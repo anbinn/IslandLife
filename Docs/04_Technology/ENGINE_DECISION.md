@@ -1,6 +1,6 @@
 # IslandLife Engine Decision
 
-Version: T0.1
+Version: T0.2
 Owner: PM
 
 ## Purpose
@@ -16,14 +16,48 @@ Future consideration:
 - Android
 - iOS
 
-## Engine Requirements
+## Engine Decision
 
-The engine must support:
-- Mobile performance optimization.
-- 2D/isometric style presentation.
-- Fast iteration with AI assisted development.
-- Asset reuse and scalable content expansion.
+Selected Engine:
+- Unity
+
+License:
+- Unity Personal for current development stage.
+
+## Engine Version
+
+Target:
+- Unity 6 LTS
+
+Exact editor patch version will be locked when the local development environment is installed and verified.
+
+## Development Stack
+
+Language:
+- C#
+
+Required Environment:
+- Unity Hub
+- Unity Editor
+- Visual Studio / compatible C# IDE
+- Git + GitHub
+
+## Decision Reasoning
+
+Unity is selected because:
+
+- Strong mobile game development ecosystem.
+- Large amount of reusable assets and tooling.
+- Suitable for 2D/isometric presentation.
+- Supports future Android and iOS expansion.
+- Good compatibility with AI assisted development workflows.
+
+## Platform And Expansion Rules
+
+The initial version focuses on Douyin mini game delivery.
+The project architecture must keep future Android/iOS expansion possible.
 
 ## Decision Status
 
-Engine selection must be frozen before production development begins.
+Engine selection is frozen.
+Production development can begin after local environment verification.
