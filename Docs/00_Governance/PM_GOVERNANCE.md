@@ -92,3 +92,15 @@ IslandLife follows a stable foundation approach:
 - Reuse suitable existing resources where licensing permits.
 - Optimize performance from the beginning.
 - Prefer controlled iteration over uncontrolled expansion.
+
+## 9. Communication Efficiency Principle
+
+Project communication follows a high-efficiency approach:
+
+- Prioritize key information over unnecessary explanation.
+- Do not repeat confirmed decisions unless there is a change.
+- Report blockers, decisions, and required actions directly.
+- Avoid spending time on options that already violate project criteria.
+- PM responses and task instructions should focus on actionable information.
+
+The goal is to maximize execution speed while maintaining clear decision records and review quality.
