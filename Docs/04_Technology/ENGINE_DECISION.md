@@ -27,9 +27,12 @@ License:
 ## Engine Version
 
 Target:
-- Unity 6 LTS
+- Unity 6.3 LTS
 
-Exact editor patch version will be locked when the local development environment is installed and verified.
+Locked Version:
+- 6000.3.25f1
+
+The editor version is verified and locked. All development environments must use 6000.3.25f1.
 
 ## Development Stack
 
