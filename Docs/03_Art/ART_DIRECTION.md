@@ -14,12 +14,46 @@ The visual direction combines:
 
 ## Reference Direction
 
-Reference qualities:
-- Stardew Valley: cozy management atmosphere.
+Primary Reference:
+- Stardew Valley
+
+Referenced qualities:
+- 45-degree tilted top-down view.
+- Farm life simulation spatial layout.
+- Warm and healing atmosphere.
+- Exploration and management loop.
+- Natural environment presentation.
+
+Secondary references:
 - Dave the Diver: approachable game presentation and charm.
 - Survival games: exploration and resource discovery.
 
-The project should not copy any specific game. It should establish its own unified style.
+### Inherited From The Reference
+
+- Life simulation feel.
+- Small world growth feel.
+- Free planning space.
+
+### Not Directly Copied
+
+- Pixel art assets.
+- Character design.
+- UI design.
+- Map layout.
+
+## IslandLife Own Direction
+
+Theme:
+- Island life simulation.
+
+Content scope:
+- Farming.
+- Exploration.
+- Resource gathering.
+- Building.
+- Underground area exploration.
+
+IslandLife must establish its own unified style rather than reproducing any referenced game.
 
 ## Style Principles
 
@@ -27,6 +61,20 @@ The project should not copy any specific game. It should establish its own unifi
 - New assets must match existing proportions, colors, and rendering style.
 - Avoid mixing unrelated art styles.
 - Prioritize readability on mobile screens.
+
+Core assets must stay visually unified:
+- Player.
+- NPC.
+- Buildings.
+- Terrain.
+
+Auxiliary assets may use compatible materials:
+- Plants.
+- Stones.
+- Decorations.
+
+Forbidden:
+- Arbitrary mixing of assets from different art styles.
 
 ## Long-term Rule
 
