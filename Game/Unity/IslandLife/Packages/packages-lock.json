@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.ruccho.fang-auto-tile": {
+      "version": "https://github.com/ruccho/FangAutoTile.git?path=/Packages/com.ruccho.fang-auto-tile#1d322cbb191b4613d251a37ad0ee3f5a6ddc2c07",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "1d322cbb191b4613d251a37ad0ee3f5a6ddc2c07"
+    },
     "com.unity.2d.animation": {
       "version": "13.0.6",
       "depth": 0,
