@@ -41,6 +41,22 @@ Secondary references:
 - UI design.
 - Map layout.
 
+## Reference vs Production Method
+
+Stardew Valley is a **visual/game-structure reference**, not a requirement to reproduce its historical asset-production pipeline.
+
+IslandLife targets a warm, readable pixel / pixel-hybrid presentation, but the implementation may use any faster modern workflow that preserves the approved final look. The project is explicitly allowed to combine:
+
+- logical gameplay grids with a different visual representation;
+- auto-tiling / terrain-rule generation;
+- procedural or editor-generated terrain;
+- masks, shaders, SpriteShape, meshes, stamps, or hybrid 2D/2.5D techniques;
+- AI-assisted source-art generation followed by automated normalization/packing.
+
+A technique is preferred because it reduces production cost and iteration time while preserving the approved visual result, not because the reference game used the same technique.
+
+The visual result is the constraint. The historical production method of the reference game is not.
+
 ## IslandLife Own Direction
 
 Theme:
