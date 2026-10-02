@@ -9,7 +9,7 @@ Branch: `experiment/terrain-autotile`
 
 Validate whether Fang Auto Tile can become IslandLife's terrain-production accelerator under the locked Unity environment.
 
-This is a workflow/compatibility test, not final art production.
+This is a workflow/compatibility test, not final art production and not a commitment to a traditional Tilemap architecture. PASS means Fang is a viable benchmark candidate only; PM will still compare it with faster modern/hybrid terrain workflows. The approved visual result is the constraint, not Stardew Valley's historical implementation method.
 
 Target workflow:
 
