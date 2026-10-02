@@ -51,6 +51,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.ruccho.fang-auto-tile": "https://github.com/ruccho/FangAutoTile.git?path=/Packages/com.ruccho.fang-auto-tile#1d322cbb191b4613d251a37ad0ee3f5a6ddc2c07"
   }
 }
