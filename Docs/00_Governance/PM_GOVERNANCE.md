@@ -118,3 +118,24 @@ IslandLife development must keep project and temporary development data off the 
 - GitHub-hosted runner temporary storage is remote runner storage and is not the user's C: drive, so hosted CI scratch paths are unaffected.
 
 This is a persistent PM/Worker rule. The user must not need to repeat the F: storage requirement in future Dispatches.
+
+## 11. Research Before Custom-Build Principle
+
+When a task involves an unfamiliar, uncertain, or potentially solved technical/art-production problem, PM must research established solutions before commissioning custom implementation.
+
+Priority order:
+
+1. Current official engine/tool documentation and samples.
+2. Proven workflows from shipped games or mature production examples.
+3. Maintained open-source tools / established third-party workflows with acceptable licensing.
+4. Project-specific custom tooling only when existing approaches have been tested and shown insufficient.
+
+Rules:
+
+- Do not build custom frameworks, editor tools, validation harnesses, or production pipelines merely because they are technically possible.
+- Prefer the solution that reaches the approved visual/product result with less production time and lower maintenance cost.
+- Use a minimal prototype to verify a researched workflow before scaling it into production.
+- Record material research conclusions in project documentation so later Workers do not repeat the same investigation.
+
+The project optimizes for result quality, iteration speed, and maintainability rather than loyalty to a particular implementation technique.
+
