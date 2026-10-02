@@ -11,6 +11,17 @@ Find the fastest practical workflow for producing IslandLife's approved first-is
 
 The visual result is the constraint. The renderer or authoring method is not.
 
+### Locked Product Constraints
+
+Workflow research must not redefine the game.
+
+- Final presentation remains 2D.
+- View remains the approved approximately 45-degree tilted top-down / three-quarter view.
+- The approved first-island visual master and established cozy pixel / pixel-hybrid visual language remain mandatory.
+- Procedural generation, AI world generation, 3D terrain tools, rendering tricks, or other technologies are evaluated only as production accelerators.
+- If a tool produces a different-looking game more easily, that is not a reason to change IslandLife's visual direction.
+- 3D/AI-generated worlds are acceptable only as behind-the-scenes source material when they can be converted into the locked 2D presentation without losing the target style.
+
 ## 2. Research Principle
 
 Before inventing project-specific tooling, prefer:
@@ -135,9 +146,13 @@ Use large visual plates only where they simplify production; prefer layered/chun
 Source:
 - https://docs.unity3d.com/6000.0/ScriptReference/SystemInfo-maxTextureSize.html
 
-### Full 3D / 2.5D
+### 3D / AI world generators
 
-Still a valid future option, especially if the visual master proves difficult in pure 2D. It is not the first prototype because it adds modeling, materials, camera, lighting and pixelization/shader work before proving the island layout.
+Do **not** treat a 3D world generator as permission to pivot IslandLife into a 3D game.
+
+A 3D/procedural/AI world generator may be tested only as an upstream production aid—for example to generate terrain composition, reference, masks, rendered layers, or other source material—when the final Unity presentation remains the locked 2D approximately 45-degree view and approved visual style.
+
+Reject any workflow whose speed advantage depends on changing the game's established visual identity.
 
 ## 6. Next Prototype
 
