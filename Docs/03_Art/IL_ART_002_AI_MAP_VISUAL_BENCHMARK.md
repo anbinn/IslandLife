@@ -95,6 +95,12 @@ Compare directly against the approved first-island master:
 
 Do not accept a technically impressive map that changes IslandLife's visual identity.
 
+### Test A5 — Editability
+
+For the whole-map output, make one controlled revision if the tool supports a practical rerun/reference iteration. Record whether local control is sufficient or whether the output must be treated as a baked base image.
+
+Do not downgrade the result solely because it is not a Tilemap. The purpose of this test is to determine whether baked visual terrain plus separate gameplay data is viable.
+
 ## Phase B — PixelLab Asset Test
 
 Only after (or independently of) the SpriteFlow whole-map result, test PixelLab for reusable production assets.
@@ -114,12 +120,6 @@ Generate one tree or rock as an independent map object/source asset in the same 
 ### Test B3 — Local edit
 
 Use inpainting/editing on one generated source asset and verify that a small correction does not require regeneration of the whole set.
-
-### Test A5 — Editability
-
-For the whole-map output, make one controlled revision if the tool supports a practical rerun/reference iteration. Record whether local control is sufficient or whether the output must be treated as a baked base image.
-
-Do not downgrade the result solely because it is not a Tilemap. The purpose of this test is to determine whether baked visual terrain plus separate gameplay data is viable.
 
 ## Evidence Required
 
