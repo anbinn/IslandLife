@@ -15,6 +15,14 @@ AI / artist creates a very small terrain source set
 → Unity Tile Palette paints terrain
 → the engine selects edge/corner/center variants automatically.
 
+## Experiment Boundary
+
+This prototype is a **benchmark candidate**, not an architecture decision.
+
+Passing this experiment only proves that auto-tiling is viable and fast. It does not require IslandLife to use a traditional all-Tilemap terrain renderer in production.
+
+After the prototype, PM may compare it against a hybrid workflow (for example logical grid + procedural/editor-generated visual terrain + independent objects/water effects). Final selection is based on production speed, editability, mobile performance, and similarity to the approved IslandLife visual master.
+
 ## Selected Prototype
 
 Prototype dependency: Fang Auto Tile 3.0.1 source at commit `1d322cbb191b4613d251a37ad0ee3f5a6ddc2c07`.
