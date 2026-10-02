@@ -1,6 +1,6 @@
 # AI-Assisted 2D World / Map Generation Research
 
-Version: R0.1  
+Version: R0.2  
 Date: 2026-10-02  
 Owner: PM  
 Status: Candidate selection for visual benchmark
@@ -21,9 +21,34 @@ Mandatory final result:
 
 Can an existing 2026 tool generate enough of the map and its source assets automatically that IslandLife avoids manually authoring every terrain sprite, transition, prop, and map placement?
 
-## Candidate 1 — PixelLab
+## Candidate 1 — SpriteFlow Game Map Generator
 
-Current finding: strongest candidate for the next benchmark.
+Current finding: strongest candidate for the **whole-map visual benchmark**.
+
+Verified current capabilities:
+
+- explicit Three-quarter projection;
+- Pixel — Modern Retro / 16-bit / hand-drawn 2D presets;
+- up to three reference images retained as visual references;
+- 1K, 2K HD and 4K UHD PNG output;
+- region/world/settlement/top-down-level templates;
+- existing examples include a Classic Island Overworld, Cozy Farming Valley, and three-quarter modern-retro scenes;
+- free accounts receive starter credits; generation begins at 3 credits for 1K.
+
+This is closer than PixelLab's current Create Map tool to IslandLife's locked approximately 45-degree three-quarter presentation.
+
+Critical limitation:
+
+SpriteFlow explicitly labels the result as a visual concept. It does not output native Unity Tilemaps, collisions, navigation, object layers, or gameplay-ready map data.
+
+For IslandLife this limitation may still be acceptable for a **baked visual terrain** experiment, because interactive trees/rocks/buildings/crops can remain separate GameObjects and gameplay placement can remain on a hidden logical grid. The benchmark must prove whether a generated high-resolution base terrain can survive close gameplay viewing and local editing.
+
+Source:
+- https://spriteflow.io/game-map-generator
+
+## Candidate 2 — PixelLab
+
+Current finding: strongest candidate for **generated production assets / terrain kits**, but not currently the strongest whole-map renderer.
 
 PixelLab is purpose-built for pixel-art game production rather than generic image generation. Current public product/docs expose:
 
@@ -65,7 +90,7 @@ Official sources:
 - https://www.pixellab.ai/docs/options/projection
 - https://www.pixellab.ai/termsofservice
 
-## Candidate 2 — Scenario + Retro Diffusion
+## Candidate 3 — Scenario + Retro Diffusion
 
 Scenario currently exposes purpose-built pixel-art models including Retro Diffusion Tile and Retro Diffusion Plus.
 
@@ -88,7 +113,7 @@ Sources:
 - https://www.scenario.com/models/retro-diffusion-tile
 - https://help.scenario.com/articles/4202673551-retro-diffusion-models-the-essentials
 
-## Candidate 3 — Frigga
+## Candidate 4 — Frigga
 
 Frigga is a Unity-native procedural 2D level/map generator.
 
@@ -112,24 +137,6 @@ Frigga does not eliminate the art-source problem by itself. It is best considere
 Source:
 - https://marketplace.unity.com/packages/tools/utilities/frigga-procedural-dungeon-level-map-generator-227242
 
-## Candidate 4 — SpriteFlow Game Map Generator
-
-SpriteFlow can generate visual 2D map concepts with:
-
-- top-down / three-quarter / isometric projections;
-- pixel / modern-retro / hand-drawn presets;
-- up to three reference images;
-- explicit examples for cozy farming and survival spaces.
-
-This is unusually close to IslandLife's required camera/art-direction vocabulary.
-
-However, SpriteFlow explicitly states that its output is a visual concept, not an engine-ready Tilemap, collision layer, navigation mesh, or gameplay-validated level.
-
-Use it as a fast whole-map concept/layout generator, not as the current production world system.
-
-Source:
-- https://spriteflow.io/game-map-generator
-
 ## Candidate 5 — Sprixen
 
 Sprixen currently advertises AI-generated sprites, maps, an isometric Map & World Builder, style locking, and Unity/Godot-oriented exports.
@@ -147,14 +154,32 @@ No researched tool has yet been proven to satisfy all three IslandLife requireme
 2. production-editable world/map data;
 3. gameplay-ready logical layers.
 
-But PixelLab is materially closer to the requested "generate the map and assets for us" workflow than the previously researched SpriteShape/Fang-only pipelines.
+The research now separates two jobs that should not be forced into one tool:
 
-Therefore the next action is not another Unity terrain implementation. It is a controlled PixelLab visual-production benchmark.
+1. **Whole-map / base-terrain visual generation:** SpriteFlow currently deserves the first benchmark because it explicitly supports three-quarter projection, reference images and up to 4K output.
+2. **Reusable production asset generation:** PixelLab currently deserves the first benchmark for terrain transitions, oblique/isometric tile kits, map objects, style-consistent objects and editing.
 
-If PixelLab passes the visual/projection test, evaluate its Unity export and map-editing workflow before building custom terrain tooling.
+Important correction: PixelLab's current Create Map documentation exposes high top-down bird's-eye or sidescroller map views; its general image/Pro tile tools expose low/high top-down and isometric/oblique controls. Therefore do not assume PixelLab Create Map itself can reproduce IslandLife's locked three-quarter world view.
 
-If PixelLab fails the visual/projection test, preserve it as an asset generator and test the hybrid:
-PixelLab/Scenario generated art -> SpriteShape or Frigga/Tilemap placement -> hidden IslandLife gameplay grid.
+### Fastest candidate pipeline to test
+
+**Generated baked base terrain + independent interactive objects + hidden gameplay grid**
+
+- Generate the non-interactive visual terrain/background in the locked three-quarter view.
+- Keep trees, rocks, chests, buildings, crops, workstations and other interactables out of (or removable from) the baked terrain where practical.
+- Generate those interactive objects separately in a matching style.
+- Unity handles sorting, collision, interaction and placement through independent objects and hidden logical data.
+- Farming/building changes can be overlays rather than destructive edits to the base terrain.
+
+This pipeline can eliminate most manual terrain slicing if the visual benchmark passes. It does not require the final game to become 3D or visibly grid-based.
+
+### Benchmark order
+
+A. SpriteFlow — whole-scene / base-terrain visual fidelity.
+B. PixelLab — reusable terrain/object generation and local editability.
+C. If A+B do not combine cleanly, Frigga/SpriteShape remains the assembly fallback using generated assets.
+
+Do not build custom terrain tooling until these existing workflows have been visually tested.
 
 ## Rule
 
