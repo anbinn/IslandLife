@@ -76,6 +76,22 @@ Auxiliary assets may use compatible materials:
 Forbidden:
 - Arbitrary mixing of assets from different art styles.
 
+
+## Non-Negotiable Visual Lock
+
+The following are product constraints and are not open for reinterpretation by terrain/workflow research:
+
+- IslandLife remains a **2D game presentation**.
+- Camera/view remains the previously approved **approximately 45-degree tilted top-down / three-quarter view**.
+- The approved first-island visual master and its established warm, detailed, cozy pixel / pixel-hybrid visual language remain the target.
+- Terrain, vegetation, buildings, characters, water, lighting, props, and future generated content must be judged against that same visual language.
+- Workflow optimization may change **how assets/worlds are produced**, but must not change **what the game looks like**.
+- A faster technique is acceptable only when its final in-game result can match the locked 2D visual target.
+- Do not pivot the game to realistic 3D, free-camera 3D, first-person/third-person presentation, or another visual genre merely because a generator/tool makes that workflow easier.
+- 3D/procedural/AI tools may be used **behind the scenes** as source-generation or rendering aids only when their output is converted/presented as the locked 2D view and style.
+
+If a proposed production method conflicts with the visual lock, reject the method rather than changing the visual target.
+
 ## Long-term Rule
 
 The visual foundation should remain stable during future content expansion.
