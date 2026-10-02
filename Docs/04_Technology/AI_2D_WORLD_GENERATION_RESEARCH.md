@@ -1,9 +1,9 @@
 # AI-Assisted 2D World / Map Generation Research
 
-Version: R0.2  
+Version: R0.3  
 Date: 2026-10-02  
 Owner: PM  
-Status: Candidate selection for visual benchmark
+Status: Acceleration research; controllable hybrid workflow is production baseline
 
 ## Locked Constraints
 
@@ -16,6 +16,32 @@ Mandatory final result:
 - Approved first-island visual master remains the visual target.
 - Warm, detailed, cozy pixel / pixel-hybrid language remains locked.
 - A tool is rejected if its speed depends on changing the game into realistic 3D, true isometric tactics art, 90-degree bird's-eye art, or another visual identity.
+
+## Mainstream Production Baseline
+
+Verified references support a controllable hybrid workflow rather than one-shot whole-map generation.
+
+- Unity Happy Harvest: top-down farming sample using Tilemap, Rule Tiles, independent scene content, gameplay APIs, 2D lighting and shaders.
+- Stardew Valley public map documentation: layered terrain/building/path maps, tile properties, tilesheets, and separate location/game data.
+- Unity Lost Crypt: SpriteShape for organic outdoor terrain plus Tilemap/Rule Tile for grid-suited areas and separate decorative objects.
+- Cult of the Lamb: a different visual target, but its developers publicly describe direct editor layout and a hybrid scene structure under a controlled camera.
+
+IslandLife baseline:
+
+- Unity-native editable world is the source of truth.
+- Tilemap/Rule Tile for grid-suited terrain.
+- SpriteShape/freeform sprites for organic boundaries where useful.
+- Independent GameObjects/Sprites for interactive objects.
+- Hidden logical data for placement, occupancy, farming and build rules.
+- Generation/AI accelerates art production and repetitive work but does not replace editability.
+- Paid art asset packs are excluded.
+
+Sources:
+- https://unity.com/blog/games/happy-harvest-demo-latest-2d-techniques
+- https://discussions.unity.com/t/how-to-create-art-and-gameplay-with-2d-tilemaps/1643416
+- https://stardewvalleywiki.com/Modding:Maps
+- https://unity.com/blog/games/download-new-2d-sample-project-lost-crypt
+- https://unity.com/blog/games/recipe-behind-smash-hit-cult-of-the-lamb
 
 ## Research Question
 
