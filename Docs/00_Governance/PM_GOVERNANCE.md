@@ -104,3 +104,17 @@ Project communication follows a high-efficiency approach:
 - PM responses and task instructions should focus on actionable information.
 
 The goal is to maximize execution speed while maintaining clear decision records and review quality.
+
+
+## 10. Local Workspace and Storage Roots
+
+IslandLife development must keep project and temporary development data off the Windows system drive.
+
+- **Formal local project root:** `F:\\IS`.
+- PM Dispatches and Worker instructions must treat `F:\\IS` as the canonical local IslandLife workspace unless the Product Owner explicitly changes it.
+- **Temporary development root:** `F:\\临时开发区\\IslandLife`.
+- Any IslandLife temporary clone, Git worktree, verification/audit/probe copy, test workspace, build-isolation workspace, or other substantial development copy created on the user's Windows machine must live under `F:\\临时开发区\\IslandLife`.
+- **Forbidden:** creating IslandLife repository/worktree/development copies under `%TEMP%`, `%TMP%`, `%LOCALAPPDATA%\\Temp`, or any other C: location. Tool defaults do not override this rule.
+- GitHub-hosted runner temporary storage is remote runner storage and is not the user's C: drive, so hosted CI scratch paths are unaffected.
+
+This is a persistent PM/Worker rule. The user must not need to repeat the F: storage requirement in future Dispatches.
