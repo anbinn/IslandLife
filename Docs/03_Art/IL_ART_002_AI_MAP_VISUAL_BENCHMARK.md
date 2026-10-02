@@ -8,6 +8,43 @@ Architecture Decision: NONE — benchmark only
 
 Determine whether a current AI game-art/map tool can produce IslandLife terrain/world content close enough to the approved first-island visual master that manual terrain-asset production can be substantially reduced.
 
+## Approved Visual Anchor — 2026-10-02
+
+The user supplied the current first-island layout overview as the benchmark's visual anchor.
+
+Treat the image as a **target family**, not a pixel-perfect blueprint.
+
+Must preserve:
+- 2D approximately 45-degree / three-quarter island presentation;
+- warm, polished, commercially finished tropical life-sim look;
+- vivid readable ocean, beach, grass, forest, lake and cliff/highland separation;
+- dense but readable vegetation;
+- volumetric cliff faces and elevation changes;
+- organic coastline and paths;
+- cozy wooden construction language;
+- high environmental detail without becoming realistic 3D.
+
+May change:
+- exact coastline;
+- exact zone boundaries;
+- exact lake shape;
+- exact path routing;
+- tree/rock counts and placement;
+- building placement;
+- cliff silhouette;
+- decorative props;
+- small-scale terrain composition.
+
+The labels, title boards, dotted zone outlines, legend, compass and explanatory panels are planning overlays, not part of the in-game visual target.
+
+Benchmark priority:
+1. overall visual language and camera;
+2. terrain/elevation readability;
+3. production practicality and editability;
+4. exact map-layout similarity.
+
+A generated result does not need to reproduce the reference island one-to-one. It must look like it belongs to the same game.
+
 ## Locked Input
 
 The approved first-island visual master is the reference.
