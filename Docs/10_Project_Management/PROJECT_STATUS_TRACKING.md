@@ -40,7 +40,20 @@ PM reviews:
 - Implementation commit: `d98cf630d76a2074ef8336154b39393d9938228a`
 - PM verification: GitHub diff reviewed; two Allowed Scope files only.
 - Result: first-island editable scene skeleton established.
-- Deferred: first interactive Editor opening should visually confirm hierarchy because Worker execution was batch-only.
+
+### IL-WORLD-002 — Sprout Lands Terrain Pipeline Validation
+- Status: Accepted
+- Final implementation commit: `33d29c7b64e2cde71536dfad70cfb391f0673981`
+- Merge commit on `main`: `66fe06091979d3c6af14ce73b1bdc807582d06ea`
+- PM verification: GitHub diff and Unity Editor result reviewed.
+- Result: Sprout Lands import, sprite slicing, Grass RuleTile auto-tiling, 4-frame Animated Tile water, Tilemap terrain, and independent prop placement were validated.
+- Scope note: this was a technical pipeline experiment, not the approved final first-island visual target.
+
+### Current Environment Gate
+- Formal workspace synchronized to accepted `main`.
+- Formal Unity project opened successfully with Unity `6000.3.25f1`.
+- Unity MCP `v10.2.0` is running through HTTP Local at `127.0.0.1:8080`.
+- Kilo → Unity MCP read-only connectivity verified against `Assets/Scenes/FirstIsland_Prototype.unity`.
 
 ### Next Gate
-Prepare the first visible terrain slice only after its visual source/asset method is selected under the free-only asset rule. Do not fill the whole island or build custom terrain tooling first.
+Begin the formal first-island production work toward the approved mother-image target. Keep the locked 2D ~45° top-down presentation and use the validated Sprout Lands pipeline as the technical base. Work in small visual slices; do not treat the IL-WORLD-002 rectangular terrain experiment as the target composition or polish level.
