@@ -43,6 +43,27 @@ Sources:
 - https://unity.com/blog/games/download-new-2d-sample-project-lost-crypt
 - https://unity.com/blog/games/recipe-behind-smash-hit-cult-of-the-lamb
 
+## 2026 Generator Reality Check
+
+Automatic generation is useful, but current tools should be treated by role:
+
+- Unity's built-in Sprite Generator can generate from prompts and reference images, remove backgrounds, upscale, recolor, inpaint, pixelate, and create animation-ready spritesheets. Unity explicitly positions these generated sprites as prototyping/placeholder assets rather than a guaranteed replacement for final production art.
+- Unity 6.3 Tile Set can automatically create/update Tile assets and palettes from source textures. This automates import/maintenance, not the creation of the source artwork itself.
+- Unity Tilemap Extras / Rule Tile automates edge/corner selection and repeated painting once compatible source art exists.
+- SpriteFlow offers free starter credits for three-quarter 2D map concepts, but its output is explicitly a concept PNG rather than engine-ready map data.
+- PixelLab's free tier can generate/edit small sprites, but its map workshop and tile-generation workflow require a subscription; therefore those paid features are not part of the baseline.
+
+Practical conclusion:
+
+Use free automatic generation to test whether it can get visually close to the approved IslandLife master. If the gap is visibly large after a short benchmark, stop. Do not spend production time repairing a generator that cannot naturally produce the locked style.
+
+Sources:
+- https://unity.com/blog/unity-ai-sprite-generator
+- https://docs.unity.com/en-us/engine/6000.3/manual/unity2d/tilemaps/create-tile-palette/assets
+- https://discussions.unity.com/t/how-to-create-art-and-gameplay-with-2d-tilemaps/1643416
+- https://spriteflow.io/game-map-generator
+- https://www.pixellab.ai/?tier=0
+
 ## Research Question
 
 Can an existing 2026 tool generate enough of the map and its source assets automatically that IslandLife avoids manually authoring every terrain sprite, transition, prop, and map placement?
