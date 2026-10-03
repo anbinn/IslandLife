@@ -329,6 +329,23 @@ namespace IslandLife.World.Terrain
                 farX,
                 farY,
                 grid.GetTerrain(farX, farY));
+
+            grid.SetTerrain(changedX, changedY, TerrainType.Sand);
+            if (!TerrainGridValidator.IsValid(grid))
+            {
+                throw new InvalidOperationException(
+                    "The terrain test grid is invalid after restoring the Sand cell.");
+            }
+
+            terrainRenderer.RefreshCell(grid, changedX, changedY);
+
+            Require(
+                waterTilemap.GetTile(changedPosition) == renderAssets.Water
+                    && sandTilemap.GetTile(changedPosition) != null
+                    && grassTilemap.GetTile(changedPosition) == null,
+                changedX,
+                changedY,
+                TerrainType.Sand);
         }
 
         private static void Require(bool condition, int x, int y, TerrainType expectedTerrain)
