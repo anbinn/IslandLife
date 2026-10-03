@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -32,7 +33,92 @@ namespace IslandLife.World.Terrain
             terrainRenderer.RenderAll(grid);
             VerifyInitialRender(grid);
             VerifyLocalRefresh(grid);
+            VerifyAllTerrainMasks();
+            Debug.Log("TERRAIN-05D 47-MASK PASS");
             Debug.Log("TERRAIN-05C PASS");
+        }
+
+        private void VerifyAllTerrainMasks()
+        {
+            HashSet<TerrainNeighborMask> canonicalMasks =
+                new HashSet<TerrainNeighborMask>();
+            Dictionary<TerrainNeighborMask, int> representativeRawMasks =
+                new Dictionary<TerrainNeighborMask, int>();
+
+            for (int raw = 0; raw <= byte.MaxValue; raw++)
+            {
+                TerrainNeighborMask rawMask = (TerrainNeighborMask)(byte)raw;
+                TerrainNeighborMask canonicalMask =
+                    TerrainMaskNormalizer.Normalize(rawMask);
+
+                if (canonicalMasks.Add(canonicalMask))
+                {
+                    representativeRawMasks.Add(canonicalMask, raw);
+                }
+            }
+
+            if (canonicalMasks.Count != 47)
+            {
+                throw new InvalidOperationException(
+                    $"Expected 47 canonical terrain masks from 256 raw masks, "
+                    + $"but found {canonicalMasks.Count}.");
+            }
+
+            HashSet<int> coordinateIdentities = new HashSet<int>();
+
+            foreach (TerrainNeighborMask canonicalMask in canonicalMasks)
+            {
+                int raw = representativeRawMasks[canonicalMask];
+
+                if (TerrainMaskNormalizer.Normalize(canonicalMask) != canonicalMask)
+                {
+                    throw new InvalidOperationException(
+                        $"Canonical mask is not idempotent: raw={(byte)raw}, "
+                        + $"canonical={(byte)canonicalMask}.");
+                }
+
+                if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
+                        canonicalMask,
+                        out TerrainSpriteCoordinate coordinate))
+                {
+                    throw new InvalidOperationException(
+                        $"No coordinate for raw={(byte)raw}, "
+                        + $"canonical={(byte)canonicalMask}.");
+                }
+
+                int coordinateIdentity = coordinate.Row * 100 + coordinate.Column;
+                if (!coordinateIdentities.Add(coordinateIdentity))
+                {
+                    throw new InvalidOperationException(
+                        $"Coordinate ({coordinate.Row}, {coordinate.Column}) is duplicated "
+                        + $"for raw={(byte)raw}, canonical={(byte)canonicalMask}.");
+                }
+
+                if (!renderAssets.Grass.TryGetSprite(coordinate, out Sprite grassSprite)
+                    || grassSprite == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Grass Sprite resolution failed for raw={(byte)raw}, "
+                        + $"canonical={(byte)canonicalMask}, "
+                        + $"coordinate=({coordinate.Row}, {coordinate.Column}).");
+                }
+
+                if (!renderAssets.Sand.TryGetSprite(coordinate, out Sprite sandSprite)
+                    || sandSprite == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Sand Sprite resolution failed for raw={(byte)raw}, "
+                        + $"canonical={(byte)canonicalMask}, "
+                        + $"coordinate=({coordinate.Row}, {coordinate.Column}).");
+                }
+            }
+
+            if (coordinateIdentities.Count != 47)
+            {
+                throw new InvalidOperationException(
+                    $"Expected 47 unique terrain Sprite coordinates, "
+                    + $"but found {coordinateIdentities.Count}.");
+            }
         }
 
         private TerrainGridData CreateTestGrid()
