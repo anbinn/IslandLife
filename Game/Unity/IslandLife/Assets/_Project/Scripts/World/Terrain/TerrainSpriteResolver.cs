@@ -35,6 +35,7 @@ namespace IslandLife.World.Terrain
                 TerrainMaskNormalizer.Normalize(rawMask);
 
             if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    spriteSet.TerrainType,
                     canonicalMask,
                     out TerrainSpriteCoordinate coordinate))
             {

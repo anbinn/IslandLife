@@ -35,6 +35,7 @@ namespace IslandLife.World.Terrain
             VerifyGrassUnderlay(grid);
             VerifyLocalRefresh(grid);
             VerifyAllTerrainMasks();
+            Debug.Log("TERRAIN-08B MAPPING PASS");
             VerifyOriginSupport();
             Debug.Log("TERRAIN-07B ORIGIN PASS");
             Debug.Log("TERRAIN-06A UNDERLAY PASS");
@@ -171,7 +172,8 @@ namespace IslandLife.World.Terrain
                     + $"but found {canonicalMasks.Count}.");
             }
 
-            HashSet<int> coordinateIdentities = new HashSet<int>();
+            HashSet<int> grassCoordinateIdentities = new HashSet<int>();
+            HashSet<int> sandCoordinateIdentities = new HashSet<int>();
 
             foreach (TerrainNeighborMask canonicalMask in canonicalMasks)
             {
@@ -184,47 +186,308 @@ namespace IslandLife.World.Terrain
                         + $"canonical={(byte)canonicalMask}.");
                 }
 
-                if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
-                        canonicalMask,
-                        out TerrainSpriteCoordinate coordinate))
-                {
-                    throw new InvalidOperationException(
-                        $"No coordinate for raw={(byte)raw}, "
-                        + $"canonical={(byte)canonicalMask}.");
-                }
+                VerifyTerrainMaskMapping(
+                    TerrainType.Grass,
+                    canonicalMask,
+                    raw,
+                    grassCoordinateIdentities,
+                    renderAssets.Grass);
+                VerifyTerrainMaskMapping(
+                    TerrainType.Sand,
+                    canonicalMask,
+                    raw,
+                    sandCoordinateIdentities,
+                    renderAssets.Sand);
+            }
 
-                int coordinateIdentity = coordinate.Row * 100 + coordinate.Column;
-                if (!coordinateIdentities.Add(coordinateIdentity))
-                {
-                    throw new InvalidOperationException(
-                        $"Coordinate ({coordinate.Row}, {coordinate.Column}) is duplicated "
-                        + $"for raw={(byte)raw}, canonical={(byte)canonicalMask}.");
-                }
+            if (grassCoordinateIdentities.Count != 47
+                || sandCoordinateIdentities.Count != 47)
+            {
+                throw new InvalidOperationException(
+                    $"Expected 47 unique coordinates per terrain, but found "
+                    + $"Grass={grassCoordinateIdentities.Count}, "
+                    + $"Sand={sandCoordinateIdentities.Count}.");
+            }
 
-                if (!renderAssets.Grass.TryGetSprite(coordinate, out Sprite grassSprite)
-                    || grassSprite == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Grass Sprite resolution failed for raw={(byte)raw}, "
-                        + $"canonical={(byte)canonicalMask}, "
-                        + $"coordinate=({coordinate.Row}, {coordinate.Column}).");
-                }
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 2, 2, 3);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 64, 0, 3);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 18, 3, 4);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 80, 0, 4);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 22, 2, 0);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 208, 0, 0);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 126, 0, 9);
+            VerifySpecificTerrainCoordinate(TerrainType.Grass, 219, 1, 9);
+            VerifySpecificTerrainCoordinate(TerrainType.Sand, 2, 2, 3);
+            VerifySpecificTerrainCoordinate(TerrainType.Sand, 64, 0, 3);
+            VerifySpecificTerrainCoordinate(TerrainType.Sand, 18, 3, 4);
+            VerifySpecificTerrainCoordinate(TerrainType.Sand, 80, 0, 4);
+            VerifySpecificTerrainCoordinate(TerrainType.Sand, 126, 1, 9);
+            VerifySpecificTerrainCoordinate(TerrainType.Sand, 219, 0, 9);
 
-                if (!renderAssets.Sand.TryGetSprite(coordinate, out Sprite sandSprite)
-                    || sandSprite == null)
+            if (SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    TerrainType.Empty,
+                    TerrainNeighborMask.None,
+                    out _)
+                || SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    TerrainType.Water,
+                    TerrainNeighborMask.None,
+                    out _)
+                || SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    (TerrainType)byte.MaxValue,
+                    TerrainNeighborMask.None,
+                    out _))
+            {
+                throw new InvalidOperationException(
+                    "Unsupported terrain types must not resolve a Sprite coordinate.");
+            }
+        }
+
+        private static void VerifyTerrainMaskMapping(
+            TerrainType terrainType,
+            TerrainNeighborMask canonicalMask,
+            int raw,
+            HashSet<int> coordinateIdentities,
+            TerrainSpriteSet spriteSet)
+        {
+            if (!TryGetExpectedCoordinate(
+                    terrainType,
+                    canonicalMask,
+                    out TerrainSpriteCoordinate expectedCoordinate))
+            {
+                throw new InvalidOperationException(
+                    $"No independent expected coordinate for {terrainType}, "
+                    + $"raw={(byte)raw}, canonical={(byte)canonicalMask}.");
+            }
+
+            if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    terrainType,
+                    canonicalMask,
+                    out TerrainSpriteCoordinate actualCoordinate))
+            {
+                throw new InvalidOperationException(
+                    $"No coordinate for {terrainType}, raw={(byte)raw}, "
+                    + $"canonical={(byte)canonicalMask}.");
+            }
+
+            if (actualCoordinate.Row != expectedCoordinate.Row
+                || actualCoordinate.Column != expectedCoordinate.Column)
+            {
+                throw new InvalidOperationException(
+                    $"Incorrect {terrainType} coordinate for raw={(byte)raw}, "
+                    + $"canonical={(byte)canonicalMask}: "
+                    + $"expected ({expectedCoordinate.Row}, {expectedCoordinate.Column}), "
+                    + $"actual ({actualCoordinate.Row}, {actualCoordinate.Column}).");
+            }
+
+            int coordinateIdentity =
+                actualCoordinate.Row * 100 + actualCoordinate.Column;
+            if (!coordinateIdentities.Add(coordinateIdentity))
+            {
+                throw new InvalidOperationException(
+                    $"{terrainType} coordinate ({actualCoordinate.Row}, "
+                    + $"{actualCoordinate.Column}) is duplicated for raw={(byte)raw}, "
+                    + $"canonical={(byte)canonicalMask}.");
+            }
+
+            if (!spriteSet.TryGetSprite(actualCoordinate, out Sprite sprite)
+                || sprite == null)
+            {
+                throw new InvalidOperationException(
+                    $"{terrainType} Sprite resolution failed for raw={(byte)raw}, "
+                    + $"canonical={(byte)canonicalMask}, "
+                    + $"coordinate=({actualCoordinate.Row}, {actualCoordinate.Column}).");
+            }
+        }
+
+        private static bool TryGetExpectedCoordinate(
+            TerrainType terrainType,
+            TerrainNeighborMask canonicalMask,
+            out TerrainSpriteCoordinate coordinate)
+        {
+            if (terrainType != TerrainType.Grass && terrainType != TerrainType.Sand)
+            {
+                coordinate = default;
+                return false;
+            }
+
+            if (terrainType == TerrainType.Sand)
+            {
+                switch (canonicalMask)
                 {
-                    throw new InvalidOperationException(
-                        $"Sand Sprite resolution failed for raw={(byte)raw}, "
-                        + $"canonical={(byte)canonicalMask}, "
-                        + $"coordinate=({coordinate.Row}, {coordinate.Column}).");
+                    case (TerrainNeighborMask)126:
+                        coordinate = new TerrainSpriteCoordinate(1, 9);
+                        return true;
+                    case (TerrainNeighborMask)219:
+                        coordinate = new TerrainSpriteCoordinate(0, 9);
+                        return true;
                 }
             }
 
-            if (coordinateIdentities.Count != 47)
+            switch (canonicalMask)
+            {
+                case (TerrainNeighborMask)22:
+                    coordinate = new TerrainSpriteCoordinate(2, 0);
+                    return true;
+                case (TerrainNeighborMask)31:
+                    coordinate = new TerrainSpriteCoordinate(2, 1);
+                    return true;
+                case (TerrainNeighborMask)11:
+                    coordinate = new TerrainSpriteCoordinate(2, 2);
+                    return true;
+                case (TerrainNeighborMask)2:
+                    coordinate = new TerrainSpriteCoordinate(2, 3);
+                    return true;
+                case (TerrainNeighborMask)18:
+                    coordinate = new TerrainSpriteCoordinate(3, 4);
+                    return true;
+                case (TerrainNeighborMask)27:
+                    coordinate = new TerrainSpriteCoordinate(3, 5);
+                    return true;
+                case (TerrainNeighborMask)30:
+                    coordinate = new TerrainSpriteCoordinate(3, 6);
+                    return true;
+                case (TerrainNeighborMask)10:
+                    coordinate = new TerrainSpriteCoordinate(3, 7);
+                    return true;
+                case (TerrainNeighborMask)26:
+                    coordinate = new TerrainSpriteCoordinate(3, 8);
+                    return true;
+                case (TerrainNeighborMask)126:
+                    coordinate = new TerrainSpriteCoordinate(0, 9);
+                    return true;
+                case (TerrainNeighborMask)214:
+                    coordinate = new TerrainSpriteCoordinate(1, 0);
+                    return true;
+                case TerrainNeighborMask.All:
+                    coordinate = new TerrainSpriteCoordinate(1, 1);
+                    return true;
+                case (TerrainNeighborMask)107:
+                    coordinate = new TerrainSpriteCoordinate(1, 2);
+                    return true;
+                case (TerrainNeighborMask)66:
+                    coordinate = new TerrainSpriteCoordinate(1, 3);
+                    return true;
+                case (TerrainNeighborMask)210:
+                    coordinate = new TerrainSpriteCoordinate(2, 4);
+                    return true;
+                case (TerrainNeighborMask)251:
+                    coordinate = new TerrainSpriteCoordinate(2, 5);
+                    return true;
+                case (TerrainNeighborMask)254:
+                    coordinate = new TerrainSpriteCoordinate(2, 6);
+                    return true;
+                case (TerrainNeighborMask)106:
+                    coordinate = new TerrainSpriteCoordinate(2, 7);
+                    return true;
+                case (TerrainNeighborMask)250:
+                    coordinate = new TerrainSpriteCoordinate(2, 8);
+                    return true;
+                case (TerrainNeighborMask)219:
+                    coordinate = new TerrainSpriteCoordinate(1, 9);
+                    return true;
+                case (TerrainNeighborMask)208:
+                    coordinate = new TerrainSpriteCoordinate(0, 0);
+                    return true;
+                case (TerrainNeighborMask)248:
+                    coordinate = new TerrainSpriteCoordinate(0, 1);
+                    return true;
+                case (TerrainNeighborMask)104:
+                    coordinate = new TerrainSpriteCoordinate(0, 2);
+                    return true;
+                case (TerrainNeighborMask)64:
+                    coordinate = new TerrainSpriteCoordinate(0, 3);
+                    return true;
+                case (TerrainNeighborMask)86:
+                    coordinate = new TerrainSpriteCoordinate(1, 4);
+                    return true;
+                case (TerrainNeighborMask)127:
+                    coordinate = new TerrainSpriteCoordinate(1, 5);
+                    return true;
+                case (TerrainNeighborMask)223:
+                    coordinate = new TerrainSpriteCoordinate(1, 6);
+                    return true;
+                case (TerrainNeighborMask)75:
+                    coordinate = new TerrainSpriteCoordinate(1, 7);
+                    return true;
+                case (TerrainNeighborMask)95:
+                    coordinate = new TerrainSpriteCoordinate(1, 8);
+                    return true;
+                case (TerrainNeighborMask)94:
+                    coordinate = new TerrainSpriteCoordinate(3, 9);
+                    return true;
+                case (TerrainNeighborMask)91:
+                    coordinate = new TerrainSpriteCoordinate(3, 10);
+                    return true;
+                case (TerrainNeighborMask)16:
+                    coordinate = new TerrainSpriteCoordinate(3, 0);
+                    return true;
+                case (TerrainNeighborMask)24:
+                    coordinate = new TerrainSpriteCoordinate(3, 1);
+                    return true;
+                case (TerrainNeighborMask)8:
+                    coordinate = new TerrainSpriteCoordinate(3, 2);
+                    return true;
+                case TerrainNeighborMask.None:
+                    coordinate = new TerrainSpriteCoordinate(3, 3);
+                    return true;
+                case (TerrainNeighborMask)80:
+                    coordinate = new TerrainSpriteCoordinate(0, 4);
+                    return true;
+                case (TerrainNeighborMask)120:
+                    coordinate = new TerrainSpriteCoordinate(0, 5);
+                    return true;
+                case (TerrainNeighborMask)216:
+                    coordinate = new TerrainSpriteCoordinate(0, 6);
+                    return true;
+                case (TerrainNeighborMask)72:
+                    coordinate = new TerrainSpriteCoordinate(0, 7);
+                    return true;
+                case (TerrainNeighborMask)88:
+                    coordinate = new TerrainSpriteCoordinate(0, 8);
+                    return true;
+                case (TerrainNeighborMask)218:
+                    coordinate = new TerrainSpriteCoordinate(2, 9);
+                    return true;
+                case (TerrainNeighborMask)122:
+                    coordinate = new TerrainSpriteCoordinate(2, 10);
+                    return true;
+                case (TerrainNeighborMask)82:
+                    coordinate = new TerrainSpriteCoordinate(4, 4);
+                    return true;
+                case (TerrainNeighborMask)123:
+                    coordinate = new TerrainSpriteCoordinate(4, 5);
+                    return true;
+                case (TerrainNeighborMask)222:
+                    coordinate = new TerrainSpriteCoordinate(4, 6);
+                    return true;
+                case (TerrainNeighborMask)74:
+                    coordinate = new TerrainSpriteCoordinate(4, 7);
+                    return true;
+                case (TerrainNeighborMask)90:
+                    coordinate = new TerrainSpriteCoordinate(4, 8);
+                    return true;
+                default:
+                    coordinate = default;
+                    return false;
+            }
+        }
+
+        private static void VerifySpecificTerrainCoordinate(
+            TerrainType terrainType,
+            int mask,
+            int expectedRow,
+            int expectedColumn)
+        {
+            if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    terrainType,
+                    (TerrainNeighborMask)mask,
+                    out TerrainSpriteCoordinate coordinate)
+                || coordinate.Row != expectedRow
+                || coordinate.Column != expectedColumn)
             {
                 throw new InvalidOperationException(
-                    $"Expected 47 unique terrain Sprite coordinates, "
-                    + $"but found {coordinateIdentities.Count}.");
+                    $"High-signal {terrainType} mask {mask} mapping was not "
+                    + $"({expectedRow}, {expectedColumn}).");
             }
         }
 
