@@ -9,8 +9,7 @@ namespace IslandLife.World.Terrain
             ValidateTerrainType(first, nameof(first));
             ValidateTerrainType(second, nameof(second));
 
-            return !((first == TerrainType.Grass && second == TerrainType.Water)
-                     || (first == TerrainType.Water && second == TerrainType.Grass));
+            return true;
         }
 
         private static void ValidateTerrainType(TerrainType terrainType, string parameterName)

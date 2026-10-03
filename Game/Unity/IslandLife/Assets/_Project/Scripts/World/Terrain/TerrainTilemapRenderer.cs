@@ -140,12 +140,17 @@ namespace IslandLife.World.Terrain
 
                 case TerrainType.Sand:
                     waterTilemap.SetTile(position, renderAssets.Water);
-                    SetResolvedLandSand(grid, x, y, position);
+                    SetResolvedSprite(
+                        grid,
+                        x,
+                        y,
+                        renderAssets.Sand,
+                        sandTilemap,
+                        position);
                     return;
 
                 case TerrainType.Grass:
                     waterTilemap.SetTile(position, renderAssets.Water);
-                    SetResolvedLandSand(grid, x, y, position);
                     SetResolvedSprite(
                         grid,
                         x,
@@ -183,37 +188,6 @@ namespace IslandLife.World.Terrain
             }
 
             tilemap.SetTile(position, GetOrCreateTransientTile(sprite));
-        }
-
-        private void SetResolvedLandSand(
-            TerrainGridData grid,
-            int x,
-            int y,
-            Vector3Int position)
-        {
-            TerrainNeighborMask rawMask =
-                TerrainNeighborResolver.ResolveLandMask(grid, x, y);
-            TerrainNeighborMask canonicalMask =
-                TerrainMaskNormalizer.Normalize(rawMask);
-
-            if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
-                    TerrainType.Sand,
-                    canonicalMask,
-                    out TerrainSpriteCoordinate coordinate))
-            {
-                throw new InvalidOperationException(
-                    $"Could not resolve the Sand land-underlay coordinate at ({x}, {y}).");
-            }
-
-            if (!renderAssets.Sand.TryGetSprite(coordinate, out Sprite sprite)
-                || sprite == null)
-            {
-                throw new InvalidOperationException(
-                    $"Could not resolve the Sand land-underlay Sprite at "
-                    + $"({coordinate.Row}, {coordinate.Column}).");
-            }
-
-            sandTilemap.SetTile(position, GetOrCreateTransientTile(sprite));
         }
 
         private Tile GetOrCreateTransientTile(Sprite sprite)
