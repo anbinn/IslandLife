@@ -17,10 +17,15 @@ namespace IslandLife.World.Terrain
         [SerializeField]
         private TileBase water;
 
+        [SerializeField]
+        private TileBase grassAutoTile;
+
         public TerrainSpriteSet Grass => grass;
 
         public TerrainSpriteSet Sand => sand;
 
         public TileBase Water => water;
+
+        public TileBase GrassAutoTile => grassAutoTile;
     }
 }

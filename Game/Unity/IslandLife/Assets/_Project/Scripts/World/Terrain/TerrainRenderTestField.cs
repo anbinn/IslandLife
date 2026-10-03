@@ -937,16 +937,12 @@ namespace IslandLife.World.Terrain
                     return;
                 case TerrainType.Grass:
                     Require(
-                        water == renderAssets.Water && dirt == null && grass != null,
+                        water == renderAssets.Water
+                        && dirt == null
+                        && grass == renderAssets.GrassAutoTile,
                         x,
                         y,
                         terrainType);
-                    VerifyResolvedTerrainSprite(
-                        grid,
-                        x,
-                        y,
-                        renderAssets.Grass,
-                        grassTilemap);
                     return;
                 default:
                     throw new InvalidOperationException(

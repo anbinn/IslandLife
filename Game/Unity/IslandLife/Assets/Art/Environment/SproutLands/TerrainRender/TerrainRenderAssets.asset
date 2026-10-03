@@ -15,3 +15,4 @@ MonoBehaviour:
   grass: {fileID: 11400000, guid: 477b9d6c35ef65d41b764905b648be13, type: 2}
   sand: {fileID: 11400000, guid: b8fd28648a5f09d43afe31da54e1fd76, type: 2}
   water: {fileID: 11400000, guid: dc9a04adfdd13b7498f57224522b9551, type: 2}
+  grassAutoTile: {fileID: 11400000, guid: d31e691d779efbc4e8959a6f145d49a7, type: 2}

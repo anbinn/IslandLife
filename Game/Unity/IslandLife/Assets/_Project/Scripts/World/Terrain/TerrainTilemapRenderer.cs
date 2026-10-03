@@ -113,9 +113,9 @@ namespace IslandLife.World.Terrain
                 throw new InvalidOperationException("Grass Tilemap is not configured.");
             }
 
-            if (renderAssets.Grass == null)
+            if (renderAssets.GrassAutoTile == null)
             {
-                throw new InvalidOperationException("Grass terrain render assets are not configured.");
+                throw new InvalidOperationException("Grass AutoTile render asset is not configured.");
             }
 
             if (renderAssets.Water == null)
@@ -185,13 +185,7 @@ namespace IslandLife.World.Terrain
 
                 case TerrainType.Grass:
                     waterTilemap.SetTile(position, renderAssets.Water);
-                    SetResolvedSprite(
-                        grid,
-                        x,
-                        y,
-                        renderAssets.Grass,
-                        grassTilemap,
-                        position);
+                    grassTilemap.SetTile(position, renderAssets.GrassAutoTile);
                     return;
 
                 default:

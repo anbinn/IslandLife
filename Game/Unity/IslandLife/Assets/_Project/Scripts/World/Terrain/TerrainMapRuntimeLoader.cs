@@ -103,14 +103,8 @@ namespace IslandLife.World.Terrain
                         case TerrainType.Grass:
                             if (waterTilemap.GetTile(position) != renderAssets.Water
                                 || !hasGrass
-                                || !TerrainSpriteResolver.TryResolve(
-                                    grid,
-                                    worldX,
-                                    worldY,
-                                    renderAssets.Grass,
-                                    out Sprite expectedGrass)
-                                || expectedGrass == null
-                                || grassTilemap.GetSprite(position) != expectedGrass)
+                                || grassTilemap.GetTile(position)
+                                    != renderAssets.GrassAutoTile)
                             {
                                 throw new InvalidOperationException(
                                     $"Rendered Grass does not match terrain data at "
