@@ -69,5 +69,80 @@ namespace IslandLife.World.Terrain
 
             return mask;
         }
+
+        public static TerrainNeighborMask ResolveLandMask(
+            TerrainGridData grid,
+            int x,
+            int y)
+        {
+            if (grid == null)
+            {
+                throw new ArgumentNullException(nameof(grid));
+            }
+
+            TerrainType center = grid.GetTerrain(x, y);
+            if (!IsLand(center))
+            {
+                return TerrainNeighborMask.None;
+            }
+
+            TerrainNeighborMask mask = TerrainNeighborMask.None;
+
+            if (IsLandAt(grid, (long)x - 1, (long)y + 1))
+            {
+                mask |= TerrainNeighborMask.NorthWest;
+            }
+
+            if (IsLandAt(grid, x, (long)y + 1))
+            {
+                mask |= TerrainNeighborMask.North;
+            }
+
+            if (IsLandAt(grid, (long)x + 1, (long)y + 1))
+            {
+                mask |= TerrainNeighborMask.NorthEast;
+            }
+
+            if (IsLandAt(grid, (long)x - 1, y))
+            {
+                mask |= TerrainNeighborMask.West;
+            }
+
+            if (IsLandAt(grid, (long)x + 1, y))
+            {
+                mask |= TerrainNeighborMask.East;
+            }
+
+            if (IsLandAt(grid, (long)x - 1, (long)y - 1))
+            {
+                mask |= TerrainNeighborMask.SouthWest;
+            }
+
+            if (IsLandAt(grid, x, (long)y - 1))
+            {
+                mask |= TerrainNeighborMask.South;
+            }
+
+            if (IsLandAt(grid, (long)x + 1, (long)y - 1))
+            {
+                mask |= TerrainNeighborMask.SouthEast;
+            }
+
+            return mask;
+        }
+
+        private static bool IsLandAt(TerrainGridData grid, long x, long y)
+        {
+            return x >= int.MinValue
+                && x <= int.MaxValue
+                && y >= int.MinValue
+                && y <= int.MaxValue
+                && IsLand(grid.GetTerrain((int)x, (int)y));
+        }
+
+        private static bool IsLand(TerrainType terrainType)
+        {
+            return terrainType == TerrainType.Sand || terrainType == TerrainType.Grass;
+        }
     }
 }

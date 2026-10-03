@@ -33,8 +33,12 @@ namespace IslandLife.World.Terrain
             terrainRenderer.RenderAll(grid);
             VerifyInitialRender(grid);
             VerifyGrassUnderlay(grid);
+            VerifyLandUnderlaySprites(grid);
             VerifyLocalRefresh(grid);
+            VerifyLandMasks();
+            VerifyMixedLandRefresh(grid);
             VerifyAllTerrainMasks();
+            Debug.Log("TERRAIN-08C LAND-UNDERLAY PASS");
             Debug.Log("TERRAIN-08B MAPPING PASS");
             VerifyOriginSupport();
             Debug.Log("TERRAIN-07B ORIGIN PASS");
@@ -645,6 +649,230 @@ namespace IslandLife.World.Terrain
 
             throw new InvalidOperationException(
                 "No Grass cell has Water, Sand, and Grass tiles rendered together.");
+        }
+
+        private void VerifyLandUnderlaySprites(TerrainGridData grid)
+        {
+            RequireLandUnderlay(grid, 1, 12, TerrainNeighborMask.None);
+            RequireLandUnderlay(grid, 4, 12, TerrainNeighborMask.East);
+            RequireLandUnderlay(grid, 11, 11, TerrainNeighborMask.North);
+            RequireLandUnderlay(grid, 11, 15, TerrainNeighborMask.South);
+            RequireLandUnderlay(
+                grid,
+                14,
+                11,
+                TerrainNeighborMask.North | TerrainNeighborMask.East
+                    | TerrainNeighborMask.NorthEast);
+
+            if (!renderAssets.Sand.TryGetSprite(
+                    new TerrainSpriteCoordinate(1, 1),
+                    out Sprite fullSandSprite)
+                || sandTilemap.GetSprite(new Vector3Int(1, 12, 0)) == fullSandSprite)
+            {
+                throw new InvalidOperationException(
+                    "An isolated Grass cell must not use the full-square Sand underlay.");
+            }
+        }
+
+        private void VerifyLandMasks()
+        {
+            TerrainGridData grid = new TerrainGridData(14, 14);
+
+            grid.SetTerrain(1, 1, TerrainType.Sand);
+            grid.SetTerrain(4, 1, TerrainType.Grass);
+            grid.SetTerrain(8, 1, TerrainType.Grass);
+            grid.SetTerrain(9, 1, TerrainType.Grass);
+            grid.SetTerrain(10, 1, TerrainType.Sand);
+
+            grid.SetTerrain(1, 4, TerrainType.Sand);
+            grid.SetTerrain(2, 4, TerrainType.Grass);
+            grid.SetTerrain(5, 4, TerrainType.Grass);
+            grid.SetTerrain(6, 4, TerrainType.Sand);
+
+            grid.SetTerrain(11, 4, TerrainType.Grass);
+            grid.SetTerrain(12, 4, TerrainType.Water);
+
+            for (int x = 1; x <= 3; x++)
+            {
+                grid.SetTerrain(x, 7, TerrainType.Grass);
+            }
+
+            grid.SetTerrain(6, 7, TerrainType.Sand);
+            grid.SetTerrain(7, 7, TerrainType.Grass);
+            grid.SetTerrain(8, 7, TerrainType.Sand);
+            grid.SetTerrain(11, 7, TerrainType.Sand);
+
+            FillRectangle(grid, 1, 10, 3, 12, TerrainType.Grass);
+            for (int y = 10; y <= 12; y++)
+            {
+                for (int x = 6; x <= 8; x++)
+                {
+                    grid.SetTerrain(
+                        x,
+                        y,
+                        ((x + y) & 1) == 0 ? TerrainType.Grass : TerrainType.Sand);
+                }
+            }
+
+            RequireLandMask(grid, 1, 1, TerrainNeighborMask.None, "isolated Sand");
+            RequireLandMask(grid, 4, 1, TerrainNeighborMask.None, "isolated Grass");
+            RequireOrigin(
+                TerrainNeighborResolver.ResolveSameTerrainMask(grid, 9, 1)
+                    == TerrainNeighborMask.West
+                    && TerrainMaskNormalizer.Normalize(
+                        TerrainNeighborResolver.ResolveLandMask(grid, 9, 1))
+                    == (TerrainNeighborMask.West | TerrainNeighborMask.East),
+                "A Grass cell between Grass and Sand must have distinct Grass and land masks.");
+
+            RequireLandMask(grid, 1, 4, TerrainNeighborMask.East, "Sand left of Grass");
+            RequireLandMask(grid, 2, 4, TerrainNeighborMask.West, "Grass right of Sand");
+            RequireLandMask(grid, 5, 4, TerrainNeighborMask.East, "Grass left of Sand");
+            RequireLandMask(grid, 6, 4, TerrainNeighborMask.West, "Sand right of Grass");
+
+            RequireLandMask(grid, 1, 7, TerrainNeighborMask.East, "Grass strip endpoint");
+            RequireLandMask(
+                grid,
+                2,
+                7,
+                TerrainNeighborMask.West | TerrainNeighborMask.East,
+                "Grass strip middle");
+            RequireLandMask(grid, 3, 7, TerrainNeighborMask.West, "Grass strip endpoint");
+
+            RequireLandMask(grid, 6, 7, TerrainNeighborMask.East, "mixed strip endpoint");
+            RequireLandMask(
+                grid,
+                7,
+                7,
+                TerrainNeighborMask.West | TerrainNeighborMask.East,
+                "mixed strip middle");
+            RequireLandMask(grid, 8, 7, TerrainNeighborMask.West, "mixed strip endpoint");
+            RequireOrigin(
+                TerrainNeighborResolver.ResolveSameTerrainMask(grid, 7, 7)
+                    == TerrainNeighborMask.None
+                    && TerrainMaskNormalizer.Normalize(
+                        TerrainNeighborResolver.ResolveLandMask(grid, 7, 7))
+                    == (TerrainNeighborMask.West | TerrainNeighborMask.East),
+                "Grass and land masks must differ for a Grass cell between Sand cells.");
+
+            TerrainNeighborMask rectangleCorner =
+                TerrainNeighborMask.North | TerrainNeighborMask.East
+                | TerrainNeighborMask.NorthEast;
+            RequireLandMask(grid, 1, 10, rectangleCorner, "Grass rectangle corner");
+            RequireLandMask(grid, 2, 11, TerrainNeighborMask.All, "Grass rectangle center");
+            RequireLandMask(grid, 6, 10, rectangleCorner, "mixed rectangle corner");
+            RequireLandMask(grid, 7, 11, TerrainNeighborMask.All, "mixed rectangle center");
+
+            RequireLandMask(grid, 11, 4, TerrainNeighborMask.None, "Grass beside Water");
+            RequireLandMask(grid, 12, 4, TerrainNeighborMask.None, "Water center");
+            RequireLandMask(grid, 13, 4, TerrainNeighborMask.None, "Empty center");
+            RequireLandMask(grid, 11, 7, TerrainNeighborMask.None, "Sand beside Empty");
+        }
+
+        private void VerifyMixedLandRefresh(TerrainGridData grid)
+        {
+            const int leftX = 30;
+            const int centerX = 31;
+            const int rightX = 32;
+            const int y = 20;
+
+            if (grid.GetTerrain(leftX, y) != TerrainType.Empty
+                || grid.GetTerrain(centerX, y) != TerrainType.Empty
+                || grid.GetTerrain(rightX, y) != TerrainType.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Mixed-land refresh test cells must start empty.");
+            }
+
+            grid.SetTerrain(leftX, y, TerrainType.Sand);
+            grid.SetTerrain(centerX, y, TerrainType.Grass);
+            grid.SetTerrain(rightX, y, TerrainType.Sand);
+            terrainRenderer.RefreshCell(grid, centerX, y);
+
+            RequireLandUnderlay(grid, leftX, y, TerrainNeighborMask.East);
+            RequireLandUnderlay(
+                grid,
+                centerX,
+                y,
+                TerrainNeighborMask.West | TerrainNeighborMask.East);
+            RequireLandUnderlay(grid, rightX, y, TerrainNeighborMask.West);
+
+            grid.SetTerrain(centerX, y, TerrainType.Water);
+            terrainRenderer.RefreshCell(grid, centerX, y);
+
+            RequireLandUnderlay(grid, leftX, y, TerrainNeighborMask.None);
+            RequireLandUnderlay(grid, rightX, y, TerrainNeighborMask.None);
+            Require(
+                waterTilemap.GetTile(new Vector3Int(centerX, y, 0)) == renderAssets.Water
+                    && sandTilemap.GetTile(new Vector3Int(centerX, y, 0)) == null
+                    && grassTilemap.GetTile(new Vector3Int(centerX, y, 0)) == null,
+                centerX,
+                y,
+                TerrainType.Water);
+
+            grid.SetTerrain(centerX, y, TerrainType.Grass);
+            terrainRenderer.RefreshCell(grid, centerX, y);
+
+            RequireLandUnderlay(grid, leftX, y, TerrainNeighborMask.East);
+            RequireLandUnderlay(
+                grid,
+                centerX,
+                y,
+                TerrainNeighborMask.West | TerrainNeighborMask.East);
+            RequireLandUnderlay(grid, rightX, y, TerrainNeighborMask.West);
+
+            grid.SetTerrain(leftX, y, TerrainType.Empty);
+            grid.SetTerrain(centerX, y, TerrainType.Empty);
+            grid.SetTerrain(rightX, y, TerrainType.Empty);
+            terrainRenderer.RefreshCell(grid, centerX, y);
+        }
+
+        private void RequireLandUnderlay(
+            TerrainGridData grid,
+            int x,
+            int y,
+            TerrainNeighborMask expectedMask)
+        {
+            TerrainNeighborMask actualMask = TerrainMaskNormalizer.Normalize(
+                TerrainNeighborResolver.ResolveLandMask(grid, x, y));
+            if (actualMask != expectedMask)
+            {
+                throw new InvalidOperationException(
+                    $"Land mask at ({x}, {y}) was {actualMask}, expected {expectedMask}.");
+            }
+
+            if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    TerrainType.Sand,
+                    expectedMask,
+                    out TerrainSpriteCoordinate coordinate)
+                || !renderAssets.Sand.TryGetSprite(coordinate, out Sprite expectedSprite)
+                || expectedSprite == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not resolve expected Sand underlay for mask {expectedMask}.");
+            }
+
+            Sprite actualSprite = sandTilemap.GetSprite(new Vector3Int(x, y, 0));
+            if (actualSprite != expectedSprite)
+            {
+                throw new InvalidOperationException(
+                    $"Sand underlay at ({x}, {y}) did not match land mask {expectedMask}.");
+            }
+        }
+
+        private static void RequireLandMask(
+            TerrainGridData grid,
+            int x,
+            int y,
+            TerrainNeighborMask expectedMask,
+            string caseName)
+        {
+            TerrainNeighborMask actualMask = TerrainMaskNormalizer.Normalize(
+                TerrainNeighborResolver.ResolveLandMask(grid, x, y));
+            if (actualMask != expectedMask)
+            {
+                throw new InvalidOperationException(
+                    $"{caseName} land mask was {actualMask}, expected {expectedMask}.");
+            }
         }
 
         private void VerifyLocalRefresh(TerrainGridData grid)

@@ -140,18 +140,12 @@ namespace IslandLife.World.Terrain
 
                 case TerrainType.Sand:
                     waterTilemap.SetTile(position, renderAssets.Water);
-                    SetResolvedSprite(
-                        grid,
-                        x,
-                        y,
-                        renderAssets.Sand,
-                        sandTilemap,
-                        position);
+                    SetResolvedLandSand(grid, x, y, position);
                     return;
 
                 case TerrainType.Grass:
                     waterTilemap.SetTile(position, renderAssets.Water);
-                    SetFullSandUnderlay(position);
+                    SetResolvedLandSand(grid, x, y, position);
                     SetResolvedSprite(
                         grid,
                         x,
@@ -191,21 +185,31 @@ namespace IslandLife.World.Terrain
             tilemap.SetTile(position, GetOrCreateTransientTile(sprite));
         }
 
-        private void SetFullSandUnderlay(Vector3Int position)
+        private void SetResolvedLandSand(
+            TerrainGridData grid,
+            int x,
+            int y,
+            Vector3Int position)
         {
+            TerrainNeighborMask rawMask =
+                TerrainNeighborResolver.ResolveLandMask(grid, x, y);
+            TerrainNeighborMask canonicalMask =
+                TerrainMaskNormalizer.Normalize(rawMask);
+
             if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
-                    TerrainNeighborMask.All,
+                    TerrainType.Sand,
+                    canonicalMask,
                     out TerrainSpriteCoordinate coordinate))
             {
                 throw new InvalidOperationException(
-                    "Could not resolve the canonical full Sand underlay coordinate.");
+                    $"Could not resolve the Sand land-underlay coordinate at ({x}, {y}).");
             }
 
             if (!renderAssets.Sand.TryGetSprite(coordinate, out Sprite sprite)
                 || sprite == null)
             {
                 throw new InvalidOperationException(
-                    $"Could not resolve the full Sand underlay Sprite at "
+                    $"Could not resolve the Sand land-underlay Sprite at "
                     + $"({coordinate.Row}, {coordinate.Column}).");
             }
 
