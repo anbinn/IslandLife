@@ -1,0 +1,754 @@
+fileFormatVersion: 2
+guid: ef0f38a2905fce846b8c5fac0f9cbd09
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8295983507880806238
+    second: free_character_spritesheet_by-cupnooble_0
+  - first:
+      213: 6629879289213274349
+    second: free_character_spritesheet_by-cupnooble_1
+  - first:
+      213: 1099437726852316358
+    second: free_character_spritesheet_by-cupnooble_2
+  - first:
+      213: 4375627710163040246
+    second: free_character_spritesheet_by-cupnooble_3
+  - first:
+      213: 6150571752921486477
+    second: free_character_spritesheet_by-cupnooble_4
+  - first:
+      213: -6125469625371152977
+    second: free_character_spritesheet_by-cupnooble_5
+  - first:
+      213: -8905351661791106096
+    second: free_character_spritesheet_by-cupnooble_6
+  - first:
+      213: -8353768075264978720
+    second: free_character_spritesheet_by-cupnooble_7
+  - first:
+      213: -4460371808523536249
+    second: free_character_spritesheet_by-cupnooble_8
+  - first:
+      213: -7972709904471087792
+    second: free_character_spritesheet_by-cupnooble_9
+  - first:
+      213: 8476211464930454025
+    second: free_character_spritesheet_by-cupnooble_10
+  - first:
+      213: 3834051701070935414
+    second: free_character_spritesheet_by-cupnooble_11
+  - first:
+      213: -2752047627985950929
+    second: free_character_spritesheet_by-cupnooble_12
+  - first:
+      213: 8261594948625828790
+    second: free_character_spritesheet_by-cupnooble_13
+  - first:
+      213: 3707093659888829691
+    second: free_character_spritesheet_by-cupnooble_14
+  - first:
+      213: -4241251579466747258
+    second: free_character_spritesheet_by-cupnooble_15
+  - first:
+      213: 6340058065152688661
+    second: free_character_spritesheet_by-cupnooble_16
+  - first:
+      213: -5638165908264601146
+    second: free_character_spritesheet_by-cupnooble_17
+  - first:
+      213: -8812273307255366839
+    second: free_character_spritesheet_by-cupnooble_18
+  - first:
+      213: -4244193788173080384
+    second: free_character_spritesheet_by-cupnooble_19
+  - first:
+      213: 4325970084042606924
+    second: free_character_spritesheet_by-cupnooble_20
+  - first:
+      213: 3410800460782995627
+    second: free_character_spritesheet_by-cupnooble_21
+  - first:
+      213: 3482718968304753044
+    second: free_character_spritesheet_by-cupnooble_22
+  - first:
+      213: 4589899821759960097
+    second: free_character_spritesheet_by-cupnooble_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e570cb1eb01412370800000000000000
+      internalID: 8295983507880806238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_1
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 64
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de8c6414610120c50800000000000000
+      internalID: 6629879289213274349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_2
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ccf1b999ccf14f00800000000000000
+      internalID: 1099437726852316358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_3
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 65
+        width: 16
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f7bf95283a59bc30800000000000000
+      internalID: 4375627710163040246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_4
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 64
+        width: 17
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d84df621c683b5550800000000000000
+      internalID: 6150571752921486477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_5
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 64
+        width: 16
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fadae4174d5fdfaa0800000000000000
+      internalID: -6125469625371152977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_6
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 64
+        width: 15
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dba10f98d5d96480800000000000000
+      internalID: -8905351661791106096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_7
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 64
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e015d91234711c80800000000000000
+      internalID: -8353768075264978720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 32
+        width: 16
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 788b9c2e8739912c0800000000000000
+      internalID: -4460371808523536249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_9
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 32
+        width: 16
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05523c6459e3b5190800000000000000
+      internalID: -7972709904471087792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_10
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 32
+        width: 15
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90ae5402b6d81a570800000000000000
+      internalID: 8476211464930454025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_11
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 32
+        width: 16
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 675b0dc55b9453530800000000000000
+      internalID: 3834051701070935414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_12
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 32
+        width: 17
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f27e0f86343cec9d0800000000000000
+      internalID: -2752047627985950929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_13
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 32
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bb010f75d417a270800000000000000
+      internalID: 8261594948625828790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_14
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 32
+        width: 15
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf4c6caea0e327330800000000000000
+      internalID: 3707093659888829691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_15
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 32
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 682f1dad82c0425c0800000000000000
+      internalID: -4241251579466747258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 512c6cc18396cf750800000000000000
+      internalID: 6340058065152688661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_17
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 0
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c9bb2d8af531c1b0800000000000000
+      internalID: -5638165908264601146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_18
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 15
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94b1361dd1484b580800000000000000
+      internalID: -8812273307255366839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_19
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 0
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c826028c389915c0800000000000000
+      internalID: -4244193788173080384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_20
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 0
+        width: 17
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4983581fdee80c30800000000000000
+      internalID: 4325970084042606924
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_21
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 1
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba885b8a2f8955f20800000000000000
+      internalID: 3410800460782995627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_22
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 0
+        width: 16
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 499d15e037a155030800000000000000
+      internalID: 3482718968304753044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free_character_spritesheet_by-cupnooble_23
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 0
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12491aec19992bf30800000000000000
+      internalID: 4589899821759960097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      free_character_spritesheet_by-cupnooble_0: 8295983507880806238
+      free_character_spritesheet_by-cupnooble_1: 6629879289213274349
+      free_character_spritesheet_by-cupnooble_10: 8476211464930454025
+      free_character_spritesheet_by-cupnooble_11: 3834051701070935414
+      free_character_spritesheet_by-cupnooble_12: -2752047627985950929
+      free_character_spritesheet_by-cupnooble_13: 8261594948625828790
+      free_character_spritesheet_by-cupnooble_14: 3707093659888829691
+      free_character_spritesheet_by-cupnooble_15: -4241251579466747258
+      free_character_spritesheet_by-cupnooble_16: 6340058065152688661
+      free_character_spritesheet_by-cupnooble_17: -5638165908264601146
+      free_character_spritesheet_by-cupnooble_18: -8812273307255366839
+      free_character_spritesheet_by-cupnooble_19: -4244193788173080384
+      free_character_spritesheet_by-cupnooble_2: 1099437726852316358
+      free_character_spritesheet_by-cupnooble_20: 4325970084042606924
+      free_character_spritesheet_by-cupnooble_21: 3410800460782995627
+      free_character_spritesheet_by-cupnooble_22: 3482718968304753044
+      free_character_spritesheet_by-cupnooble_23: 4589899821759960097
+      free_character_spritesheet_by-cupnooble_3: 4375627710163040246
+      free_character_spritesheet_by-cupnooble_4: 6150571752921486477
+      free_character_spritesheet_by-cupnooble_5: -6125469625371152977
+      free_character_spritesheet_by-cupnooble_6: -8905351661791106096
+      free_character_spritesheet_by-cupnooble_7: -8353768075264978720
+      free_character_spritesheet_by-cupnooble_8: -4460371808523536249
+      free_character_spritesheet_by-cupnooble_9: -7972709904471087792
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
