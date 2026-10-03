@@ -30,11 +30,23 @@ namespace IslandLife.World.Terrain
             sandTilemap.ClearAllTiles();
             grassTilemap.ClearAllTiles();
 
-            for (int y = 0; y < grid.Height; y++)
+            long endY = (long)grid.OriginY + grid.Height;
+            long endX = (long)grid.OriginX + grid.Width;
+            for (long y = grid.OriginY; y < endY; y++)
             {
-                for (int x = 0; x < grid.Width; x++)
+                if (y > int.MaxValue)
                 {
-                    RenderCell(grid, x, y);
+                    break;
+                }
+
+                for (long x = grid.OriginX; x < endX; x++)
+                {
+                    if (x > int.MaxValue)
+                    {
+                        break;
+                    }
+
+                    RenderCell(grid, (int)x, (int)y);
                 }
             }
         }
@@ -46,7 +58,8 @@ namespace IslandLife.World.Terrain
             for (int offsetY = -1; offsetY <= 1; offsetY++)
             {
                 long cellY = (long)y + offsetY;
-                if (cellY < 0 || cellY >= grid.Height)
+                if (cellY < int.MinValue || cellY > int.MaxValue
+                    || !grid.IsInside(x, (int)cellY))
                 {
                     continue;
                 }
@@ -54,7 +67,8 @@ namespace IslandLife.World.Terrain
                 for (int offsetX = -1; offsetX <= 1; offsetX++)
                 {
                     long cellX = (long)x + offsetX;
-                    if (cellX < 0 || cellX >= grid.Width)
+                    if (cellX < int.MinValue || cellX > int.MaxValue
+                        || !grid.IsInside((int)cellX, (int)cellY))
                     {
                         continue;
                     }

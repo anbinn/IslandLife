@@ -10,7 +10,16 @@ namespace IslandLife.World.Terrain
 
         public int Height { get; }
 
+        public int OriginX { get; }
+
+        public int OriginY { get; }
+
         public TerrainGridData(int width, int height)
+            : this(width, height, 0, 0)
+        {
+        }
+
+        public TerrainGridData(int width, int height, int originX, int originY)
         {
             if (width <= 0)
             {
@@ -24,25 +33,40 @@ namespace IslandLife.World.Terrain
 
             Width = width;
             Height = height;
+            OriginX = originX;
+            OriginY = originY;
             terrainTypes = new TerrainType[width, height];
         }
 
         public bool IsInside(int x, int y)
         {
-            return x >= 0 && x < Width && y >= 0 && y < Height;
+            long localX = (long)x - OriginX;
+            long localY = (long)y - OriginY;
+            return localX >= 0 && localX < Width && localY >= 0 && localY < Height;
         }
 
         public TerrainType GetTerrain(int x, int y)
         {
-            return IsInside(x, y) ? terrainTypes[x, y] : TerrainType.Empty;
+            if (!IsInside(x, y))
+            {
+                return TerrainType.Empty;
+            }
+
+            int localX = (int)((long)x - OriginX);
+            int localY = (int)((long)y - OriginY);
+            return terrainTypes[localX, localY];
         }
 
         public void SetTerrain(int x, int y, TerrainType terrainType)
         {
-            if (IsInside(x, y))
+            if (!IsInside(x, y))
             {
-                terrainTypes[x, y] = terrainType;
+                return;
             }
+
+            int localX = (int)((long)x - OriginX);
+            int localY = (int)((long)y - OriginY);
+            terrainTypes[localX, localY] = terrainType;
         }
     }
 }

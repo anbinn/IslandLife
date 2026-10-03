@@ -35,9 +35,114 @@ namespace IslandLife.World.Terrain
             VerifyGrassUnderlay(grid);
             VerifyLocalRefresh(grid);
             VerifyAllTerrainMasks();
+            VerifyOriginSupport();
+            Debug.Log("TERRAIN-07B ORIGIN PASS");
             Debug.Log("TERRAIN-06A UNDERLAY PASS");
             Debug.Log("TERRAIN-05D 47-MASK PASS");
             Debug.Log("TERRAIN-05C PASS");
+        }
+
+        private static void VerifyOriginSupport()
+        {
+            TerrainGridData grid = new TerrainGridData(5, 4, -2, -1);
+            RequireOrigin(grid.OriginX == -2, "OriginX must be -2.");
+            RequireOrigin(grid.OriginY == -1, "OriginY must be -1.");
+
+            RequireOrigin(grid.IsInside(-2, -1), "Lower-left corner must be inside.");
+            RequireOrigin(grid.IsInside(2, -1), "Lower-right corner must be inside.");
+            RequireOrigin(grid.IsInside(-2, 2), "Upper-left corner must be inside.");
+            RequireOrigin(grid.IsInside(2, 2), "Upper-right corner must be inside.");
+
+            RequireOrigin(!grid.IsInside(-3, -1), "Cell left of the grid must be outside.");
+            RequireOrigin(!grid.IsInside(3, -1), "Cell right of the grid must be outside.");
+            RequireOrigin(!grid.IsInside(-2, -2), "Cell below the grid must be outside.");
+            RequireOrigin(!grid.IsInside(-2, 3), "Cell above the grid must be outside.");
+
+            grid.SetTerrain(-2, -1, TerrainType.Water);
+            grid.SetTerrain(2, -1, TerrainType.Sand);
+            grid.SetTerrain(-2, 2, TerrainType.Grass);
+            grid.SetTerrain(2, 2, TerrainType.Water);
+            grid.SetTerrain(-1, 0, TerrainType.Grass);
+            grid.SetTerrain(-1, 1, TerrainType.Grass);
+            grid.SetTerrain(-2, 0, TerrainType.Grass);
+            grid.SetTerrain(0, 1, TerrainType.Grass);
+            grid.SetTerrain(-2, 1, TerrainType.Grass);
+
+            RequireOrigin(
+                grid.GetTerrain(-2, -1) == TerrainType.Water,
+                "Negative valid coordinate did not retain its terrain.");
+            RequireOrigin(
+                grid.GetTerrain(2, -1) == TerrainType.Sand,
+                "Positive valid coordinate did not retain its terrain.");
+            RequireOrigin(
+                grid.GetTerrain(-2, 2) == TerrainType.Grass,
+                "Upper negative valid coordinate did not retain its terrain.");
+            RequireOrigin(
+                grid.GetTerrain(2, 2) == TerrainType.Water,
+                "Upper positive valid coordinate did not retain its terrain.");
+
+            RequireOrigin(
+                grid.GetTerrain(-3, -1) == TerrainType.Empty,
+                "Out-of-bounds GetTerrain must return Empty.");
+            RequireOrigin(
+                grid.GetTerrain(3, -1) == TerrainType.Empty,
+                "Out-of-bounds GetTerrain must return Empty.");
+
+            grid.SetTerrain(-3, -1, TerrainType.Sand);
+            grid.SetTerrain(3, -1, TerrainType.Grass);
+            grid.SetTerrain(-2, -2, TerrainType.Sand);
+            grid.SetTerrain(-2, 3, TerrainType.Water);
+            RequireOrigin(
+                grid.GetTerrain(-2, -1) == TerrainType.Water
+                    && grid.GetTerrain(2, -1) == TerrainType.Sand
+                    && grid.GetTerrain(-2, 2) == TerrainType.Grass
+                    && grid.GetTerrain(2, 2) == TerrainType.Water,
+                "Out-of-bounds SetTerrain changed an in-bounds cell.");
+
+            TerrainNeighborMask expectedMask =
+                TerrainNeighborMask.NorthWest
+                | TerrainNeighborMask.North
+                | TerrainNeighborMask.NorthEast
+                | TerrainNeighborMask.West;
+            TerrainNeighborMask actualMask =
+                TerrainNeighborResolver.ResolveSameTerrainMask(grid, -1, 0);
+            RequireOrigin(
+                actualMask == expectedMask,
+                $"Negative-origin neighbor mask was {actualMask}, expected {expectedMask}.");
+
+            TerrainGridData maximumOriginGrid =
+                new TerrainGridData(2, 2, int.MaxValue, int.MaxValue);
+            maximumOriginGrid.SetTerrain(
+                int.MaxValue,
+                int.MaxValue,
+                TerrainType.Grass);
+            RequireOrigin(
+                maximumOriginGrid.IsInside(int.MaxValue, int.MaxValue)
+                    && maximumOriginGrid.GetTerrain(int.MaxValue, int.MaxValue)
+                    == TerrainType.Grass
+                    && !maximumOriginGrid.IsInside(int.MinValue, int.MaxValue),
+                "Bounds overflowed for a grid at the maximum integer origin.");
+
+            TerrainGridData minimumOriginGrid =
+                new TerrainGridData(2, 2, int.MinValue, int.MinValue);
+            minimumOriginGrid.SetTerrain(
+                int.MinValue,
+                int.MinValue,
+                TerrainType.Water);
+            RequireOrigin(
+                minimumOriginGrid.IsInside(int.MinValue, int.MinValue)
+                    && minimumOriginGrid.GetTerrain(int.MinValue, int.MinValue)
+                    == TerrainType.Water
+                    && !minimumOriginGrid.IsInside(int.MaxValue, int.MinValue),
+                "Bounds overflowed for a grid at the minimum integer origin.");
+        }
+
+        private static void RequireOrigin(bool condition, string message)
+        {
+            if (!condition)
+            {
+                throw new InvalidOperationException(message);
+            }
         }
 
         private void VerifyAllTerrainMasks()
