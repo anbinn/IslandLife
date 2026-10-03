@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d318b6ee9d7b7d84cacadfd56898dd95, type: 3}
+  m_Name: TerrainSpriteSet_Sand
+  m_EditorClassIdentifier: Assembly-CSharp::IslandLife.World.Terrain.TerrainSpriteSet
+  terrainType: 3
+  sprites:
+  - {fileID: 21300000, guid: 678a570bb671000438d1b7eaeceee552, type: 2}
+  - {fileID: 21300000, guid: ef50e6df4697f9a40ba522811e971861, type: 2}
+  - {fileID: 21300000, guid: 30304b65f64dde44d9aa163b8404f62b, type: 2}
+  - {fileID: 21300000, guid: d6752422507d9764c832f83567f39781, type: 2}
+  - {fileID: 21300000, guid: bdc15aab7b24c1a40b3d4280df1d30e2, type: 2}
+  - {fileID: 21300000, guid: b974d95ca3eaab14d883406b8e9ee5f5, type: 2}
+  - {fileID: 21300000, guid: 39946bd0884e9424ab6b912acee2e272, type: 2}
+  - {fileID: 21300000, guid: ff1e97c328156e8498df2696e361037d, type: 2}
+  - {fileID: 21300000, guid: 62827cba995b9144bb6506d72eb9b184, type: 2}
+  - {fileID: 21300000, guid: e0a8d7ef7acf315409beaa5bf0c308f1, type: 2}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 5b9199cf5ee4d3b4681108106a272616, type: 2}
+  - {fileID: 21300000, guid: ace5b1d975b2ff2439ce29240eb66d8f, type: 2}
+  - {fileID: 21300000, guid: aac7cf7e75fb80c4e8945b37e7d23422, type: 2}
+  - {fileID: 21300000, guid: 86b180bc030bdf740adc271e02877c03, type: 2}
+  - {fileID: 21300000, guid: f387995875d45d743a08845e66f261d5, type: 2}
+  - {fileID: 21300000, guid: fa7bde7b52d37f34c9bcb5b90f229d9a, type: 2}
+  - {fileID: 21300000, guid: 4f4f76ceab891af448f3e706647b811a, type: 2}
+  - {fileID: 21300000, guid: 4fa042369a878db44b764b4d1b7ef668, type: 2}
+  - {fileID: 21300000, guid: 147178b0874f1a54b84b73f0ecaba14a, type: 2}
+  - {fileID: 21300000, guid: c57e6ed4ca6acea4fa57d20a55bec144, type: 2}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 6b28d84a6c85ccf428dc3d8c27c10732, type: 2}
+  - {fileID: 21300000, guid: b0dd2220ccb37c24fb92420f5ced15b8, type: 2}
+  - {fileID: 21300000, guid: d6778d116ec369d4f98ae73fca96e51c, type: 2}
+  - {fileID: 21300000, guid: b52c003a706c851439b1a075c5fd9e44, type: 2}
+  - {fileID: 21300000, guid: 82772eb664825294dbaa9ae1f8deb08c, type: 2}
+  - {fileID: 21300000, guid: 7adcf4a3380d68c43843fa71e4821311, type: 2}
+  - {fileID: 21300000, guid: 2df1346f58cf67d459586d3a6fc175c2, type: 2}
+  - {fileID: 21300000, guid: c60e99a297db25d4988fb4aca322c1e4, type: 2}
+  - {fileID: 21300000, guid: 2794a843f82e9c54ca8b2fe2e40c222a, type: 2}
+  - {fileID: 21300000, guid: d7805a177e4cce44ea51b9c3f1063446, type: 2}
+  - {fileID: 21300000, guid: 5caa40fabff2d894cb7a59bea3c5a026, type: 2}
+  - {fileID: 21300000, guid: 9768a6fb6dd7500428ffbc7ab749117b, type: 2}
+  - {fileID: 21300000, guid: ad5a68882acba3e459bd355f5a3ebc16, type: 2}
+  - {fileID: 21300000, guid: d1121da3183bfdf4a8d6b61862e8461f, type: 2}
+  - {fileID: 21300000, guid: 9ad6c3720d4b3e54eb38cea73b47246b, type: 2}
+  - {fileID: 21300000, guid: 782e3bdd2db18164dbaf2e525cd56078, type: 2}
+  - {fileID: 21300000, guid: 8280728002e93dd42aa345703e14089c, type: 2}
+  - {fileID: 21300000, guid: cdd03f1785884d548a9f681b5c242f97, type: 2}
+  - {fileID: 21300000, guid: a41febc3058b73946b619a26192a69a5, type: 2}
+  - {fileID: 21300000, guid: e4df2f3027a154e44a73ca1bd8279257, type: 2}
+  - {fileID: 21300000, guid: 116ca3c071c8c734cb440f43281f41f9, type: 2}
+  - {fileID: 21300000, guid: f51501332c4f03046af386f10da578b6, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 7931f5f1c836b9b46ac16ca030707911, type: 2}
+  - {fileID: 21300000, guid: e730eba76314e814a93fb98044c6f3e2, type: 2}
+  - {fileID: 21300000, guid: fb39f63d72f4a5c4cb8904368fcdaa46, type: 2}
+  - {fileID: 21300000, guid: b77e6d4aee02f4e429038e4a02c5264e, type: 2}
+  - {fileID: 21300000, guid: 942097f80add99a4f93e00e688fd9656, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
