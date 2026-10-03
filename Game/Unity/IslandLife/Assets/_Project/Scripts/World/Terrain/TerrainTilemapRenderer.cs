@@ -27,7 +27,7 @@ namespace IslandLife.World.Terrain
             ValidateInputs(grid);
 
             waterTilemap.ClearAllTiles();
-            sandTilemap.ClearAllTiles();
+            sandTilemap?.ClearAllTiles();
             grassTilemap.ClearAllTiles();
 
             long endY = (long)grid.OriginY + grid.Height;
@@ -49,6 +49,19 @@ namespace IslandLife.World.Terrain
                     RenderCell(grid, (int)x, (int)y);
                 }
             }
+        }
+
+        public void RenderAll(
+            TerrainGridData grid,
+            TerrainRenderAssets assets,
+            Tilemap water,
+            Tilemap grass)
+        {
+            renderAssets = assets;
+            waterTilemap = water;
+            sandTilemap = null;
+            grassTilemap = grass;
+            RenderAll(grid);
         }
 
         public void RefreshCell(TerrainGridData grid, int x, int y)
@@ -95,11 +108,6 @@ namespace IslandLife.World.Terrain
                 throw new InvalidOperationException("Water Tilemap is not configured.");
             }
 
-            if (sandTilemap == null)
-            {
-                throw new InvalidOperationException("Sand Tilemap is not configured.");
-            }
-
             if (grassTilemap == null)
             {
                 throw new InvalidOperationException("Grass Tilemap is not configured.");
@@ -110,22 +118,42 @@ namespace IslandLife.World.Terrain
                 throw new InvalidOperationException("Grass terrain render assets are not configured.");
             }
 
-            if (renderAssets.Sand == null)
-            {
-                throw new InvalidOperationException("Sand terrain render assets are not configured.");
-            }
-
             if (renderAssets.Water == null)
             {
                 throw new InvalidOperationException("Water terrain render asset is not configured.");
             }
+
+            if (ContainsSand(grid)
+                && (sandTilemap == null || renderAssets.Sand == null))
+            {
+                throw new InvalidOperationException(
+                    "Sand terrain requires configured Sand render assets and a Tilemap.");
+            }
+        }
+
+        private static bool ContainsSand(TerrainGridData grid)
+        {
+            for (int localY = 0; localY < grid.Height; localY++)
+            {
+                for (int localX = 0; localX < grid.Width; localX++)
+                {
+                    int worldX = checked(grid.OriginX + localX);
+                    int worldY = checked(grid.OriginY + localY);
+                    if (grid.GetTerrain(worldX, worldY) == TerrainType.Sand)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void RenderCell(TerrainGridData grid, int x, int y)
         {
             Vector3Int position = new Vector3Int(x, y, 0);
             waterTilemap.SetTile(position, null);
-            sandTilemap.SetTile(position, null);
+            sandTilemap?.SetTile(position, null);
             grassTilemap.SetTile(position, null);
 
             TerrainType terrainType = grid.GetTerrain(x, y);
@@ -140,6 +168,12 @@ namespace IslandLife.World.Terrain
 
                 case TerrainType.Sand:
                     waterTilemap.SetTile(position, renderAssets.Water);
+                    if (sandTilemap == null)
+                    {
+                        throw new InvalidOperationException(
+                            "Sand terrain requires a configured Sand Tilemap.");
+                    }
+
                     SetResolvedSprite(
                         grid,
                         x,

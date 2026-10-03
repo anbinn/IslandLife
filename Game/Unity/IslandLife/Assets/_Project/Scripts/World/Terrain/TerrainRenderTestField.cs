@@ -37,12 +37,70 @@ namespace IslandLife.World.Terrain
             VerifyDistinctTerrainTopology(grid);
             VerifyLocalRefresh(grid);
             VerifyAllTerrainMasks();
+            VerifyTerrainMapDataIndexing();
             Debug.Log("TERRAIN-09A GROUND-MODEL PASS");
             Debug.Log("TERRAIN-08B MAPPING PASS");
             VerifyOriginSupport();
             Debug.Log("TERRAIN-07B ORIGIN PASS");
             Debug.Log("TERRAIN-05D 47-MASK PASS");
             Debug.Log("TERRAIN-05C PASS");
+        }
+
+        private static void VerifyTerrainMapDataIndexing()
+        {
+            TerrainType[] cells =
+            {
+                TerrainType.Empty,
+                TerrainType.Grass,
+                TerrainType.Water,
+                TerrainType.Sand,
+                TerrainType.Grass,
+                TerrainType.Empty
+            };
+
+            TerrainMapData mapData = ScriptableObject.CreateInstance<TerrainMapData>();
+            try
+            {
+                mapData.SetData(-4, 7, 3, 2, cells);
+                cells[1] = TerrainType.Water;
+
+                RequireOrigin(
+                    mapData.GetTerrain(-3, 7) == TerrainType.Grass
+                        && mapData.GetTerrain(-2, 7) == TerrainType.Water
+                        && mapData.GetTerrain(-4, 8) == TerrainType.Sand
+                        && mapData.GetTerrain(-3, 8) == TerrainType.Grass,
+                    "TerrainMapData must use index localY * width + localX.");
+                RequireOrigin(
+                    mapData.GetTerrain(-5, 7) == TerrainType.Empty
+                        && mapData.GetTerrain(-2, 9) == TerrainType.Empty,
+                    "TerrainMapData must return Empty outside its world bounds.");
+
+                TerrainGridData grid = mapData.CreateGridData();
+                RequireOrigin(
+                    grid.OriginX == -4
+                        && grid.OriginY == 7
+                        && grid.Width == 3
+                        && grid.Height == 2,
+                    "TerrainMapData grid dimensions and origin must be preserved.");
+
+                for (int localY = 0; localY < grid.Height; localY++)
+                {
+                    for (int localX = 0; localX < grid.Width; localX++)
+                    {
+                        int index = localY * grid.Width + localX;
+                        int worldX = grid.OriginX + localX;
+                        int worldY = grid.OriginY + localY;
+                        RequireOrigin(
+                            grid.GetTerrain(worldX, worldY)
+                                == mapData.GetTerrain(worldX, worldY),
+                            $"Flattened TerrainMapData index {index} did not round-trip.");
+                    }
+                }
+            }
+            finally
+            {
+                DestroyImmediate(mapData);
+            }
         }
 
         private static void VerifyOriginSupport()
