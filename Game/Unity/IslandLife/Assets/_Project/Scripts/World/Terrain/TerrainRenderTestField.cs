@@ -32,8 +32,10 @@ namespace IslandLife.World.Terrain
 
             terrainRenderer.RenderAll(grid);
             VerifyInitialRender(grid);
+            VerifyGrassUnderlay(grid);
             VerifyLocalRefresh(grid);
             VerifyAllTerrainMasks();
+            Debug.Log("TERRAIN-06A UNDERLAY PASS");
             Debug.Log("TERRAIN-05D 47-MASK PASS");
             Debug.Log("TERRAIN-05C PASS");
         }
@@ -229,11 +231,19 @@ namespace IslandLife.World.Terrain
                             break;
 
                         case TerrainType.Sand:
-                            Require(water == null && sand != null && grass == null, x, y, terrainType);
+                            Require(
+                                water == renderAssets.Water && sand != null && grass == null,
+                                x,
+                                y,
+                                terrainType);
                             break;
 
                         case TerrainType.Grass:
-                            Require(water == null && sand == null && grass != null, x, y, terrainType);
+                            Require(
+                                water == renderAssets.Water && sand != null && grass != null,
+                                x,
+                                y,
+                                terrainType);
                             break;
 
                         default:
@@ -242,6 +252,31 @@ namespace IslandLife.World.Terrain
                     }
                 }
             }
+        }
+
+        private void VerifyGrassUnderlay(TerrainGridData grid)
+        {
+            for (int y = 0; y < grid.Height; y++)
+            {
+                for (int x = 0; x < grid.Width; x++)
+                {
+                    if (grid.GetTerrain(x, y) != TerrainType.Grass)
+                    {
+                        continue;
+                    }
+
+                    Vector3Int position = new Vector3Int(x, y, 0);
+                    if (waterTilemap.GetTile(position) == renderAssets.Water
+                        && sandTilemap.GetTile(position) != null
+                        && grassTilemap.GetTile(position) != null)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException(
+                "No Grass cell has Water, Sand, and Grass tiles rendered together.");
         }
 
         private void VerifyLocalRefresh(TerrainGridData grid)

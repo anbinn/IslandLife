@@ -125,6 +125,7 @@ namespace IslandLife.World.Terrain
                     return;
 
                 case TerrainType.Sand:
+                    waterTilemap.SetTile(position, renderAssets.Water);
                     SetResolvedSprite(
                         grid,
                         x,
@@ -135,6 +136,8 @@ namespace IslandLife.World.Terrain
                     return;
 
                 case TerrainType.Grass:
+                    waterTilemap.SetTile(position, renderAssets.Water);
+                    SetFullSandUnderlay(position);
                     SetResolvedSprite(
                         grid,
                         x,
@@ -172,6 +175,27 @@ namespace IslandLife.World.Terrain
             }
 
             tilemap.SetTile(position, GetOrCreateTransientTile(sprite));
+        }
+
+        private void SetFullSandUnderlay(Vector3Int position)
+        {
+            if (!SproutLandsTerrainMaskMap.TryGetCoordinate(
+                    TerrainNeighborMask.All,
+                    out TerrainSpriteCoordinate coordinate))
+            {
+                throw new InvalidOperationException(
+                    "Could not resolve the canonical full Sand underlay coordinate.");
+            }
+
+            if (!renderAssets.Sand.TryGetSprite(coordinate, out Sprite sprite)
+                || sprite == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not resolve the full Sand underlay Sprite at "
+                    + $"({coordinate.Row}, {coordinate.Column}).");
+            }
+
+            sandTilemap.SetTile(position, GetOrCreateTransientTile(sprite));
         }
 
         private Tile GetOrCreateTransientTile(Sprite sprite)
