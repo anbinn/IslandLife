@@ -91,7 +91,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -102,10 +102,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -129,7 +129,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -167,419 +167,507 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Birch wood Biom water plants_0
+      name: BirchWaterPlant_01
       rect:
         serializedVersion: 2
-        x: 3
-        y: 16
-        width: 11
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 4
+        y: 0
+        width: 9
+        height: 15
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: e029fd5876bfdf2a0800000000000000
-      internalID: -6701924248411205106
+      spriteID: 36accbcd4e5ab16458d92be93851573d
+      internalID: -1528567655
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_1
+      name: BirchWaterPlant_02
       rect:
         serializedVersion: 2
-        x: 17
+        x: 18
         y: 0
-        width: 16
+        width: 14
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.464286, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 038b3e70492679470800000000000000
-      internalID: 8401292017809995824
+      spriteID: 6c0f0539cc5d07846a182eb865519ab7
+      internalID: -148227558
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_2
+      name: BirchWaterPlant_03
       rect:
         serializedVersion: 2
-        x: 38
-        y: 17
-        width: 11
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d969812bd96fbc780800000000000000
-      internalID: -8661558301158762851
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_3
-      rect:
-        serializedVersion: 2
-        x: 50
-        y: 18
-        width: 13
+        x: 39
+        y: 1
+        width: 9
         height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4f5c0bfe9a50b62f0800000000000000
-      internalID: -978682266593999372
+      spriteID: 3682c165fc3b0a047932b4ab52b50277
+      internalID: -970012522
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_4
+      name: BirchWaterPlant_04_Part01
       rect:
         serializedVersion: 2
-        x: 64
-        y: 25
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8f9f67bc8a5d2ad20800000000000000
-      internalID: 3288425598878677496
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_5
-      rect:
-        serializedVersion: 2
-        x: 70
-        y: 18
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7e56dd03ccba7d970800000000000000
-      internalID: 8779674892063565287
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_6
-      rect:
-        serializedVersion: 2
-        x: 74
-        y: 17
-        width: 20
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: cc3809b2d5c57c260800000000000000
-      internalID: 7117759291314963404
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_7
-      rect:
-        serializedVersion: 2
-        x: 95
-        y: 20
-        width: 15
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 841d37708439461a0800000000000000
-      internalID: -6817161998360129208
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_8
-      rect:
-        serializedVersion: 2
-        x: 111
-        y: 16
-        width: 18
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a5776ecd70541a5b0800000000000000
-      internalID: -5358926181521000614
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_9
-      rect:
-        serializedVersion: 2
-        x: 127
-        y: 15
-        width: 17
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6baa0dc267921d830800000000000000
-      internalID: 4094099123791243958
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_10
-      rect:
-        serializedVersion: 2
-        x: 3
-        y: 0
-        width: 11
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ef3adc301868ef9a0800000000000000
-      internalID: -6197368148542512130
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_11
-      rect:
-        serializedVersion: 2
-        x: 38
-        y: 1
-        width: 11
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 99f2aa6b03619c180800000000000000
-      internalID: -9094713574019158119
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_12
-      rect:
-        serializedVersion: 2
-        x: 49
-        y: 3
-        width: 15
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4148522604dfc1af0800000000000000
-      internalID: -424185811913309164
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_13
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 9
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2a9537137a7dcbd20800000000000000
-      internalID: 3295746140417513890
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom water plants_14
-      rect:
-        serializedVersion: 2
-        x: 70
+        x: 51
         y: 2
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 9
+        height: 6
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7f1bbc96d499232a0800000000000000
-      internalID: -6759171532963204617
+      spriteID: 09339ddc61f52354da6a71dcc97acdb5
+      internalID: 316610267
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_15
+      name: BirchWaterPlant_04_Part02
       rect:
         serializedVersion: 2
-        x: 74
-        y: 3
-        width: 21
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 57
+        y: 10
+        width: 5
+        height: 3
+      alignment: 9
+      pivot: {x: 0.4, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 0e7707230ef4ec070800000000000000
-      internalID: 8128522201787824096
+      spriteID: b093b1b4d029652439d45785ec396c69
+      internalID: -1885899333
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_16
+      name: BirchWaterPlant_05_Part01
       rect:
         serializedVersion: 2
-        x: 95
+        x: 65
         y: 1
-        width: 15
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 9
+        height: 5
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d4833806c6b60c3f0800000000000000
-      internalID: -882587413744764851
+      spriteID: bcffc856ee8eda14798eedcbbf64fd2d
+      internalID: -729871735
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_17
+      name: BirchWaterPlant_05_Part02
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 8
+        width: 9
+        height: 5
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2218d8cc4f3b0394fa174460663c1279
+      internalID: -734535069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_05_Part03
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 2
+        width: 5
+        height: 3
+      alignment: 9
+      pivot: {x: 0.4, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8edc2fb97329e85439b08235384df7d9
+      internalID: 161949155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_06
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 5
+        width: 13
+        height: 9
+      alignment: 9
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aebcfa5f1d872dc40adbae8c0bc2e3e2
+      internalID: 1861280891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_07
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 2
+        width: 13
+        height: 9
+      alignment: 9
+      pivot: {x: 0.461538, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08a33af7c88820e479de69ffcf5fb9d1
+      internalID: 1327284723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_08
       rect:
         serializedVersion: 2
         x: 112
         y: 0
         width: 16
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 15
+      alignment: 9
+      pivot: {x: 0.375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: dd78339b2abdef410800000000000000
-      internalID: 1512888016781412317
+      spriteID: 6e03cdd999c2f2a4fb7516de9926acbe
+      internalID: -1783853315
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom water plants_18
+      name: BirchWaterPlant_09
       rect:
         serializedVersion: 2
         x: 128
-        y: 2
+        y: 1
         width: 16
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 15
+      alignment: 9
+      pivot: {x: 0.75, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bc7ab08ebdec29b30800000000000000
-      internalID: 4292720838723741643
+      spriteID: 245a165f798ead64e8f01240b10cfb4b
+      internalID: -1770143072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_10
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 16
+        width: 9
+        height: 15
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9d831b4010ef0b40821767c87366e72
+      internalID: -240606082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_11
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 17
+        width: 9
+        height: 13
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: decb651c8424f164e93631be6cf1bb70
+      internalID: -351370767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_12_Part01
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 18
+        width: 9
+        height: 6
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f8d5443e8d3c9dd4c8cbe0b5ca02f88b
+      internalID: -1731940837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_12_Part02
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 25
+        width: 5
+        height: 3
+      alignment: 9
+      pivot: {x: 0.4, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ccc78caa58c4ece4996ceaf1ae501df7
+      internalID: -2009939834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_13_Part01
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 17
+        width: 9
+        height: 5
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 161b7f5f05df444428d75c7e0d72cfa7
+      internalID: 1121990927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_13_Part02
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 24
+        width: 9
+        height: 5
+      alignment: 9
+      pivot: {x: 0.444444, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 76be9871bd20e1144b950aa293387072
+      internalID: -846080899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_13_Part03
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 18
+        width: 5
+        height: 3
+      alignment: 9
+      pivot: {x: 0.4, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61b7390e04b0e884f92bab3e519fa09d
+      internalID: -2060374512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_14
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 19
+        width: 13
+        height: 9
+      alignment: 9
+      pivot: {x: 0.423077, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64a49bcc087dacd48ae1a8b9d9935962
+      internalID: -1225573605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_15
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 21
+        width: 13
+        height: 9
+      alignment: 9
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1675d51031b36214b8c02b2520543939
+      internalID: 983667083
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_16
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 19
+        width: 14
+        height: 12
+      alignment: 9
+      pivot: {x: 0.428571, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0abd6f4fe3ca5f84abc6da8b4a2db8e5
+      internalID: -1285457752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchWaterPlant_17
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 17
+        width: 14
+        height: 12
+      alignment: 9
+      pivot: {x: 0.464286, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3564251985da9d14b83daae5d47c180b
+      internalID: 2142299973
       vertices: []
       indices: 
       edges: []
@@ -588,7 +676,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 2ae0074594e468f418b697de99e9b9fa
     internalID: 0
     vertices: []
     indices: 
@@ -617,6 +705,29 @@ TextureImporter:
       Birch wood Biom water plants_7: -6817161998360129208
       Birch wood Biom water plants_8: -5358926181521000614
       Birch wood Biom water plants_9: 4094099123791243958
+      BirchWaterPlant_01: -1528567655
+      BirchWaterPlant_02: -148227558
+      BirchWaterPlant_03: -970012522
+      BirchWaterPlant_04_Part01: 316610267
+      BirchWaterPlant_04_Part02: -1885899333
+      BirchWaterPlant_05_Part01: -729871735
+      BirchWaterPlant_05_Part02: -734535069
+      BirchWaterPlant_05_Part03: 161949155
+      BirchWaterPlant_06: 1861280891
+      BirchWaterPlant_07: 1327284723
+      BirchWaterPlant_08: -1783853315
+      BirchWaterPlant_09: -1770143072
+      BirchWaterPlant_10: -240606082
+      BirchWaterPlant_11: -351370767
+      BirchWaterPlant_12_Part01: -1731940837
+      BirchWaterPlant_12_Part02: -2009939834
+      BirchWaterPlant_13_Part01: 1121990927
+      BirchWaterPlant_13_Part02: -846080899
+      BirchWaterPlant_13_Part03: -2060374512
+      BirchWaterPlant_14: -1225573605
+      BirchWaterPlant_15: 983667083
+      BirchWaterPlant_16: -1285457752
+      BirchWaterPlant_17: 2142299973
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
