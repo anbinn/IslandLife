@@ -741,9 +741,9 @@ TextureImporter:
       name: SproutPlantUpdate2_Mushroom_04
       rect:
         serializedVersion: 2
-        x: 33
+        x: 32
         y: 0
-        width: 14
+        width: 16
         height: 15
       alignment: 9
       pivot: {x: 0.214286, y: 0}
@@ -763,9 +763,9 @@ TextureImporter:
       name: SproutPlantUpdate2_Mushroom_05
       rect:
         serializedVersion: 2
-        x: 47
+        x: 48
         y: 0
-        width: 17
+        width: 16
         height: 15
       alignment: 9
       pivot: {x: 0.411765, y: 0}

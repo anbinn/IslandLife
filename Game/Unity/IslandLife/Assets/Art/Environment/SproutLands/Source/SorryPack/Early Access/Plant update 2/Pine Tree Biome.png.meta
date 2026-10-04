@@ -179,10 +179,10 @@ TextureImporter:
       name: PineBiome_01
       rect:
         serializedVersion: 2
-        x: 4
-        y: 8
-        width: 8
-        height: 5
+        x: 2
+        y: 1
+        width: 13
+        height: 12
       alignment: 9
       pivot: {x: 0.4375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -198,35 +198,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PineBiome_02
-      rect:
-        serializedVersion: 2
-        x: 17
-        y: 3
-        width: 8
-        height: 5
-      alignment: 9
-      pivot: {x: 0.4375, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1ae80c3e159fa6943b07b4196e1c74a1
-      internalID: 147917077
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: PineBiome_03
       rect:
         serializedVersion: 2
-        x: 22
-        y: 10
-        width: 8
-        height: 5
+        x: 16
+        y: 0
+        width: 16
+        height: 16
       alignment: 9
       pivot: {x: 0.4375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -245,10 +223,10 @@ TextureImporter:
       name: PineBiome_04
       rect:
         serializedVersion: 2
-        x: 33
-        y: 5
-        width: 14
-        height: 10
+        x: 34
+        y: 3
+        width: 12
+        height: 9
       alignment: 9
       pivot: {x: 0.464286, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -267,10 +245,10 @@ TextureImporter:
       name: PineBiome_05
       rect:
         serializedVersion: 2
-        x: 48
-        y: 2
-        width: 16
-        height: 13
+        x: 55
+        y: 4
+        width: 17
+        height: 12
       alignment: 9
       pivot: {x: 0.46875, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -289,10 +267,10 @@ TextureImporter:
       name: PineBiome_06
       rect:
         serializedVersion: 2
-        x: 119
-        y: 0
-        width: 35
-        height: 46
+        x: 132
+        y: 1
+        width: 23
+        height: 13
       alignment: 9
       pivot: {x: 0.485714, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -311,10 +289,10 @@ TextureImporter:
       name: PineBiome_07
       rect:
         serializedVersion: 2
-        x: 1
-        y: 16
-        width: 14
-        height: 16
+        x: 3
+        y: 18
+        width: 10
+        height: 12
       alignment: 9
       pivot: {x: 0.464286, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -334,9 +312,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 18
-        y: 16
+        y: 17
         width: 12
-        height: 16
+        height: 12
       alignment: 9
       pivot: {x: 0.458333, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -355,10 +333,10 @@ TextureImporter:
       name: PineBiome_09
       rect:
         serializedVersion: 2
-        x: 50
+        x: 49
         y: 17
-        width: 12
-        height: 14
+        width: 14
+        height: 15
       alignment: 9
       pivot: {x: 0.458333, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -378,7 +356,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 64
-        y: 22
+        y: 17
         width: 16
         height: 25
       alignment: 9
@@ -400,7 +378,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 83
-        y: 16
+        y: 17
         width: 26
         height: 31
       alignment: 9
@@ -421,10 +399,10 @@ TextureImporter:
       name: PineBiome_12
       rect:
         serializedVersion: 2
-        x: 3
-        y: 34
-        width: 10
-        height: 12
+        x: 1
+        y: 32
+        width: 14
+        height: 16
       alignment: 9
       pivot: {x: 0.45, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -444,9 +422,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 18
-        y: 35
+        y: 32
         width: 12
-        height: 12
+        height: 16
       alignment: 9
       pivot: {x: 0.208333, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -462,35 +440,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PineBiome_14
-      rect:
-        serializedVersion: 2
-        x: 34
-        y: 37
-        width: 10
-        height: 10
-      alignment: 9
-      pivot: {x: 0.7, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 057ff66ef7fca3441bc4cb7eb7dc78ae
-      internalID: -147990767
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: PineBiome_15
       rect:
         serializedVersion: 2
-        x: 49
-        y: 32
-        width: 14
-        height: 15
+        x: 50
+        y: 33
+        width: 12
+        height: 14
       alignment: 9
       pivot: {x: 0.464286, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -509,10 +465,10 @@ TextureImporter:
       name: PineBiome_16
       rect:
         serializedVersion: 2
-        x: 2
+        x: 4
         y: 51
-        width: 13
-        height: 12
+        width: 8
+        height: 5
       alignment: 9
       pivot: {x: 0.461538, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -531,10 +487,10 @@ TextureImporter:
       name: PineBiome_17
       rect:
         serializedVersion: 2
-        x: 16
-        y: 48
-        width: 16
-        height: 16
+        x: 17
+        y: 49
+        width: 13
+        height: 12
       alignment: 9
       pivot: {x: 0.46875, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -553,10 +509,10 @@ TextureImporter:
       name: PineBiome_18
       rect:
         serializedVersion: 2
-        x: 34
-        y: 52
-        width: 12
-        height: 9
+        x: 33
+        y: 49
+        width: 14
+        height: 10
       alignment: 9
       pivot: {x: 0.458333, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -575,10 +531,10 @@ TextureImporter:
       name: PineBiome_19
       rect:
         serializedVersion: 2
-        x: 55
-        y: 48
-        width: 17
-        height: 12
+        x: 48
+        y: 49
+        width: 16
+        height: 13
       alignment: 9
       pivot: {x: 0.470588, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -594,57 +550,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PineBiome_20
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 52
-        width: 16
-        height: 10
-      alignment: 9
-      pivot: {x: 0.46875, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0d745b3e53d19db4792a08ad7b676f57
-      internalID: 1210014025
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PineBiome_21
-      rect:
-        serializedVersion: 2
-        x: 100
-        y: 51
-        width: 23
-        height: 12
-      alignment: 9
-      pivot: {x: 0.478261, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d4720dcf0b378454ca37ec3f53e04075
-      internalID: -270885984
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: PineBiome_22
       rect:
         serializedVersion: 2
-        x: 132
-        y: 50
-        width: 23
-        height: 13
+        x: 119
+        y: 18
+        width: 35
+        height: 46
       alignment: 9
       pivot: {x: 0.478261, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -655,6 +567,72 @@ TextureImporter:
       bones: []
       spriteID: c4420611034b2ef48976872acf58461b
       internalID: -981086744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Pine Tree Biome_0
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 1
+        width: 23
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 78cc83c78ece8e04ca770aa220a93c15
+      internalID: -717064579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Pine Tree Biome_1
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 2
+        width: 16
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7bdc41d6c3628074182f28040c167135
+      internalID: -1660828478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Pine Tree Biome_2
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 17
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4724a21e3d824c448de5dc7abe6839a
+      internalID: 833485919
       vertices: []
       indices: 
       edges: []
@@ -673,6 +651,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      Pine Tree Biome_0: -717064579
+      Pine Tree Biome_1: -1660828478
+      Pine Tree Biome_2: 833485919
       PineBiome_01: -106028735
       PineBiome_02: 147917077
       PineBiome_03: 203720742

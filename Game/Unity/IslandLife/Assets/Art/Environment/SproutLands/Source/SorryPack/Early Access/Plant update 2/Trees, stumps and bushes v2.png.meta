@@ -531,9 +531,9 @@ TextureImporter:
       name: SproutPlantUpdate2_FallenTreeLog_01
       rect:
         serializedVersion: 2
-        x: 161
+        x: 162
         y: 96
-        width: 31
+        width: 30
         height: 12
       alignment: 9
       pivot: {x: 0.435484, y: 0}
@@ -619,10 +619,10 @@ TextureImporter:
       name: SproutPlantUpdate2_FallenTreeLog_02
       rect:
         serializedVersion: 2
-        x: 161
-        y: 83
-        width: 31
-        height: 12
+        x: 160
+        y: 80
+        width: 32
+        height: 16
       alignment: 9
       pivot: {x: 0.483871, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -729,7 +729,7 @@ TextureImporter:
       name: SproutPlantUpdate2_Tree_12
       rect:
         serializedVersion: 2
-        x: 131
+        x: 130
         y: 64
         width: 14
         height: 16
@@ -751,7 +751,7 @@ TextureImporter:
       name: SproutPlantUpdate2_Tree_13
       rect:
         serializedVersion: 2
-        x: 148
+        x: 146
         y: 64
         width: 14
         height: 16
@@ -773,7 +773,7 @@ TextureImporter:
       name: SproutPlantUpdate2_Tree_14
       rect:
         serializedVersion: 2
-        x: 164
+        x: 162
         y: 64
         width: 14
         height: 16
@@ -972,9 +972,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 128
-        y: 50
+        y: 48
         width: 16
-        height: 14
+        height: 16
       alignment: 9
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -993,10 +993,10 @@ TextureImporter:
       name: SproutPlantUpdate2_BushPlant_06
       rect:
         serializedVersion: 2
-        x: 145
-        y: 50
+        x: 144
+        y: 48
         width: 16
-        height: 14
+        height: 16
       alignment: 9
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -1015,10 +1015,10 @@ TextureImporter:
       name: SproutPlantUpdate2_BushPlant_07
       rect:
         serializedVersion: 2
-        x: 162
-        y: 50
+        x: 160
+        y: 48
         width: 16
-        height: 14
+        height: 16
       alignment: 9
       pivot: {x: 0.4375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -1381,6 +1381,28 @@ TextureImporter:
       bones: []
       spriteID: 2515a2eab825336448d0c0ed638cf116
       internalID: 1974825379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Trees, stumps and bushes v2_0
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 80
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bce7d4da99a21d84896dcd57ba3bdcdd
+      internalID: 3128478705714098976
       vertices: []
       indices: 
       edges: []
