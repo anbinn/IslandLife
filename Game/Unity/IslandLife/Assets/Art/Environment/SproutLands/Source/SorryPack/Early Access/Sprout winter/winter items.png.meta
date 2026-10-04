@@ -134,12 +134,12 @@ TextureImporter:
       name: winter items_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 47
-        width: 15
-        height: 17
+        x: 1
+        y: 48
+        width: 13
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -156,12 +156,12 @@ TextureImporter:
       name: winter items_1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 32
-        width: 15
-        height: 17
+        x: 1
+        y: 33
+        width: 13
+        height: 15
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -178,12 +178,12 @@ TextureImporter:
       name: winter items_2
       rect:
         serializedVersion: 2
-        x: 15
-        y: 32
-        width: 17
-        height: 32
+        x: 16
+        y: 48
+        width: 16
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -200,12 +200,12 @@ TextureImporter:
       name: winter items_3
       rect:
         serializedVersion: 2
-        x: 0
-        y: 16
-        width: 17
-        height: 17
+        x: 1
+        y: 17
+        width: 15
+        height: 15
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -222,12 +222,12 @@ TextureImporter:
       name: winter items_4
       rect:
         serializedVersion: 2
-        x: 2
-        y: 0
-        width: 13
-        height: 16
+        x: 3
+        y: 1
+        width: 11
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -244,12 +244,12 @@ TextureImporter:
       name: winter items_5
       rect:
         serializedVersion: 2
-        x: 16
-        y: 16
-        width: 16
-        height: 17
+        x: 17
+        y: 17
+        width: 15
+        height: 15
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -266,12 +266,12 @@ TextureImporter:
       name: winter items_6
       rect:
         serializedVersion: 2
-        x: 15
-        y: 0
-        width: 17
-        height: 15
+        x: 16
+        y: 1
+        width: 16
+        height: 13
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -284,11 +284,33 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: winter items_7
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 33
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4fea30e126e6e5f48b1be72c9076a82a
+      internalID: 786359415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: e6df82b985f933d45b7e8d1df91b0e42
     internalID: 0
     vertices: []
     indices: 
@@ -305,6 +327,7 @@ TextureImporter:
       winter items_4: 1336257822099967147
       winter items_5: -792601673825289696
       winter items_6: 7399635521258211100
+      winter items_7: 786359415
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

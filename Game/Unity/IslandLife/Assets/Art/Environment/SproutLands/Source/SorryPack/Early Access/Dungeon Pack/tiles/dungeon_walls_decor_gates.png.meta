@@ -137,12 +137,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_0
       rect:
         serializedVersion: 2
-        x: 9
-        y: 80
-        width: 30
-        height: 18
+        x: 10
+        y: 81
+        width: 28
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -159,12 +159,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_1
       rect:
         serializedVersion: 2
-        x: 47
-        y: 86
-        width: 18
-        height: 14
+        x: 48
+        y: 87
+        width: 16
+        height: 12
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -181,12 +181,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_2
       rect:
         serializedVersion: 2
-        x: 8
-        y: 48
-        width: 32
-        height: 22
+        x: 9
+        y: 49
+        width: 30
+        height: 20
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -203,12 +203,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_3
       rect:
         serializedVersion: 2
-        x: 47
-        y: 54
-        width: 18
-        height: 18
+        x: 48
+        y: 55
+        width: 16
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -225,12 +225,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_4
       rect:
         serializedVersion: 2
-        x: 74
-        y: 70
-        width: 28
-        height: 15
+        x: 75
+        y: 71
+        width: 26
+        height: 13
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -247,12 +247,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_5
       rect:
         serializedVersion: 2
-        x: 73
-        y: 48
-        width: 30
-        height: 18
+        x: 74
+        y: 49
+        width: 28
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -269,12 +269,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_6
       rect:
         serializedVersion: 2
-        x: 9
+        x: 10
         y: 0
-        width: 30
-        height: 37
+        width: 28
+        height: 36
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -291,12 +291,12 @@ TextureImporter:
       name: dungeon_walls_decor_gates_7
       rect:
         serializedVersion: 2
-        x: 47
+        x: 48
         y: 0
-        width: 50
-        height: 34
+        width: 48
+        height: 33
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -313,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 3ffd123af8de70f448561c978ab69293
     internalID: 0
     vertices: []
     indices: 

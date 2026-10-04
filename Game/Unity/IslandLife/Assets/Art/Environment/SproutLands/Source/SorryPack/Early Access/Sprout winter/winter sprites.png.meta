@@ -203,12 +203,12 @@ TextureImporter:
       name: winter sprites_0
       rect:
         serializedVersion: 2
-        x: 6
-        y: 96
-        width: 37
-        height: 48
+        x: 7
+        y: 97
+        width: 35
+        height: 46
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -225,12 +225,12 @@ TextureImporter:
       name: winter sprites_1
       rect:
         serializedVersion: 2
-        x: 18
-        y: 64
-        width: 28
-        height: 33
+        x: 19
+        y: 65
+        width: 26
+        height: 31
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -247,12 +247,12 @@ TextureImporter:
       name: winter sprites_2
       rect:
         serializedVersion: 2
-        x: 54
-        y: 96
-        width: 37
-        height: 48
+        x: 55
+        y: 97
+        width: 35
+        height: 46
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -269,12 +269,12 @@ TextureImporter:
       name: winter sprites_3
       rect:
         serializedVersion: 2
-        x: 63
-        y: 79
-        width: 18
-        height: 18
+        x: 64
+        y: 80
+        width: 16
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -291,12 +291,12 @@ TextureImporter:
       name: winter sprites_4
       rect:
         serializedVersion: 2
-        x: 96
-        y: 79
-        width: 16
-        height: 18
+        x: 97
+        y: 80
+        width: 14
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -313,12 +313,12 @@ TextureImporter:
       name: winter sprites_5
       rect:
         serializedVersion: 2
-        x: 102
-        y: 96
-        width: 37
-        height: 48
+        x: 103
+        y: 97
+        width: 35
+        height: 46
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -335,12 +335,12 @@ TextureImporter:
       name: winter sprites_6
       rect:
         serializedVersion: 2
-        x: 111
-        y: 47
-        width: 34
-        height: 49
+        x: 129
+        y: 80
+        width: 14
+        height: 15
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -357,12 +357,12 @@ TextureImporter:
       name: winter sprites_7
       rect:
         serializedVersion: 2
-        x: 143
-        y: 79
-        width: 50
-        height: 18
+        x: 176
+        y: 80
+        width: 16
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -379,12 +379,12 @@ TextureImporter:
       name: winter sprites_8
       rect:
         serializedVersion: 2
-        x: 150
-        y: 96
-        width: 37
-        height: 48
+        x: 151
+        y: 97
+        width: 35
+        height: 46
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -401,12 +401,12 @@ TextureImporter:
       name: winter sprites_9
       rect:
         serializedVersion: 2
-        x: 196
-        y: 80
-        width: 41
-        height: 55
+        x: 197
+        y: 81
+        width: 39
+        height: 53
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -424,11 +424,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 64
-        width: 17
-        height: 27
+        y: 65
+        width: 16
+        height: 25
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -445,12 +445,12 @@ TextureImporter:
       name: winter sprites_11
       rect:
         serializedVersion: 2
-        x: 48
-        y: 80
-        width: 15
-        height: 14
+        x: 49
+        y: 81
+        width: 13
+        height: 12
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -467,12 +467,12 @@ TextureImporter:
       name: winter sprites_12
       rect:
         serializedVersion: 2
-        x: 96
-        y: 47
-        width: 16
-        height: 19
+        x: 97
+        y: 48
+        width: 14
+        height: 17
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -489,12 +489,12 @@ TextureImporter:
       name: winter sprites_13
       rect:
         serializedVersion: 2
-        x: 145
-        y: 65
-        width: 13
-        height: 14
+        x: 146
+        y: 66
+        width: 11
+        height: 12
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -511,12 +511,12 @@ TextureImporter:
       name: winter sprites_14
       rect:
         serializedVersion: 2
-        x: 160
-        y: 64
-        width: 15
-        height: 11
+        x: 161
+        y: 65
+        width: 13
+        height: 9
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -533,12 +533,12 @@ TextureImporter:
       name: winter sprites_15
       rect:
         serializedVersion: 2
-        x: 175
-        y: 48
-        width: 18
-        height: 17
+        x: 176
+        y: 49
+        width: 16
+        height: 15
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -555,12 +555,12 @@ TextureImporter:
       name: winter sprites_16
       rect:
         serializedVersion: 2
-        x: 176
-        y: 64
-        width: 16
-        height: 14
+        x: 177
+        y: 65
+        width: 14
+        height: 12
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -577,12 +577,12 @@ TextureImporter:
       name: winter sprites_17
       rect:
         serializedVersion: 2
-        x: 4
-        y: 32
-        width: 22
-        height: 30
+        x: 5
+        y: 33
+        width: 20
+        height: 28
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -599,12 +599,12 @@ TextureImporter:
       name: winter sprites_18
       rect:
         serializedVersion: 2
-        x: 39
-        y: 32
-        width: 19
-        height: 30
+        x: 40
+        y: 33
+        width: 17
+        height: 28
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -621,12 +621,12 @@ TextureImporter:
       name: winter sprites_19
       rect:
         serializedVersion: 2
-        x: 71
-        y: 32
-        width: 19
-        height: 30
+        x: 72
+        y: 33
+        width: 17
+        height: 28
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -643,12 +643,12 @@ TextureImporter:
       name: winter sprites_20
       rect:
         serializedVersion: 2
-        x: 145
-        y: 48
-        width: 15
-        height: 16
+        x: 146
+        y: 49
+        width: 13
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -665,12 +665,12 @@ TextureImporter:
       name: winter sprites_21
       rect:
         serializedVersion: 2
-        x: 160
-        y: 48
-        width: 16
-        height: 16
+        x: 161
+        y: 49
+        width: 14
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -687,12 +687,12 @@ TextureImporter:
       name: winter sprites_22
       rect:
         serializedVersion: 2
-        x: 96
-        y: 31
-        width: 16
-        height: 16
+        x: 97
+        y: 32
+        width: 14
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -709,12 +709,12 @@ TextureImporter:
       name: winter sprites_23
       rect:
         serializedVersion: 2
-        x: 112
-        y: 31
-        width: 16
-        height: 16
+        x: 113
+        y: 32
+        width: 14
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -731,12 +731,12 @@ TextureImporter:
       name: winter sprites_24
       rect:
         serializedVersion: 2
-        x: 128
-        y: 31
-        width: 16
-        height: 16
+        x: 129
+        y: 32
+        width: 14
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -753,12 +753,12 @@ TextureImporter:
       name: winter sprites_25
       rect:
         serializedVersion: 2
-        x: 144
-        y: 31
-        width: 16
-        height: 16
+        x: 145
+        y: 32
+        width: 14
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -775,12 +775,12 @@ TextureImporter:
       name: winter sprites_26
       rect:
         serializedVersion: 2
-        x: 160
-        y: 31
-        width: 16
-        height: 16
+        x: 161
+        y: 32
+        width: 14
+        height: 14
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -797,12 +797,12 @@ TextureImporter:
       name: winter sprites_27
       rect:
         serializedVersion: 2
-        x: 2
-        y: 0
-        width: 20
-        height: 30
+        x: 3
+        y: 1
+        width: 18
+        height: 28
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -819,12 +819,12 @@ TextureImporter:
       name: winter sprites_28
       rect:
         serializedVersion: 2
-        x: 34
-        y: 0
-        width: 20
-        height: 30
+        x: 35
+        y: 1
+        width: 18
+        height: 28
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -841,12 +841,12 @@ TextureImporter:
       name: winter sprites_29
       rect:
         serializedVersion: 2
-        x: 66
-        y: 0
-        width: 20
-        height: 30
+        x: 67
+        y: 1
+        width: 18
+        height: 28
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -859,11 +859,121 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: winter sprites_30
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 80
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2abf9ee896c3fc94ea90d2e603b284d5
+      internalID: -644027659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: winter sprites_31
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 80
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 05fcb0c5ecbd14548b39d519136ef829
+      internalID: 1115675351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: winter sprites_32
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 80
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e6fc9dab84c98714d85d5b279ee79c85
+      internalID: 798802982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: winter sprites_33
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 48
+        width: 16
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 42846da732d657745b78d811699cc584
+      internalID: -1784015568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: winter sprites_34
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 48
+        width: 16
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9719c09a5ec71924bb0b0fc9017398b2
+      internalID: 1580308271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: ea9e3a772abbbaf46a991dd8a2b74b8e
     internalID: 0
     vertices: []
     indices: 
@@ -897,6 +1007,11 @@ TextureImporter:
       winter sprites_28: -1305917268699710953
       winter sprites_29: -4409060380388310346
       winter sprites_3: 6129103220003485823
+      winter sprites_30: -644027659
+      winter sprites_31: 1115675351
+      winter sprites_32: 798802982
+      winter sprites_33: -1784015568
+      winter sprites_34: 1580308271
       winter sprites_4: -7772392283277168703
       winter sprites_5: 6783381826645704055
       winter sprites_6: -8542886771241020422
