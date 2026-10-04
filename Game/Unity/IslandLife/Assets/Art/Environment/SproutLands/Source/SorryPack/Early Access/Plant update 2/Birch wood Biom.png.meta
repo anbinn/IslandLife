@@ -100,7 +100,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -114,7 +114,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -138,7 +138,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -176,485 +176,485 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Birch wood Biom_0
+      name: BirchBiome_01
       rect:
         serializedVersion: 2
-        x: 3
-        y: 50
-        width: 10
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 4
+        y: 8
+        width: 8
+        height: 5
+      alignment: 9
+      pivot: {x: 0.4375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 357a4c51607528380800000000000000
-      internalID: -8970511824121977005
+      spriteID: d59cdb664b65928479b42f500967c5c1
+      internalID: 1799406774
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_1
+      name: BirchBiome_02
       rect:
         serializedVersion: 2
-        x: 16
-        y: 55
-        width: 10
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 17
+        y: 3
+        width: 8
+        height: 5
+      alignment: 9
+      pivot: {x: 0.4375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 269f32468d5e734c0800000000000000
-      internalID: -4307721801000814238
+      spriteID: 58873df3af85f0f46aa0bdfe1bf4a461
+      internalID: -1839842124
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_2
+      name: BirchBiome_03
       rect:
         serializedVersion: 2
-        x: 21
-        y: 48
-        width: 10
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 22
+        y: 10
+        width: 8
+        height: 5
+      alignment: 9
+      pivot: {x: 0.4375, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 00de07c7ee23d3590800000000000000
-      internalID: -7692936588607558400
+      spriteID: f9fdff45fbe61af4681b7369d36f3c39
+      internalID: 709271631
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_3
+      name: BirchBiome_04
       rect:
         serializedVersion: 2
-        x: 32
-        y: 48
+        x: 33
+        y: 5
+        width: 14
+        height: 10
+      alignment: 9
+      pivot: {x: 0.464286, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6012695ff7a1a894aa28348bc0a4d762
+      internalID: -187363865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_05
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 2
         width: 16
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 13
+      alignment: 9
+      pivot: {x: 0.46875, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b19fd618679baddb0800000000000000
-      internalID: -4766293336989501157
+      spriteID: 6425ded196e7b494180c7bcf3929ef8d
+      internalID: -2142001951
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_4
+      name: BirchBiome_06
       rect:
         serializedVersion: 2
-        x: 47
-        y: 48
-        width: 18
+        x: 113
+        y: 0
+        width: 44
+        height: 48
+      alignment: 9
+      pivot: {x: 0.488636, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4646eb42acd02b47a88a218016a5fed
+      internalID: 1587785739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_07
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 16
+        width: 16
         height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.21875, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 432245e8e9c20e2b0800000000000000
-      internalID: -5557392880670858700
+      spriteID: 3ec23658f79577047846c532f82cab8a
+      internalID: 791120668
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_5
+      name: BirchBiome_08
       rect:
         serializedVersion: 2
-        x: 112
-        y: 15
-        width: 46
-        height: 49
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c24d759ac5a947f60800000000000000
-      internalID: 8031213758277211180
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_6
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 32
-        width: 17
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2a9128c0e958d6ef0800000000000000
-      internalID: -113287501753214558
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_7
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 31
-        width: 16
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 68140620767d657b0800000000000000
-      internalID: -5235760679350156922
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_8
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 32
-        width: 16
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f03214e32f7c744b0800000000000000
-      internalID: -5456172580295597297
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_9
-      rect:
-        serializedVersion: 2
-        x: 49
-        y: 32
-        width: 14
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d5ead70a4e7cfb500800000000000000
-      internalID: 414269475500437085
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_10
-      rect:
-        serializedVersion: 2
-        x: 49
+        x: 17
         y: 16
         width: 14
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 16
+      alignment: 9
+      pivot: {x: 0.464286, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d4d6f7af0c9458980800000000000000
-      internalID: -8537336425425703603
+      spriteID: 844caf93e4435b84380c76648eb752d1
+      internalID: -188255455
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_11
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 16
-        width: 16
-        height: 31
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ed86c95e860ee7e00800000000000000
-      internalID: 1044518904729987294
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_12
-      rect:
-        serializedVersion: 2
-        x: 83
-        y: 16
-        width: 26
-        height: 33
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 1af74503498ef6cf0800000000000000
-      internalID: -256730930573181023
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_13
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 17
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: dcaa5a8522b2c8d40800000000000000
-      internalID: 5587888664176077517
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_14
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 16
-        width: 15
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bea6695c568972f40800000000000000
-      internalID: 5703695015962110699
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_15
+      name: BirchBiome_09
       rect:
         serializedVersion: 2
         x: 33
         y: 16
+        width: 14
+        height: 15
+      alignment: 9
+      pivot: {x: 0.464286, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 09418b6183268044dbfc145a22e14bcf
+      internalID: -2114062637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_10
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 16
         width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 15
+      alignment: 9
+      pivot: {x: 0.458333, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ab4843b9a07bfded0800000000000000
-      internalID: -2386988021301607238
+      spriteID: cabbf62c738eeee46a5c7c97a3e88ce8
+      internalID: 359875247
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_16
+      name: BirchBiome_11
       rect:
         serializedVersion: 2
-        x: 81
-        y: 0
-        width: 28
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 65
+        y: 18
+        width: 14
+        height: 29
+      alignment: 9
+      pivot: {x: 0.464286, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b467ca0b7742f27b0800000000000000
-      internalID: -5246934944379537845
+      spriteID: 4bf4d94f740866b48991a93fa8b5fc5b
+      internalID: -1827659367
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_17
+      name: BirchBiome_12
       rect:
         serializedVersion: 2
-        x: 19
-        y: 2
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 84
+        y: 16
+        width: 24
+        height: 31
+      alignment: 9
+      pivot: {x: 0.479167, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bdf93147838d59ef0800000000000000
-      internalID: -101937679568756773
+      spriteID: 8d1dff0fc0f26ff4cb20e9845d680525
+      internalID: -1861891027
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_18
+      name: BirchBiome_13
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 36
+        width: 12
+        height: 10
+      alignment: 9
+      pivot: {x: 0.208333, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7da09768b9cb18343a186f7d2be45269
+      internalID: -133829819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_14
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 35
+        width: 13
+        height: 12
+      alignment: 9
+      pivot: {x: 0.538462, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b6d37093bf0cb142b943ea1f98c26ce
+      internalID: 1645775933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_15
       rect:
         serializedVersion: 2
         x: 34
-        y: 1
+        y: 37
+        width: 10
+        height: 10
+      alignment: 9
+      pivot: {x: 0.7, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ac54833ae93807428c07b774a3ccd73
+      internalID: 1919569945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_16
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 32
         width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 50997868bd75e6960800000000000000
-      internalID: 7597106221787093253
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Birch wood Biom_19
-      rect:
-        serializedVersion: 2
-        x: 53
-        y: 0
-        width: 20
         height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.458333, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ec56b0057247a3390800000000000000
-      internalID: -7837824489289456178
+      spriteID: 19151abd745f6ee44a32ab2e9f8c1b22
+      internalID: 2071686919
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_20
+      name: BirchBiome_17
       rect:
         serializedVersion: 2
-        x: 111
-        y: 1
+        x: 20
+        y: 51
+        width: 8
+        height: 10
+      alignment: 9
+      pivot: {x: 0.375, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fde51acb2c06ac442a93fe7884e31a9d
+      internalID: 1358631227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_18
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 52
+        width: 10
+        height: 10
+      alignment: 9
+      pivot: {x: 0.45, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aef67f53e9e6bbb4d91409d60a695ba7
+      internalID: -2008447811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_19
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 50
         width: 18
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 13
+      alignment: 9
+      pivot: {x: 0.472222, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 93e79952cf3eb1f50800000000000000
-      internalID: 6853321930076421689
+      spriteID: 43ffae7681955974a8a9207a55d067f6
+      internalID: -1281679077
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Birch wood Biom_21
+      name: BirchBiome_20
       rect:
         serializedVersion: 2
-        x: 131
-        y: 0
-        width: 25
+        x: 82
+        y: 48
+        width: 26
         height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.673077, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: fc8be1f9d71e3a700800000000000000
-      internalID: 550531509126084815
+      spriteID: d8c0057e926647d4a91a68a171789af2
+      internalID: 1061614661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_21
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 52
+        width: 16
+        height: 10
+      alignment: 9
+      pivot: {x: 0.46875, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97bdad48fcb4c8f4e8bfb772fad7ec0c
+      internalID: -1029873069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BirchBiome_22
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 49
+        width: 23
+        height: 14
+      alignment: 9
+      pivot: {x: 0.478261, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2d5447743a79964bb6b96d6ed6b7196
+      internalID: -1146290
       vertices: []
       indices: 
       edges: []
@@ -663,7 +663,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 2c7b3f02dcdda27468e000a9cbf19465
     internalID: 0
     vertices: []
     indices: 
@@ -673,28 +673,28 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Birch wood Biom_0: -8970511824121977005
-      Birch wood Biom_1: -4307721801000814238
-      Birch wood Biom_10: -8537336425425703603
-      Birch wood Biom_11: 1044518904729987294
-      Birch wood Biom_12: -256730930573181023
-      Birch wood Biom_13: 5587888664176077517
-      Birch wood Biom_14: 5703695015962110699
-      Birch wood Biom_15: -2386988021301607238
-      Birch wood Biom_16: -5246934944379537845
-      Birch wood Biom_17: -101937679568756773
-      Birch wood Biom_18: 7597106221787093253
-      Birch wood Biom_19: -7837824489289456178
-      Birch wood Biom_2: -7692936588607558400
-      Birch wood Biom_20: 6853321930076421689
-      Birch wood Biom_21: 550531509126084815
-      Birch wood Biom_3: -4766293336989501157
-      Birch wood Biom_4: -5557392880670858700
-      Birch wood Biom_5: 8031213758277211180
-      Birch wood Biom_6: -113287501753214558
-      Birch wood Biom_7: -5235760679350156922
-      Birch wood Biom_8: -5456172580295597297
-      Birch wood Biom_9: 414269475500437085
+      BirchBiome_01: 1799406774
+      BirchBiome_02: -1839842124
+      BirchBiome_03: 709271631
+      BirchBiome_04: -187363865
+      BirchBiome_05: -2142001951
+      BirchBiome_06: 1587785739
+      BirchBiome_07: 791120668
+      BirchBiome_08: -188255455
+      BirchBiome_09: -2114062637
+      BirchBiome_10: 359875247
+      BirchBiome_11: -1827659367
+      BirchBiome_12: -1861891027
+      BirchBiome_13: -133829819
+      BirchBiome_14: 1645775933
+      BirchBiome_15: 1919569945
+      BirchBiome_16: 2071686919
+      BirchBiome_17: 1358631227
+      BirchBiome_18: -2008447811
+      BirchBiome_19: -1281679077
+      BirchBiome_20: 1061614661
+      BirchBiome_21: -1029873069
+      BirchBiome_22: -1146290
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
