@@ -64,10 +64,23 @@ namespace IslandLife.EditorTools.IslandMap
                 EditorGUILayout.Space(6f);
                 EditorGUILayout.LabelField("Terrain Palette", EditorStyles.boldLabel);
 
+                EditorGUILayout.LabelField("Surface", EditorStyles.miniBoldLabel);
                 DrawPaletteButton(TerrainType.Grass);
                 DrawPaletteButton(TerrainType.Water);
                 DrawPaletteButton(TerrainType.Sand);
                 DrawPaletteButton(TerrainType.Empty);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("Elevation (land only)", EditorStyles.miniBoldLabel);
+                DrawElevationButton(ElevationLevel.Normal);
+                DrawElevationButton(ElevationLevel.Raised);
+
+                // Low Ground is shown but permanently disabled: the Sprout Lands author art has
+                // no pit or depression tiles, so there is nothing truthful to draw with it.
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorGUILayout.LabelField("Low Ground (-1)  -  unavailable, no author art");
+                }
 
                 EditorGUILayout.LabelField("Brush Size", "1 (fixed)");
 
@@ -103,10 +116,52 @@ namespace IslandLife.EditorTools.IslandMap
             EditorGUILayout.EndScrollView();
         }
 
+        /// <summary>
+        /// Elevation buttons. Normal is the "flat ground" reset; High Ground paints only the
+        /// vertical layer of a land cell and leaves its base terrain untouched. Low Ground is not
+        /// offered - see the disabled label above.
+        /// </summary>
+        private static void DrawElevationButton(ElevationLevel level)
+        {
+            string label = level == ElevationLevel.Normal
+                ? "Flat Ground (reset)"
+                : "High Ground (+1)";
+
+            bool selected = IslandMapAuthoring.IsActive
+                && IslandMapAuthoring.ElevationBrush == level;
+
+            using (new EditorGUI.DisabledScope(!IslandMapAuthoring.IsActive))
+            {
+                Color previous = GUI.backgroundColor;
+                if (selected)
+                {
+                    GUI.backgroundColor = level == ElevationLevel.Raised
+                        ? new Color(0.95f, 0.85f, 0.55f)
+                        : new Color(0.8f, 0.8f, 0.8f);
+                }
+
+                if (GUILayout.Button(label, GUILayout.Height(24f)))
+                {
+                    IslandMapAuthoring.SetElevationBrush(level, out _);
+                }
+
+                GUI.backgroundColor = previous;
+            }
+
+            if (level != ElevationLevel.Normal)
+            {
+                EditorGUILayout.LabelField(
+                    "    " + label + ": land cells only, edges auto-join",
+                    EditorStyles.miniLabel);
+            }
+        }
+
         private static void DrawPaletteButton(TerrainType type)
         {
             bool paintable = IslandMapAuthoring.IsPaintable(type, out string reason);
-            bool selected = IslandMapAuthoring.IsActive && IslandMapAuthoring.Brush == type;
+            bool selected = IslandMapAuthoring.IsActive
+                && !IslandMapAuthoring.IsElevationBrush
+                && IslandMapAuthoring.Brush == type;
 
             using (new EditorGUI.DisabledScope(!paintable || !IslandMapAuthoring.IsActive))
             {

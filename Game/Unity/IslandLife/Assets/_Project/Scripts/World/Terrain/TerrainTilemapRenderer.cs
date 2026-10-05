@@ -19,16 +19,35 @@ namespace IslandLife.World.Terrain
         [SerializeField]
         private Tilemap grassTilemap;
 
+        /// <summary>
+        /// Pure visual layer holding the author's Hills cells for Raised ground. It is a projection
+        /// cache, never a data source: nothing reads Raised state back out of this Tilemap. It may
+        /// hold tiles one row SOUTH of a logical Raised mask, which R5 proved is required.
+        /// A null reference is legal and means "no hill visual is configured".
+        /// </summary>
+        [SerializeField]
+        private Tilemap raisedVisualTilemap;
+
         [NonSerialized]
         private Dictionary<Sprite, Tile> transientTilesBySprite;
+
+        /// <summary>
+        /// The most recent Raised projection, for editor diagnostics. Null until something is
+        /// rendered and a Raised composition set is configured.
+        /// </summary>
+        public RaisedVisualPlan LastRaisedPlan { get; private set; }
 
         public void RenderAll(TerrainGridData grid)
         {
             ValidateInputs(grid);
 
             waterTilemap.ClearAllTiles();
-            sandTilemap?.ClearAllTiles();
+            ClearSandTiles();
             grassTilemap.ClearAllTiles();
+            if (raisedVisualTilemap != null)
+            {
+                raisedVisualTilemap.ClearAllTiles();
+            }
 
             long endY = (long)grid.OriginY + grid.Height;
             long endX = (long)grid.OriginX + grid.Width;
@@ -49,6 +68,8 @@ namespace IslandLife.World.Terrain
                     RenderCell(grid, (int)x, (int)y);
                 }
             }
+
+            RenderRaisedVisuals(grid);
         }
 
         public void RenderAll(
@@ -57,12 +78,26 @@ namespace IslandLife.World.Terrain
             Tilemap water,
             Tilemap grass)
         {
+            RenderAll(grid, assets, water, grass, null);
+        }
+
+        public void RenderAll(
+            TerrainGridData grid,
+            TerrainRenderAssets assets,
+            Tilemap water,
+            Tilemap grass,
+            Tilemap raisedVisual)
+        {
             renderAssets = assets;
             waterTilemap = water;
             sandTilemap = null;
             grassTilemap = grass;
+            raisedVisualTilemap = raisedVisual;
             RenderAll(grid);
         }
+
+
+
 
         public void RefreshCell(TerrainGridData grid, int x, int y)
         {
@@ -89,6 +124,69 @@ namespace IslandLife.World.Terrain
                     RenderCell(grid, (int)cellX, (int)cellY);
                 }
             }
+
+            // A Raised projection is REGION-based, not cell-based: painting or clearing one cell can
+            // merge two regions or split one in two, so a 3x3 neighbourhood refresh cannot know the
+            // new boundary. The Raised layer is therefore rebuilt in full on every edit. It is a
+            // handful of cells per region, so this stays cheap, and it guarantees a region can
+            // never leave a stale hill tile behind.
+            RenderRaisedVisuals(grid);
+        }
+
+        /// <summary>
+        /// Sand is not paintable yet, so the Sand layer is legitimately optional. The null-conditional
+        /// operator is NOT safe for that: a null reference assigned through SerializedObject is a
+        /// Unity "fake null" that it does not short-circuit, which throws
+        /// UnassignedReferenceException. Comparing against null directly uses UnityEngine.Object's
+        /// operator, which does handle it.
+        /// </summary>
+        private void ClearSandTiles()
+        {
+            if (sandTilemap == null)
+            {
+                return;
+            }
+
+            sandTilemap.ClearAllTiles();
+        }
+
+        private void RenderRaisedVisuals(TerrainGridData grid)
+        {
+            AuthorHillsCompositionSet composition = renderAssets.RaisedComposition;
+            if (composition == null || raisedVisualTilemap == null)
+            {
+                // No hill visual configured: Raised cells simply render as ordinary Grass. This is a
+                // legal configuration and must never invent art.
+                LastRaisedPlan = null;
+                return;
+            }
+
+            RaisedVisualPlan plan = RaisedVisualPlan.Build(grid, composition);
+
+            foreach (HillVisualTile tile in plan.Tiles)
+            {
+                if (tile.Sprite == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Author Hills composition produced a null Sprite at "
+                        + $"{tile.VisualPosition}. Check the composition set.");
+                }
+
+                raisedVisualTilemap.SetTile(
+                    tile.VisualPosition, GetOrCreateTransientTile(tile.Sprite));
+            }
+
+            LastRaisedPlan = plan;
+
+            // Grass is deliberately NOT erased. The author's interior hill cells are 256/256 opaque
+            // (measured in IL-WORLD-004S-R5), so drawing the hill layer above grass is the REPLACE
+            // relation without touching TerrainData's grass logic. The transparent pixels in the
+            // author's outline cells are meant to reveal the ground behind them.
+            Debug.Log(
+                "[IslandMap] Raised visual projection: " + plan.Describe()
+                + (plan.UnsupportedDiagnostics.Count == 0
+                    ? string.Empty
+                    : " | no hill art was invented for the unsupported region(s) above."));
         }
 
         private void ValidateInputs(TerrainGridData grid)
@@ -129,7 +227,9 @@ namespace IslandLife.World.Terrain
                 throw new InvalidOperationException(
                     "Sand terrain requires configured Sand render assets and a Tilemap.");
             }
+
         }
+
 
         private static bool ContainsSand(TerrainGridData grid)
         {
@@ -149,11 +249,16 @@ namespace IslandLife.World.Terrain
             return false;
         }
 
+
         private void RenderCell(TerrainGridData grid, int x, int y)
         {
             Vector3Int position = new Vector3Int(x, y, 0);
             waterTilemap.SetTile(position, null);
-            sandTilemap?.SetTile(position, null);
+            if (sandTilemap != null)
+            {
+                sandTilemap.SetTile(position, null);
+            }
+
             grassTilemap.SetTile(position, null);
 
             TerrainType terrainType = grid.GetTerrain(x, y);
@@ -195,6 +300,7 @@ namespace IslandLife.World.Terrain
                         "Unsupported terrain type.");
             }
         }
+
 
         private void SetResolvedSprite(
             TerrainGridData grid,

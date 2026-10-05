@@ -37,8 +37,10 @@ namespace IslandLife.EditorTools.IslandMap
         private static Tilemap s_PreviewWater;
         private static Tilemap s_PreviewGrass;
         private static Tilemap s_PreviewSand;
+        private static Tilemap s_PreviewRaisedVisual;
         private static GameObject s_PreviewRoot;
         private static bool s_StrokeActive;
+        private static ElevationLevel s_ElevationBrush = ElevationLevel.Normal;
         private static int s_Edits;
         private static Vector2Int s_Hover = new Vector2Int(int.MinValue, int.MinValue);
         private static string s_Status = "Press \"Start Authoring\" to preview the map in Edit Mode.";
@@ -46,6 +48,11 @@ namespace IslandLife.EditorTools.IslandMap
         public static bool IsActive => s_Active;
 
         public static TerrainType Brush => s_Brush;
+
+        /// <summary>Elevation brush selection; Normal means the base-terrain brush is active.</summary>
+        public static ElevationLevel ElevationBrush => s_ElevationBrush;
+
+        public static bool IsElevationBrush => s_ElevationBrush != ElevationLevel.Normal;
 
         public static string Status => s_Status;
 
@@ -62,6 +69,16 @@ namespace IslandLife.EditorTools.IslandMap
         public static Tilemap PreviewWater => s_PreviewWater;
 
         public static Tilemap PreviewGrass => s_PreviewGrass;
+
+        /// <summary>
+        /// The preview's pure-visual Raised/Hills layer. It is a projection of the logical Raised
+        /// mask, never a data source, and it may legitimately hold tiles one row south of a Raised
+        /// mask.
+        /// </summary>
+        public static Tilemap PreviewRaisedVisual => s_PreviewRaisedVisual;
+
+        /// <summary>Diagnostics for the most recent Raised projection, or null when none is active.</summary>
+        public static RaisedVisualPlan RaisedPlan => s_PreviewRenderer?.LastRaisedPlan;
 
         public static TerrainRenderAssets RenderAssets => s_RenderAssets;
 
@@ -199,7 +216,51 @@ namespace IslandLife.EditorTools.IslandMap
             }
 
             s_Brush = type;
+            s_ElevationBrush = ElevationLevel.Normal;
             SceneView.RepaintAll();
+        }
+
+        /// <summary>Selects an elevation brush. Normal returns to the base-terrain palette.</summary>
+        public static bool SetElevationBrush(ElevationLevel level, out string reason)
+        {
+            if (level == ElevationLevel.Normal)
+            {
+                s_ElevationBrush = ElevationLevel.Normal;
+                reason = string.Empty;
+                SceneView.RepaintAll();
+                return true;
+            }
+
+            // Low Ground is not shippable. The author ships no pit or depression art, so the
+            // editor refuses to author it rather than inventing a look out of unrelated tiles.
+            // The ElevationLevel.Lowered value itself is untouched and still loads, but a cell
+            // holding it draws as flat Normal ground.
+            if (level != ElevationLevel.Raised)
+            {
+                reason =
+                    "Low Ground (-1) is not available: the Sprout Lands author art has no pit "
+                    + "or depression tiles. Only High Ground (+1) and Normal Ground (0) ship.";
+                return false;
+            }
+
+            // The High Ground brush authors real logical data that is stored, loaded and kept for
+            // future collision / occupancy queries. Since IL-WORLD-004S-R6 it also produces a hill
+            // VISUAL: RaisedRegionAnalyzer classifies the connected region and
+            // AuthorHillsCompositionResolver projects it onto the author's verified Hills.png cells
+            // in a separate pure-visual Tilemap. A region the author never drew - a 2-wide run, a
+            // turning outline, a concave notch, a rectangle taller than 3 - is reported as
+            // UNSUPPORTED_AUTHOR_GRAMMAR and draws no hill art at all; nothing is ever guessed.
+            s_ElevationBrush = level;
+            reason = string.Empty;
+            SceneView.RepaintAll();
+            return true;
+        }
+
+        /// <summary>Elevation can only be authored where the base terrain is land.</summary>
+        public static bool CanPaintElevationHere(int x, int y)
+        {
+            return s_Grid != null && s_Grid.IsInside(x, y)
+                && s_Grid.GetTerrain(x, y) == TerrainType.Grass;
         }
 
         // ---------------------------------------------------------------- preview rig
@@ -237,12 +298,19 @@ namespace IslandLife.EditorTools.IslandMap
                 s_PreviewWater = CreatePreviewTilemap("Water", realWater);
                 s_PreviewGrass = CreatePreviewTilemap("Grass", realGrass);
 
+
                 // RenderAll unconditionally calls sandTilemap.ClearAllTiles(). A null assigned
                 // through SerializedObject is a "fake null" that does not short-circuit the
                 // null-conditional, so the field must hold a real Tilemap. Sand is not
                 // paintable yet, so this sandbox Tilemap always stays empty.
                 s_PreviewSand = CreateSandboxTilemap();
-                if (s_PreviewWater == null || s_PreviewGrass == null || s_PreviewSand == null)
+
+                // Pure-visual Raised/Hills layer, sorted one step above Grass so the author's opaque
+                // hill cells read as REPLACE rather than as a second grass image. It is transient and
+                // is destroyed with the rest of the preview; it never becomes a data source.
+                s_PreviewRaisedVisual = CreatePreviewTilemap("RaisedVisual", s_PreviewGrass, 1);
+                if (s_PreviewWater == null || s_PreviewGrass == null || s_PreviewSand == null
+                    || s_PreviewRaisedVisual == null)
                 {
                     return false;
                 }
@@ -253,6 +321,7 @@ namespace IslandLife.EditorTools.IslandMap
                 rso.FindProperty("waterTilemap").objectReferenceValue = s_PreviewWater;
                 rso.FindProperty("sandTilemap").objectReferenceValue = s_PreviewSand;
                 rso.FindProperty("grassTilemap").objectReferenceValue = s_PreviewGrass;
+                rso.FindProperty("raisedVisualTilemap").objectReferenceValue = s_PreviewRaisedVisual;
                 rso.ApplyModifiedPropertiesWithoutUndo();
 
                 return true;
@@ -314,7 +383,7 @@ namespace IslandLife.EditorTools.IslandMap
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static Tilemap CreatePreviewTilemap(string name, Tilemap real)
+        private static Tilemap CreatePreviewTilemap(string name, Tilemap real, int sortOffset = 0)
         {
             var go = new GameObject(name)
             {
@@ -332,6 +401,21 @@ namespace IslandLife.EditorTools.IslandMap
             if (src != null)
             {
                 CopySerializedProperties(src, dst, TilemapRendererProperties);
+                if (sortOffset != 0)
+                {
+                    var order = new SerializedObject(dst);
+                    SerializedProperty property = order.FindProperty("m_SortOrder");
+                    if (property == null)
+                    {
+                        property = order.FindProperty("m_SortingOrder");
+                    }
+
+                    if (property != null)
+                    {
+                        property.intValue = src.sortingOrder + sortOffset;
+                        order.ApplyModifiedPropertiesWithoutUndo();
+                    }
+                }
             }
 
             return map;
@@ -353,6 +437,7 @@ namespace IslandLife.EditorTools.IslandMap
             s_PreviewWater = null;
             s_PreviewGrass = null;
             s_PreviewSand = null;
+            s_PreviewRaisedVisual = null;
 
             if (s_PreviewRoot != null)
             {
@@ -375,12 +460,19 @@ namespace IslandLife.EditorTools.IslandMap
         /// Paints one cell in the authoritative TerrainMapData and refreshes the preview
         /// neighbourhood. Returns false - and changes nothing - for out-of-bounds, non-paintable
         /// and no-op cases.
+        ///
+        /// Elevation brushes use the same entry point; see <see cref="s_ElevationBrush"/>.
         /// </summary>
         public static bool TryPaintCell(int x, int y)
         {
             if (!s_Active || s_Data == null || s_Grid == null || s_PreviewRenderer == null)
             {
                 return false;
+            }
+
+            if (s_ElevationBrush != ElevationLevel.Normal)
+            {
+                return TryPaintElevation(x, y, s_ElevationBrush);
             }
 
             if (!IsPaintable(s_Brush, out _))
@@ -408,7 +500,7 @@ namespace IslandLife.EditorTools.IslandMap
                 return false;
             }
 
-            long index = ((long)y - s_Grid.OriginY) * s_Grid.Width + ((long)x - s_Grid.OriginX);
+            long index = CellIndex(x, y);
             if (index < 0 || index >= cells.arraySize)
             {
                 return false;
@@ -419,12 +511,152 @@ namespace IslandLife.EditorTools.IslandMap
 
             s_Grid.SetTerrain(x, y, s_Brush);
 
+            // Water is always flat ground. Resetting an existing elevation here is legitimate, but
+            // a legacy map that has never had elevation data must NOT gain an elevations array as a
+            // side effect of a plain Grass/Water paint, so the array is only touched when one
+            // already exists.
+            if (s_Brush != TerrainType.Grass)
+            {
+                ResetElevationIfPresent(x, y);
+            }
+
             // The existing renderer + resolver chain handles adjacency (3x3 neighbourhood).
             s_PreviewRenderer.RefreshCell(s_Grid, x, y);
 
             EditorUtility.SetDirty(s_Data);
             SceneView.RepaintAll();
             s_Edits++;
+            return true;
+        }
+
+        /// <summary>
+        /// Paints only the elevation of a legal land cell. The base terrain is never changed by an
+        /// elevation brush, which is what keeps Raised independent of Grass.
+        ///
+        /// Only Raised and Normal are accepted. Lowered is refused here as well as in
+        /// <see cref="SetElevationBrush"/>, so no code path in the editor can author low ground.
+        /// </summary>
+        internal static bool TryPaintElevation(int x, int y, ElevationLevel level)
+        {
+            if (!s_Grid.IsInside(x, y))
+            {
+                return false;
+            }
+
+            // Conservative rule: elevation only exists on land, so a High Ground brush must never
+            // create a floating plateau out of open water.
+            if (s_Grid.GetTerrain(x, y) != TerrainType.Grass)
+            {
+                return false;
+            }
+
+            // No author pit art exists, so Low Ground is never authored. Only clearing an existing
+            // Lowered value back to Normal is meaningful.
+            if (level != ElevationLevel.Raised && level != ElevationLevel.Normal)
+            {
+                return false;
+            }
+
+            if (s_Grid.GetElevation(x, y) == level)
+            {
+                return false;
+            }
+
+            // Undo is recorded before any mutation, and the elevation array is grown only here -
+            // inside the single real-edit path - so reading, hovering and no-op paints never
+            // dirty or re-serialize a legacy map that has no elevation data yet.
+            Undo.RecordObject(s_Data, "Paint " + level);
+
+            if (!EnsureElevationArrayLength(s_Grid.Width * s_Grid.Height))
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(s_Data);
+            SerializedProperty elevations = so.FindProperty("elevations");
+            long index = CellIndex(x, y);
+            if (elevations == null || index < 0 || index >= elevations.arraySize)
+            {
+                return false;
+            }
+
+            elevations.GetArrayElementAtIndex((int)index).intValue = (int)level;
+            so.ApplyModifiedProperties();
+
+            s_Grid.SetElevation(x, y, level);
+            s_PreviewRenderer.RefreshCell(s_Grid, x, y);
+
+            EditorUtility.SetDirty(s_Data);
+            SceneView.RepaintAll();
+            s_Edits++;
+            return true;
+        }
+
+        private static long CellIndex(int x, int y)
+        {
+            return ((long)y - s_Grid.OriginY) * s_Grid.Width + ((long)x - s_Grid.OriginX);
+        }
+
+        /// <summary>
+        /// Clears a cell's elevation only if the map already carries elevation data. Used when the
+        /// base terrain changes to Water, so a legacy all-Normal map stays legacy.
+        /// </summary>
+        private static void ResetElevationIfPresent(int x, int y)
+        {
+            var so = new SerializedObject(s_Data);
+            SerializedProperty elevations = so.FindProperty("elevations");
+            if (elevations == null || !elevations.isArray
+                || elevations.arraySize != s_Grid.Width * s_Grid.Height)
+            {
+                return;
+            }
+
+            long index = CellIndex(x, y);
+            if (index < 0 || index >= elevations.arraySize)
+            {
+                return;
+            }
+
+            if (elevations.GetArrayElementAtIndex((int)index).intValue == (int)ElevationLevel.Normal)
+            {
+                return;
+            }
+
+            elevations.GetArrayElementAtIndex((int)index).intValue = (int)ElevationLevel.Normal;
+            so.ApplyModifiedProperties();
+            s_Grid.SetElevation(x, y, ElevationLevel.Normal);
+        }
+
+        /// <summary>
+        /// Grows the serialized elevation array to match the cell array. Maps that have never had
+        /// elevation authored have no such array at all; this materialises it lazily on the first
+        /// real edit, so untouched legacy maps are never rewritten.
+        /// </summary>
+        private static bool EnsureElevationArrayLength(int required)
+        {
+            var so = new SerializedObject(s_Data);
+            SerializedProperty elevations = so.FindProperty("elevations");
+            if (elevations == null || !elevations.isArray)
+            {
+                return false;
+            }
+
+            if (elevations.arraySize == required)
+            {
+                return true;
+            }
+
+            int previous = elevations.arraySize;
+            elevations.arraySize = required;
+            if (required > previous)
+            {
+                for (int i = previous; i < required; i++)
+                {
+                    elevations.GetArrayElementAtIndex(i).intValue = (int)ElevationLevel.Normal;
+                }
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
             return true;
         }
 
@@ -599,6 +831,11 @@ namespace IslandLife.EditorTools.IslandMap
 
                 string type = inside ? s_Grid.GetTerrain(s_Hover.x, s_Hover.y).ToString()
                     : "OUT OF BOUNDS";
+                if (inside && s_Grid.GetTerrain(s_Hover.x, s_Hover.y) == TerrainType.Grass)
+                {
+                    type += " / " + s_Grid.GetElevation(s_Hover.x, s_Hover.y);
+                }
+
                 Handles.Label(
                     c + new Vector3(0f, -h - 0.4f, 0f),
                     string.Format("({0}, {1})  {2}", s_Hover.x, s_Hover.y, type));
@@ -621,7 +858,10 @@ namespace IslandLife.EditorTools.IslandMap
                 EditorStyles.boldLabel);
             GUI.Label(
                 new Rect(area.x + 6f, area.y + 23f, area.width - 12f, 18f),
-                string.Format("Brush: {0}     Brush Size = 1     Edits: {1}", s_Brush, s_Edits));
+                string.Format(
+                    "Brush: {0}     Brush Size = 1     Edits: {1}",
+                    IsElevationBrush ? s_ElevationBrush + " ground" : s_Brush.ToString(),
+                    s_Edits));
             GUI.Label(
                 new Rect(area.x + 6f, area.y + 42f, area.width - 12f, 30f),
                 "Left click / drag to paint.  Ctrl+Z undo, Ctrl+Y redo.  Preview only - save the "

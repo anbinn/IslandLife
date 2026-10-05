@@ -23,6 +23,18 @@ namespace IslandLife.World.Terrain
         [SerializeField]
         private TerrainType[] cells = Array.Empty<TerrainType>();
 
+        /// <summary>
+        /// Per-cell vertical layer, parallel to <see cref="cells"/>.
+        ///
+        /// Backward compatibility is deliberate and load-time only: maps authored before elevation
+        /// existed have no serialized elevations at all, and those must keep loading byte-identical
+        /// as all-Normal without any migration step or asset rewrite. An absent, empty, or
+        /// wrong-length array therefore reads as all Normal, and is only written back once the user
+        /// actually authors an elevation.
+        /// </summary>
+        [SerializeField]
+        private ElevationLevel[] elevations = Array.Empty<ElevationLevel>();
+
         public int OriginX => originX;
 
         public int OriginY => originY;
@@ -31,7 +43,148 @@ namespace IslandLife.World.Terrain
 
         public int Height => height;
 
+        /// <summary>True when this map has never had elevation authored on it.</summary>
+        public bool HasElevationData => elevations != null && elevations.Length == cells?.Length;
+
         public void SetData(
+            int dataOriginX,
+            int dataOriginY,
+            int dataWidth,
+            int dataHeight,
+            TerrainType[] terrainCells)
+        {
+            ValidateBaseData(dataOriginX, dataOriginY, dataWidth, dataHeight, terrainCells);
+
+            originX = dataOriginX;
+            originY = dataOriginY;
+            width = dataWidth;
+            height = dataHeight;
+            cells = (TerrainType[])terrainCells.Clone();
+        }
+
+        /// <summary>
+        /// Bulk elevation write used by tooling and tests. Passing an all-Normal array stores it
+        /// explicitly; pass null to clear back to the implicit all-Normal state.
+        /// </summary>
+        public void SetElevations(ElevationLevel[] dataElevations)
+        {
+            if (dataElevations == null)
+            {
+                elevations = Array.Empty<ElevationLevel>();
+                return;
+            }
+
+            if (dataElevations.Length != cells.Length)
+            {
+                throw new ArgumentException(
+                    $"Expected {cells.Length} elevation cells, got {dataElevations.Length}.",
+                    nameof(dataElevations));
+            }
+
+            for (int i = 0; i < dataElevations.Length; i++)
+            {
+                ValidateElevation(dataElevations[i], i);
+            }
+
+            elevations = (ElevationLevel[])dataElevations.Clone();
+        }
+
+        public TerrainType GetTerrain(int worldX, int worldY)
+        {
+            if (!IsInside(worldX, worldY))
+            {
+                return TerrainType.Empty;
+            }
+
+            ValidateData();
+
+            long localX = (long)worldX - originX;
+            long localY = (long)worldY - originY;
+            if (localX < 0 || localX >= width || localY < 0 || localY >= height)
+            {
+                return TerrainType.Empty;
+            }
+
+            int index = checked((int)(localY * width + localX));
+            return cells[index];
+        }
+
+        private bool IsInside(int worldX, int worldY)
+        {
+            long localX = (long)worldX - originX;
+            long localY = (long)worldY - originY;
+            return localX >= 0 && localX < width && localY >= 0 && localY < height;
+        }
+
+        public ElevationLevel GetElevation(int worldX, int worldY)
+        {
+            if (!IsElevationAuthored())
+            {
+                return ElevationLevel.Normal;
+            }
+
+            long localX = (long)worldX - originX;
+            long localY = (long)worldY - originY;
+            if (localX < 0 || localX >= width || localY < 0 || localY >= height)
+            {
+                return ElevationLevel.Normal;
+            }
+
+            int index = checked((int)(localY * width + localX));
+            return elevations[index];
+        }
+
+        public TerrainGridData CreateGridData()
+        {
+            ValidateBaseData(originX, originY, width, height, cells);
+
+            TerrainGridData grid = new TerrainGridData(width, height, originX, originY);
+            bool hasElevation = IsElevationAuthored();
+
+            for (int localY = 0; localY < height; localY++)
+            {
+                for (int localX = 0; localX < width; localX++)
+                {
+                    int index = checked(localY * width + localX);
+                    int worldX = checked(originX + localX);
+                    int worldY = checked(originY + localY);
+
+                    TerrainType terrainType = cells[index];
+                    grid.SetTerrain(worldX, worldY, terrainType);
+
+                    if (!hasElevation)
+                    {
+                        continue;
+                    }
+
+                    ElevationLevel elevation = elevations[index];
+                    TerrainGridData.ConstrainElevation(terrainType, ref elevation);
+                    grid.SetElevation(worldX, worldY, elevation);
+                }
+            }
+
+            return grid;
+        }
+
+        private bool IsElevationAuthored()
+        {
+            return elevations != null && cells != null && elevations.Length == cells.Length;
+        }
+
+        private void ValidateData()
+        {
+            ValidateBaseData(originX, originY, width, height, cells);
+
+            if (IsElevationAuthored())
+            {
+                for (int i = 0; i < elevations.Length; i++)
+                {
+                    ValidateElevation(elevations[i], i);
+                }
+            }
+        }
+
+        private void ValidateBaseData(
             int dataOriginX,
             int dataOriginY,
             int dataWidth,
@@ -70,55 +223,15 @@ namespace IslandLife.World.Terrain
                         $"Unsupported terrain value at index {i}.");
                 }
             }
-
-            originX = dataOriginX;
-            originY = dataOriginY;
-            width = dataWidth;
-            height = dataHeight;
-            cells = (TerrainType[])terrainCells.Clone();
         }
 
-        public TerrainType GetTerrain(int worldX, int worldY)
+        private static void ValidateElevation(ElevationLevel elevation, int index)
         {
-            ValidateData();
-
-            long localX = (long)worldX - originX;
-            long localY = (long)worldY - originY;
-            if (localX < 0 || localX >= width || localY < 0 || localY >= height)
+            if (!Enum.IsDefined(typeof(ElevationLevel), elevation))
             {
-                return TerrainType.Empty;
-            }
-
-            int index = checked((int)(localY * width + localX));
-            return cells[index];
-        }
-
-        public TerrainGridData CreateGridData()
-        {
-            ValidateData();
-
-            TerrainGridData grid = new TerrainGridData(width, height, originX, originY);
-            for (int localY = 0; localY < height; localY++)
-            {
-                for (int localX = 0; localX < width; localX++)
-                {
-                    int index = checked(localY * width + localX);
-                    int worldX = checked(originX + localX);
-                    int worldY = checked(originY + localY);
-                    grid.SetTerrain(worldX, worldY, cells[index]);
-                }
-            }
-
-            return grid;
-        }
-
-        private void ValidateData()
-        {
-            if (width <= 0 || height <= 0 || cells == null
-                || cells.Length != checked(width * height))
-            {
-                throw new InvalidOperationException(
-                    "Terrain map data has invalid dimensions or cell storage.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(elevations),
+                    $"Unsupported elevation value at index {index}.");
             }
         }
     }
