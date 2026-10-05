@@ -604,13 +604,28 @@ namespace IslandLife.EditorTools.IslandMap
                     string.Format("({0}, {1})  {2}", s_Hover.x, s_Hover.y, type));
             }
 
+            // IL-WORLD-004R fix: this overlay is drawn from a Repaint-only code path.
+            // GUILayout cannot be used here. GUILayout controls are positioned from the layout
+            // groups built during EventType.Layout; a Repaint-only path never registers any
+            // control, so Unity raises
+            //   ArgumentException: Getting control 0's position in a group with only 0
+            //   controls when doing repaint
+            // on every Scene View repaint. Fixed-rect GUI controls carry their own position and
+            // need no Layout pass, so they are safe to draw from Repaint alone.
             Handles.BeginGUI();
-            GUILayout.BeginArea(new Rect(12f, 12f, 460f, 74f), GUI.skin.box);
-            GUILayout.Label("ISLAND MAP EDITOR  -  AUTHORING", EditorStyles.boldLabel);
-            GUILayout.Label(string.Format("Brush: {0}     Brush Size = 1     Edits: {1}", s_Brush, s_Edits));
-            GUILayout.Label(
-                "Left click / drag to paint.  Ctrl+Z undo, Ctrl+Y redo.  Preview only - save the TerrainMapData asset.");
-            GUILayout.EndArea();
+            var area = new Rect(12f, 12f, 460f, 74f);
+            GUI.Box(area, GUIContent.none);
+            GUI.Label(
+                new Rect(area.x + 6f, area.y + 4f, area.width - 12f, 18f),
+                "ISLAND MAP EDITOR  -  AUTHORING",
+                EditorStyles.boldLabel);
+            GUI.Label(
+                new Rect(area.x + 6f, area.y + 23f, area.width - 12f, 18f),
+                string.Format("Brush: {0}     Brush Size = 1     Edits: {1}", s_Brush, s_Edits));
+            GUI.Label(
+                new Rect(area.x + 6f, area.y + 42f, area.width - 12f, 30f),
+                "Left click / drag to paint.  Ctrl+Z undo, Ctrl+Y redo.  Preview only - save the "
+                + "TerrainMapData asset.");
             Handles.EndGUI();
         }
     }
