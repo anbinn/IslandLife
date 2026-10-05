@@ -121,12 +121,17 @@ namespace IslandLife.World.Terrain
                 }
             }
 
-            if (waterCount != 1825 || grassCount != 1100 || waterLayerCount != 2925)
+            // IL-WORLD-004R: the previous check froze the island silhouette by hardcoding
+            // Water=1825 / Grass=1100 / Water layer=2925, which threw as soon as anyone edited
+            // the coastline. The exhaustive per-cell verification above still guarantees that
+            // the rendered Tilemaps match the data; this now only asserts the structural
+            // invariant that must hold for ANY island shape: every non-Empty cell renders
+            // exactly one water layer tile.
+            if (waterLayerCount != waterCount + grassCount)
             {
                 throw new InvalidOperationException(
-                    $"Production terrain counts were Water={waterCount}, "
-                    + $"Grass={grassCount}, Water layer={waterLayerCount}; expected "
-                    + "Water=1825, Grass=1100, Water layer=2925.");
+                    $"Rendered water layer count {waterLayerCount} does not match "
+                    + $"Water={waterCount} + Grass={grassCount}.");
             }
         }
 
