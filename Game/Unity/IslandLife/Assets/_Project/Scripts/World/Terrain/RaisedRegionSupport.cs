@@ -37,6 +37,48 @@ namespace IslandLife.World.Terrain
         WIDTH_NOT_PROVEN,
     }
 
+    /// <summary>
+    /// A short, stable, uppercase code for each refusal, suitable for a Scene View label.
+    /// Kept next to the enum so the editor overlay and any diagnostic can never disagree about
+    /// why a region was refused. IL-WORLD-004S-R9.
+    /// </summary>
+    public static class RaisedRegionReasons
+    {
+        public static string ShortCode(RaisedRegionUnsupportedReason reason)
+        {
+            switch (reason)
+            {
+                case RaisedRegionUnsupportedReason.TWO_CELL_WIDTH:
+                    return "WIDTH_2";
+                case RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION:
+                    return "NON_RECTANGULAR";
+                case RaisedRegionUnsupportedReason.HEIGHT_NOT_PROVEN:
+                    return "HEIGHT_NOT_SUPPORTED";
+                case RaisedRegionUnsupportedReason.WIDTH_NOT_PROVEN:
+                    return "WIDTH_NOT_SUPPORTED";
+                default:
+                    return "UNSUPPORTED";
+            }
+        }
+
+        /// <summary>One line a user can act on, without prescribing a change to their map.</summary>
+        public static string Explain(RaisedRegionUnsupportedReason reason)
+        {
+            switch (reason)
+            {
+                case RaisedRegionUnsupportedReason.TWO_CELL_WIDTH:
+                    return "two cells wide - the author's Hills.png has no 2-wide instance";
+                case RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION:
+                    return "the outline is not a solid rectangle - it has a notch or a step";
+                case RaisedRegionUnsupportedReason.HEIGHT_NOT_PROVEN:
+                    return "taller than the author's proven vertical stack";
+                case RaisedRegionUnsupportedReason.WIDTH_NOT_PROVEN:
+                    return "wider than the author's proven run";
+                default:
+                    return "not expressible with the author's verified Hills cells";
+            }
+        }
+    }
     /// <summary>One connected group of Raised logical cells, plus its classification.</summary>
     public sealed class RaisedRegion
     {

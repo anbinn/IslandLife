@@ -803,6 +803,71 @@ namespace IslandLife.EditorTools.IslandMap
 
         // ---------------------------------------------------------------- scene overlay
 
+        /// <summary>
+        /// The exact text drawn over an unsupported Raised region. Extracted so the diagnostic can be
+        /// asserted by tests without needing a live Scene View repaint. IL-WORLD-004S-R9.
+        /// </summary>
+        internal static string BuildUnsupportedRaisedLabel(RaisedRegion region)
+        {
+            RaisedRegionUnsupportedReason reason =
+                region.UnsupportedReason ?? RaisedRegionUnsupportedReason.WIDTH_NOT_PROVEN;
+            return string.Format(
+                "Unsupported Raised Shape  [{0}]  {1}  ({2}x{3}, {4} cells)",
+                RaisedRegionReasons.ShortCode(reason),
+                RaisedRegionReasons.Explain(reason),
+                region.Width, region.Height, region.CellCount);
+        }
+        /// <summary>
+        /// IL-WORLD-004S-R9. Draws the Raised cells the author CANNOT express, so that "no hill art"
+        /// never reads as "your work vanished".
+        ///
+        /// This is an EDITOR DIAGNOSTIC ONLY. It draws nothing into the runtime terrain, generates no
+        /// hill Sprite, and never mutates TerrainMapData: no modal, no blocked painting, no undo of the
+        /// user's stroke, no automatic shape change. Every refused region keeps its logical Raised
+        /// cells and simply gets a visible outline plus a reason.
+        /// </summary>
+        private static void DrawUnsupportedRaisedDiagnostics()
+        {
+            RaisedVisualPlan plan = RaisedPlan;
+            if (plan == null || plan.UnsupportedRegions.Count == 0 || s_Grid == null
+                || s_PreviewGrass == null)
+            {
+                return;
+            }
+
+            float w = s_PreviewGrass.cellSize.x * 0.5f;
+            float h = s_PreviewGrass.cellSize.y * 0.5f;
+            Color fill = new Color(1f, 0.25f, 0.2f, 0.35f);
+            Color edge = new Color(1f, 0.15f, 0.1f, 1f);
+
+            foreach (RaisedRegion region in plan.UnsupportedRegions)
+            {
+                // One translucent cell per Raised cell, so the user sees exactly what they painted.
+                foreach (Vector2Int cell in region.Cells)
+                {
+                    if (!s_Grid.IsInside(cell.x, cell.y))
+                    {
+                        continue;
+                    }
+
+                    Vector3 c = CellCenterWorld(new Vector3Int(cell.x, cell.y, 0));
+                    Handles.DrawSolidRectangleWithOutline(
+                        new[]
+                        {
+                            c + new Vector3(-w, -h, 0f), c + new Vector3(w, -h, 0f),
+                            c + new Vector3(w, h, 0f), c + new Vector3(-w, h, 0f),
+                        },
+                        fill, edge);
+                }
+
+                // One label per region, anchored above its bounding box.
+                Vector3 top = CellCenterWorld(new Vector3Int(region.MinX, region.MaxY, 0));
+                Handles.Label(
+                    top + new Vector3(0f, h + 0.35f, 0f),
+                    BuildUnsupportedRaisedLabel(region),
+                    EditorStyles.whiteBoldLabel);
+            }
+        }
         internal static void DrawSceneOverlay()
         {
             if (!s_Active || s_Grid == null || s_PreviewGrass == null)
@@ -841,6 +906,8 @@ namespace IslandLife.EditorTools.IslandMap
                     string.Format("({0}, {1})  {2}", s_Hover.x, s_Hover.y, type));
             }
 
+            DrawUnsupportedRaisedDiagnostics();
+
             // IL-WORLD-004R fix: this overlay is drawn from a Repaint-only code path.
             // GUILayout cannot be used here. GUILayout controls are positioned from the layout
             // groups built during EventType.Layout; a Repaint-only path never registers any
@@ -850,7 +917,14 @@ namespace IslandLife.EditorTools.IslandMap
             // on every Scene View repaint. Fixed-rect GUI controls carry their own position and
             // need no Layout pass, so they are safe to draw from Repaint alone.
             Handles.BeginGUI();
-            var area = new Rect(12f, 12f, 460f, 74f);
+            int unsupportedCount = 0;
+            RaisedVisualPlan planForPanel = RaisedPlan;
+            if (planForPanel != null)
+            {
+                unsupportedCount = planForPanel.UnsupportedRegions.Count;
+            }
+
+            var area = new Rect(12f, 12f, 460f, unsupportedCount > 0 ? 94f : 74f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(
                 new Rect(area.x + 6f, area.y + 4f, area.width - 12f, 18f),
@@ -863,9 +937,23 @@ namespace IslandLife.EditorTools.IslandMap
                     IsElevationBrush ? s_ElevationBrush + " ground" : s_Brush.ToString(),
                     s_Edits));
             GUI.Label(
-                new Rect(area.x + 6f, area.y + 42f, area.width - 12f, 30f),
+                new Rect(area.x + 6f, area.y + 42f, area.width - 12f, 18f),
                 "Left click / drag to paint.  Ctrl+Z undo, Ctrl+Y redo.  Preview only - save the "
                 + "TerrainMapData asset.");
+
+            if (unsupportedCount > 0)
+            {
+                // Fixed-rect label only. GUILayout is deliberately not used anywhere in this
+                // Repaint-only path; see the IL-WORLD-004R note above.
+                var warn = new Rect(area.x + 6f, area.y + 62f, area.width - 12f, 30f);
+                GUI.Box(warn, GUIContent.none);
+                GUI.Label(warn, string.Format(
+                        "{0} Raised region(s) cannot be drawn with the author's Hills art and are "
+                        + "outlined in red. Your Raised cells are kept; no hill art is invented.",
+                        unsupportedCount),
+                    EditorStyles.wordWrappedMiniLabel);
+            }
+
             Handles.EndGUI();
         }
     }

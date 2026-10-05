@@ -17,10 +17,12 @@ namespace IslandLife.World.Terrain
         private RaisedVisualPlan(
             List<HillVisualTile> tiles,
             List<RaisedRegion> supportedRegions,
+            List<RaisedRegion> unsupportedRegions,
             List<string> unsupportedDiagnostics)
         {
             Tiles = tiles;
             SupportedRegions = supportedRegions;
+            UnsupportedRegions = unsupportedRegions;
             UnsupportedDiagnostics = unsupportedDiagnostics;
         }
 
@@ -31,6 +33,13 @@ namespace IslandLife.World.Terrain
 
         /// <summary>One line per unsupported region: bounds, size, cell count and the reason.</summary>
         public IReadOnlyList<string> UnsupportedDiagnostics { get; }
+
+        /// <summary>
+        /// The same unsupported regions as objects, with their real bounds. The Scene View
+        /// diagnostic needs coordinates to draw an outline; a preformatted string cannot supply
+        /// those. IL-WORLD-004S-R9.
+        /// </summary>
+        public IReadOnlyList<RaisedRegion> UnsupportedRegions { get; }
 
         public int RaisedCellCount { get; private set; }
 
@@ -59,6 +68,7 @@ namespace IslandLife.World.Terrain
 
             var tiles = new List<HillVisualTile>();
             var supported = new List<RaisedRegion>();
+            var unsupportedRegions = new List<RaisedRegion>();
             var unsupported = new List<string>();
 
             foreach (RaisedRegion region in regions)
@@ -66,6 +76,7 @@ namespace IslandLife.World.Terrain
                 if (!AuthorHillsCompositionResolver.TryResolve(
                         region, compositionSet, tiles, out string failure))
                 {
+                    unsupportedRegions.Add(region);
                     unsupported.Add(region + "  ::  " + failure);
                     continue;
                 }
@@ -82,7 +93,7 @@ namespace IslandLife.World.Terrain
                 }
             }
 
-            return new RaisedVisualPlan(tiles, supported, unsupported)
+            return new RaisedVisualPlan(tiles, supported, unsupportedRegions, unsupported)
             {
                 RaisedCellCount = RaisedRegionAnalyzer.CountRaisedCells(grid),
                 TilesOutsideLogicalMask = outsideMask,

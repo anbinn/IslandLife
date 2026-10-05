@@ -26,8 +26,18 @@ namespace IslandLife.World.Terrain
         /// <summary>Narrowest proven rectangle. Author-wide cliff rows are terminal + body + terminal.</summary>
         public const int MinimumRectangleWidth = 3;
 
-        /// <summary>Shortest proven rectangle: the two surface rows above the cliff row.</summary>
-        public const int MinimumRectangleHeight = 2;
+        /// <summary>
+        /// Shortest proven rectangle.
+        ///
+        /// IL-WORLD-004S-R9 lowered this from 2 to 1. IL-WORLD-004S-R8 proved the height-1
+        /// composition directly: a logical one-row band projects to the author's grass BODY row r1
+        /// over the author's front CLIFF row r2, the cliff one visual row south of the logical mask,
+        /// at widths 3, 5 and 8, matching Hills.png exactly (1536/1536, 2560/2560, 4096/4096 px)
+        /// with zero seam steps. Height 4 stays excluded on purpose: R8 found the author's own
+        /// 3-wide x 4-tall instance, but it carries a 1px seam defect and its r3 tier does not
+        /// self-repeat, so the evidence standard is deliberately not lowered for coverage.
+        /// </summary>
+        public const int MinimumRectangleHeight = 1;
 
         /// <summary>
         /// Tallest proven rectangle. R5 proved a 3-tall plateau in-mask (author r0..r2). A fourth

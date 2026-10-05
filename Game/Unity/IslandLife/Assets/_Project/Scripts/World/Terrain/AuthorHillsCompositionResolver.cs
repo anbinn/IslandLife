@@ -140,6 +140,14 @@ namespace IslandLife.World.Terrain
                 }
             }
 
+            if (region.Height == 1)
+            {
+                // IL-WORLD-004S-R8: one grass row inside the mask, one cliff row below it.
+                visualHeight = 2;
+                rowsBelowLogicalMask = 1;
+                return true;
+            }
+
             if (region.Height == 2)
             {
                 visualHeight = 3;
@@ -154,29 +162,36 @@ namespace IslandLife.World.Terrain
             AuthorHillsCompositionSet compositionSet,
             List<HillVisualTile> output)
         {
-            int topSurfaceY;
-            int middleSurfaceY;
-            int cliffY;
-
             if (region.Height == 3)
             {
-                topSurfaceY = region.MaxY;
-                middleSurfaceY = region.MaxY - 1;
-                cliffY = region.MinY;
-            }
-            else
-            {
-                // Height 2. The cliff is drawn one row south of the logical mask and is NOT Raised.
-                topSurfaceY = region.MaxY;
-                middleSurfaceY = region.MinY;
-                cliffY = region.MinY - 1;
+                // The author's own c0..c2 r0..r2 instance: cap, body, cliff, all inside the mask.
+                EmitRow(region, compositionSet, output, region.MaxY, HillCompositionRow.TOP_SURFACE);
+                EmitRow(region, compositionSet, output, region.MaxY - 1,
+                    HillCompositionRow.MIDDLE_SURFACE);
+                EmitRow(region, compositionSet, output, region.MinY, HillCompositionRow.FRONT_CLIFF);
+                return;
             }
 
-            EmitRow(region, compositionSet, output, topSurfaceY,
-                HillCompositionRow.TOP_SURFACE);
-            EmitRow(region, compositionSet, output, middleSurfaceY,
-                HillCompositionRow.MIDDLE_SURFACE);
-            EmitRow(region, compositionSet, output, cliffY, HillCompositionRow.FRONT_CLIFF);
+            if (region.Height == 2)
+            {
+                // Cap on the top row, body on the bottom row, cliff one row south of the mask.
+                EmitRow(region, compositionSet, output, region.MaxY, HillCompositionRow.TOP_SURFACE);
+                EmitRow(region, compositionSet, output, region.MinY,
+                    HillCompositionRow.MIDDLE_SURFACE);
+                EmitRow(region, compositionSet, output, region.MinY - 1,
+                    HillCompositionRow.FRONT_CLIFF);
+                return;
+            }
+
+            // Height 1, IL-WORLD-004S-R8 PROVEN: the author's grass BODY row over the author's
+            // front CLIFF row, the cliff one visual row south of the logical mask.
+            //
+            // The BODY row is used, not the cap row, because R8 verified r1c1 over r2c1 at widths
+            // 3, 5 and 8 against Hills.png with zero mismatches and zero seam steps. Placing the cap
+            // row r0 directly above the cliff row r2 would skip the author's r1 row, and that
+            // adjacency was never measured, so it is not used here.
+            EmitRow(region, compositionSet, output, region.MinY, HillCompositionRow.MIDDLE_SURFACE);
+            EmitRow(region, compositionSet, output, region.MinY - 1, HillCompositionRow.FRONT_CLIFF);
         }
 
         private static void EmitRow(
