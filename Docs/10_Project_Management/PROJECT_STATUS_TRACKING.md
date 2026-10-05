@@ -54,3 +54,67 @@ PM reviews:
 - Formal Unity project opened successfully with Unity `6000.3.25f1`.
 - Unity MCP `v10.2.0` is running through HTTP Local at `127.0.0.1:8080`.
 - Kilo → Unity MCP read-only connectivity verified against `Assets/Scenes/FirstIsland_Prototype.unity`.
+
+
+## PM Memory Update — 2026-10-05
+
+### Current accepted baseline
+- Active branch: `IL-WORLD-003A`.
+- Accepted HEAD before the current authoring work: `37585fd51142e3f57282abf6b4946284d2135db6`.
+- Asset expansion is paused. Current accepted assets are sufficient for the landscaping stage; additional assets such as beehive/frog are activated only when product need appears.
+- `new Wooden Furniture items.png.meta` remains a local HOLD item and must not be committed or overwritten by unrelated work.
+- `ProjectSettings/ShaderGraphSettings.asset` remains an excluded local artifact unless explicitly tasked.
+
+### IL-WORLD-004 — superseded experiment
+- Status: Stopped / Uncommitted / Superseded.
+- No commit and no push were made.
+- Experimental local files:
+  - `Assets/_Project/Editor/IslandLifeTerrainBrush.cs` (+ meta)
+  - `Assets/_Project/Editor/IslandLifeTerrainEditWindow.cs` (+ meta)
+  - local modification to `TerrainMapRuntimeLoader.cs`
+- These files are candidate implementation material only. They are not accepted project architecture and may be reused, rewritten, or deleted by the replacement task.
+- The experiment confirmed that the current first-island terrain is data-driven and that saved scene Tilemaps are not the authoritative terrain source.
+- It also exposed an invalid silhouette-freeze validation tied to the current Water/Grass counts. Future validation must verify data/render consistency, not freeze the island to a specific cell count.
+
+### IL-WORLD-004R — Island Map Authoring Foundation
+- Status: Planned / replacement for IL-WORLD-004.
+- Product direction: map production must use a normal visual Unity workflow: **paint terrain + place scene objects**, not write code or coordinates to author a map.
+- Terrain authoritative source remains the existing `TerrainData / TerrainGridData` model.
+- Scene Tilemaps are visualization/editing output and must not become a second authoritative terrain database.
+- Edit Mode authoring must allow the map to be visible and editable without entering Play Mode.
+- Terrain painting must reuse the existing Terrain renderer/resolver/adjacency/AutoTile chain rather than duplicate terrain rules.
+- Initial production painting only exposes terrain types whose rendering pipeline is actually production-ready (at minimum current Grass and Water). Enum presence alone does not mean a terrain type is ready for authoring.
+- Initial environment props such as Trees, Bushes, and Rocks remain normal Unity Prefab instances in the Scene for authoring: drag/place/move/copy/delete/Undo/Save.
+- Do not build a custom object-painting/database system merely for editor landscaping at this stage.
+
+### Core world-grid / player placement principle
+IslandLife is a grid-based world. The same grid concept must support both authored initial scenery and later player modification of the island.
+
+Product rule:
+- Except for cells/areas explicitly forbidden by placement rules, the player is intended to be able to place permitted objects on usable cells.
+- A crafted chest is a placeable world object and can be placed on a legal free cell.
+- A standing tree occupies its required cell(s). After the tree is chopped/removed, its occupancy is released.
+- A released legal cell can later be used again, including planting a tree when planting rules allow it.
+- Water, protected/special terrain, entrances, occupied cells, or other rule-defined areas may reject placement.
+- Placement legality is a gameplay rule and must not be inferred solely from visual appearance.
+
+Architecture consequence:
+- **Terrain type** and **object occupancy / placement permission** are separate concepts.
+- The editor's initial landscaping and the player's runtime placement should ultimately share the same grid coordinates and core placement/occupancy rules, rather than becoming unrelated systems.
+- A designer-placed tree and a player-planted tree should ultimately participate in the same world occupancy semantics.
+- A future formal Grid Occupancy / Placement System will be required for runtime gameplay (place chest, plant tree, remove/chop object and release cells, furniture placement, etc.).
+- Do **not** prematurely fold that runtime placement system into IL-WORLD-004R. IL-WORLD-004R establishes the map-authoring foundation first; runtime occupancy/placement is a subsequent system task.
+- Do not treat the current instruction to avoid a custom `ObjectPlacementData/ObjectGridDatabase` during editor landscaping as a permanent rejection of runtime occupancy data. It is only a scope boundary for the current authoring task.
+
+### Authoring vs runtime responsibilities
+- Unity Editor authoring: paint initial terrain and place the initial scenery/prefabs.
+- Runtime gameplay: player chops/removes/plants/places permitted objects according to placement and occupancy rules.
+- Code: terrain rules, rendering, validation, occupancy/placement legality, and gameplay behavior.
+- Map creation must not require the user to edit C# files, serialized text, or manually enter object coordinates.
+
+### Stage order
+1. Complete and validate the Island Map Authoring foundation.
+2. User manually refines the First Island coastline and then performs/approves landscaping.
+3. Define and implement the formal runtime Grid Occupancy / Placement rules before chest placement, tree planting, furniture placement, and similar player construction systems depend on them.
+4. Expand assets only on demand during landscaping/gameplay development.
+
