@@ -89,8 +89,9 @@ PM reviews:
 
 ### IL-WORLD-004S — Author Hills Composition System
 
-**004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED`.**
-Grammar baseline locked by R11; freeform coverage added by IL-WORLD-004S-R12.
+**004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED` · `RAISED ERASE AVAILABLE` ·
+`CONNECTED OUTLINES CLOSED`.**
+Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13.
 
 Current production model: **Author Hills Composition System, per cell.**
 - `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
@@ -114,21 +115,33 @@ second front row · outside-logical-mask cliff projection · **two-wide runs** �
 notch, staircase, zigzag, cross, blob and irregular masses** · **plateaus 4 cells and taller** ·
 **rings and holes, with the hole left unfilled**.
 
-Verified on the live user map: **283 of 283 Raised cells now carry an author hill tile**, up from 48.
-The R11 baseline of 235 cells with no visual is gone.
+- Raised has a **Paint** and an **Erase** mode, toggled in the Island Map Authoring window and always
+  shown in the UI and in the Scene View status line. Erase is a mode of the existing High Ground
+  brush, not a second brush system. It writes `ElevationLevel.Normal` only: `TerrainType` is never
+  rewritten, world objects and decoration are never touched, erasing an already-Normal cell is a
+  no-op, and a drag erase is a single undo step.
+- **Exterior-boundary invariant (R13).** For every Raised cell, a side whose neighbour is not Raised
+  MUST be drawn, and only a genuinely Raised neighbour may remove an edge. Being in the same
+  connected region, or having stopped being isolated, may never remove an edge. This is asserted
+  per cell on every fixture and on the live map.
+- `Raised` erase immediately re-runs the per-cell production projection, so neighbours are
+  recomputed and no ghost hill, cliff, top edge or stale outside-mask tile can survive.
 
-| metric | R11 baseline | R12 |
-|---|---|---|
-| Raised cells | 283 | 283 |
-| cells drawn with author Hills | 48 | **283** |
-| cells with no hill art | 235 | **0** |
-| `HEIGHT_NOT_PROVEN` (8×4 plateau) | 32 cells refused | **0, all 32 drawn** |
-| HillVisualTile | 75 | 325 |
-| outside-logical-mask tiles | 27 | 42 |
+Verified on the live user map: every Raised cell closes on all four sides and carries an author hill
+tile, with zero renderer faults. The map itself is user-owned and was not modified.
 
-Current user map baseline (read-only):
-- `FirstIsland_TerrainData.asset` SHA256 `BD27211ACDD639F513F3C36F27C2B3530AA5AF7148B5F483BC597D0A5370A4C8`
-- **283 Raised cells** in 15 connected regions. The 44-cell figure from early 004S cards is historical.
+| metric | R11 baseline | R12 | R13 |
+|---|---|---|---|
+| Raised cells | 283 | 283 | user-owned, now 364 |
+| cells drawn with author Hills | 48 | 283 | **all of them** |
+| cells with no hill art | 235 | 0 | 0 |
+| `HEIGHT_NOT_PROVEN` (8×4 plateau) | 32 refused | 0, all drawn | 0 |
+| cells with a broken exterior boundary | not measured | not measured | **0** |
+
+Current user map baseline (read-only, re-read at the start of every card):
+- `FirstIsland_TerrainData.asset` SHA256 `8E9320A600034AA562BBE5040F88280802BD9ABCE1DA0F1C4D37FF96D092F43`
+- **364 Raised cells**. Earlier 004S figures (44, then 283) are historical; the user keeps painting.
+  **The live file is the only authority.** Worker automated tests never modify it.
 
 Extending the grammar is **evidence-first**, in this order and no other:
 ```

@@ -75,6 +75,29 @@ namespace IslandLife.EditorTools.IslandMap
                 DrawElevationButton(ElevationLevel.Normal);
                 DrawElevationButton(ElevationLevel.Raised);
 
+                // IL-WORLD-004S-R13. Raised erase is a MODE of the existing High Ground brush, not a
+                // second brush system, so the current brush and mode are always both visible and the
+                // user can never wonder which of the two a click will do.
+                using (new EditorGUI.DisabledScope(!IslandMapAuthoring.IsElevationBrush))
+                {
+                    EditorGUILayout.Space(4f);
+
+                    bool erase = GUILayout.Toggle(
+                        IslandMapAuthoring.IsElevationErase,
+                        "Raised mode:  ERASE",
+                        "Button",
+                        GUILayout.Height(22f));
+                    if (erase != IslandMapAuthoring.IsElevationErase)
+                    {
+                        IslandMapAuthoring.SetElevationErase(erase);
+                    }
+
+                    EditorGUILayout.LabelField(
+                        "Brush:  Raised ground        Mode:  "
+                        + IslandMapAuthoring.ElevationModeLabel,
+                        EditorStyles.miniLabel);
+                }
+
                 // Low Ground is shown but permanently disabled: the Sprout Lands author art has
                 // no pit or depression tiles, so there is nothing truthful to draw with it.
                 using (new EditorGUI.DisabledScope(true))

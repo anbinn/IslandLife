@@ -41,6 +41,13 @@ namespace IslandLife.EditorTools.IslandMap
         private static GameObject s_PreviewRoot;
         private static bool s_StrokeActive;
         private static ElevationLevel s_ElevationBrush = ElevationLevel.Normal;
+
+        /// <summary>
+        /// Raised erase mode, IL-WORLD-004S-R13. When the High Ground brush is selected this flips it
+        /// from painting Raised cells to clearing them. It only ever writes ElevationLevel.Normal and
+        /// never touches TerrainType, world objects or decoration.
+        /// </summary>
+        private static bool s_ElevationErase;
         private static int s_Edits;
         private static Vector2Int s_Hover = new Vector2Int(int.MinValue, int.MinValue);
         private static string s_Status = "Press \"Start Authoring\" to preview the map in Edit Mode.";
@@ -53,6 +60,12 @@ namespace IslandLife.EditorTools.IslandMap
         public static ElevationLevel ElevationBrush => s_ElevationBrush;
 
         public static bool IsElevationBrush => s_ElevationBrush != ElevationLevel.Normal;
+
+        /// <summary>True when the High Ground brush is in Erase mode. IL-WORLD-004S-R13.</summary>
+        public static bool IsElevationErase => s_ElevationErase;
+
+        /// <summary>The word shown in the UI so the current mode is never ambiguous.</summary>
+        public static string ElevationModeLabel => s_ElevationErase ? "Erase" : "Paint";
 
         public static string Status => s_Status;
 
@@ -217,6 +230,7 @@ namespace IslandLife.EditorTools.IslandMap
 
             s_Brush = type;
             s_ElevationBrush = ElevationLevel.Normal;
+            s_ElevationErase = false;
             SceneView.RepaintAll();
         }
 
@@ -226,6 +240,7 @@ namespace IslandLife.EditorTools.IslandMap
             if (level == ElevationLevel.Normal)
             {
                 s_ElevationBrush = ElevationLevel.Normal;
+                s_ElevationErase = false;
                 reason = string.Empty;
                 SceneView.RepaintAll();
                 return true;
@@ -253,9 +268,32 @@ namespace IslandLife.EditorTools.IslandMap
             // region keeps every Raised logical cell, is never snapped or filled or deleted, and
             // draws no hill art at all. Nothing is ever guessed.
             s_ElevationBrush = level;
+
+            // Selecting the High Ground brush means Paint. Erase is then an explicit toggle, so the
+            // mode is never something the user has to guess.
+            s_ElevationErase = false;
             reason = string.Empty;
             SceneView.RepaintAll();
             return true;
+        }
+
+        /// <summary>
+        /// Switches the High Ground brush between Paint and Erase. IL-WORLD-004S-R13.
+        ///
+        /// Erase only ever writes ElevationLevel.Normal. It never changes TerrainType, never touches
+        /// world objects or decoration, and it is a no-op on a cell that is already Normal.
+        /// </summary>
+        public static void SetElevationErase(bool erase)
+        {
+            s_ElevationErase = erase;
+            SceneView.RepaintAll();
+        }
+
+        /// <summary>Flips Paint and Erase. Returns the new mode.</summary>
+        public static bool ToggleElevationErase()
+        {
+            SetElevationErase(!s_ElevationErase);
+            return s_ElevationErase;
         }
 
         /// <summary>Elevation can only be authored where the base terrain is land.</summary>
@@ -474,7 +512,11 @@ namespace IslandLife.EditorTools.IslandMap
 
             if (s_ElevationBrush != ElevationLevel.Normal)
             {
-                return TryPaintElevation(x, y, s_ElevationBrush);
+                // IL-WORLD-004S-R13: the same entry point serves Paint and Erase, so a drag erase goes
+                // through exactly the same stroke, undo and rebuild path as a drag paint.
+                return TryPaintElevation(x, y, s_ElevationErase
+                    ? ElevationLevel.Normal
+                    : s_ElevationBrush);
             }
 
             if (!IsPaintable(s_Brush, out _))
@@ -545,9 +587,14 @@ namespace IslandLife.EditorTools.IslandMap
                 return false;
             }
 
-            // Conservative rule: elevation only exists on land, so a High Ground brush must never
-            // create a floating plateau out of open water.
-            if (s_Grid.GetTerrain(x, y) != TerrainType.Grass)
+            // Conservative rule: CREATING Raised is only allowed on land, so a High Ground brush can
+            // never build a floating plateau out of open water.
+            //
+            // IL-WORLD-004S-R13: clearing is NOT restricted to land. An erase may only ever write
+            // Normal, and it must be able to clean up a Raised cell whatever terrain it sits on
+            // without ever rewriting that terrain.
+            if (level == ElevationLevel.Raised
+                && s_Grid.GetTerrain(x, y) != TerrainType.Grass)
             {
                 return false;
             }
@@ -666,7 +713,9 @@ namespace IslandLife.EditorTools.IslandMap
         {
             s_StrokeActive = true;
             Undo.IncrementCurrentGroup();
-            Undo.SetCurrentGroupName("Paint " + s_Brush);
+            Undo.SetCurrentGroupName(s_ElevationErase
+                ? "Erase Raised"
+                : "Paint " + s_Brush);
         }
 
         public static void EndStroke()
@@ -940,7 +989,9 @@ namespace IslandLife.EditorTools.IslandMap
                 new Rect(area.x + 6f, area.y + 23f, area.width - 12f, 18f),
                 string.Format(
                     "Brush: {0}     Brush Size = 1     Edits: {1}",
-                    IsElevationBrush ? s_ElevationBrush + " ground" : s_Brush.ToString(),
+                    IsElevationBrush
+                    ? s_ElevationBrush + " ground (" + ElevationModeLabel + ")"
+                    : s_Brush.ToString(),
                     s_Edits));
             GUI.Label(
                 new Rect(area.x + 6f, area.y + 42f, area.width - 12f, 18f),

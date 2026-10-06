@@ -303,16 +303,20 @@ namespace IslandLife.World.Terrain
 
             // Depth 1. The cell is at once the top and the front of its column, so it has room for
             // exactly one tile and the cliff must go below the mask.
-            if (!solidNorth && southExposed)
-            {
-                return isNarrow
-                    ? RaisedSurfaceRole.TOP_SURFACE
-                    : RaisedSurfaceRole.MIDDLE_SURFACE;
-            }
-
-            // Open above and below but joined left and right: a bridge across a notch or a U. A flat
-            // body row reads correctly; a cap would bulge between two front walls.
-            return RaisedSurfaceRole.MIDDLE_SURFACE;
+            //
+            // IL-WORLD-004S-R13. This branch used to return MIDDLE for a wide run and TOP only for the
+            // one-wide column, and the user proved that wrong on screen: two isolated Raised cells each
+            // rendered as a properly closed little plateau using the author rounded cap, but painting
+            // the cell between them turned the pair into a band whose top edge used the SQUARE body
+            // row, so the north exterior boundary vanished and the plateau read as a U shaped trough.
+            //
+            // The cause is exactly what must never happen: the north exterior disappeared not because a
+            // neighbour had become Raised, but because the cell had stopped being isolated. The fix is
+            // the exposed-neighbour invariant, not a special case for horizontal runs. A cell with no
+            // Raised neighbour to its north HAS a north exterior boundary, and the only author art that
+            // carries one is the cap row r0. So every north-exposed cell gets the cap, one-wide or wide,
+            // and the horizontal slot alone decides which slice is used.
+            return RaisedSurfaceRole.TOP_SURFACE;
         }
 
         /// <summary>

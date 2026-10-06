@@ -268,7 +268,14 @@ namespace IslandLife.EditorTools.IslandMap
             }
             else
             {
-                FillWideRow(expect, w, 0, "r1");
+                // IL-WORLD-004S-R13 CORRECTION. This used to expect the r1 body row here. The user proved
+                // on screen that a one-deep band drawn with the square body row loses its north exterior
+                // and reads as a U shaped trough, because its top edge is flat while its ends are
+                // rounded. A cell whose north neighbour is not Raised HAS a north exterior, and the only
+                // author art carrying one is the cap row r0, so every north-exposed cell now uses it.
+                // The sprites are still the author own cells and the cliff is still one row south; only
+                // the expected row changed, and it changed because the old expectation was wrong.
+                FillWideRow(expect, w, 0, "r0");
                 FillWideRow(expect, w, -1, "r2");
             }
 
