@@ -163,6 +163,24 @@ namespace IslandLife.World.Terrain
 
             RaisedVisualPlan plan = RaisedVisualPlan.Build(grid, composition);
 
+            // IL-WORLD-004S-R15. THE STALE-VISUAL FIX.
+            //
+            // This method is the incremental path: RefreshCell re-renders only the local neighbourhood
+            // and then calls straight into here, which is what every paint and every erase goes
+            // through. It used to write the new projection with SetTile and never removed what the
+            // PREVIOUS projection had drawn, so every hill tile that dropped out of the plan survived
+            // on the map forever. Erase therefore left the user with pillars of old cliff, severed
+            // front faces and corners that belonged to a topology that no longer existed. A full
+            // RenderAll cleared the layer first and was correct, which is exactly why the bug only
+            // appeared while editing.
+            //
+            // The Raised visual layer is a pure cache derived entirely from the logical elevation, and
+            // RaisedVisualPlan.Build only ever reads that elevation. So rebuilding it in full is both
+            // correct and safe: it cannot lose anything that is not recomputed immediately afterwards,
+            // and a plateau of a few hundred cells costs nothing in the editor. Correctness wins over
+            // a narrower dirty range; a stale hill tile is a wrong picture of the user's own map.
+            raisedVisualTilemap.ClearAllTiles();
+
             foreach (HillVisualTile tile in plan.Tiles)
             {
                 if (tile.Sprite == null)
@@ -184,9 +202,9 @@ namespace IslandLife.World.Terrain
             // author's outline cells are meant to reveal the ground behind them.
             Debug.Log(
                 "[IslandMap] Raised visual projection: " + plan.Describe()
-                + (plan.UnsupportedDiagnostics.Count == 0
+                + (plan.VisualDiagnostics.Count == 0
                     ? string.Empty
-                    : " | no hill art was invented for the unsupported region(s) above."));
+                    : " | renderer faults, no hill art was invented: " + plan.VisualDiagnostics.Count));
         }
 
         private void ValidateInputs(TerrainGridData grid)

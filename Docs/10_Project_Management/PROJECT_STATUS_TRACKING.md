@@ -90,9 +90,10 @@ PM reviews:
 ### IL-WORLD-004S — Author Hills Composition System
 
 **004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED` · `RAISED ERASE AVAILABLE` ·
-`CONNECTED OUTLINES CLOSED` · `T-JUNCTION INNER CORNERS FIXED`.**
+`CONNECTED OUTLINES CLOSED` · `T-JUNCTION INNER CORNERS FIXED` ·
+`RAISED ERASE VISUAL REBUILD FIXED`.**
 Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13;
-the T-junction inner corner by R14.
+the T-junction inner corner by R14; the erase visual rebuild by R15.
 
 Current production model: **Author Hills Composition System, per cell.**
 - `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
@@ -132,28 +133,51 @@ notch, staircase, zigzag, cross, blob and irregular masses** · **plateaus 4 cel
   brush, not a second brush system. It writes `ElevationLevel.Normal` only: `TerrainType` is never
   rewritten, world objects and decoration are never touched, erasing an already-Normal cell is a
   no-op, and a drag erase is a single undo step.
+- **Stale-visual root cause and fix (R15).** `RenderRaisedVisuals` is the incremental path that
+  `RefreshCell` calls into, so it is what every paint and every erase goes through. It used to write
+  the new projection with `SetTile` **without ever clearing the previous one**, so every hill tile
+  that dropped out of the plan survived on the map forever: erasing produced pillars of old cliff,
+  severed front faces, corners belonging to a topology that no longer existed, and regions that
+  stayed joined by a shared edge after the row between them was gone. A full `RenderAll` cleared the
+  layer first and was always correct, which is exactly why the fault only appeared while editing.
+  The Raised visual layer is a pure cache derived entirely from the logical elevation, so it is now
+  cleared and rebuilt in full on every refresh — measured at **41.6 ms for a complete rebuild over
+  the live 65×45 map**, an upper bound on what a drag stroke pays, so the narrow dirty range was not
+  worth keeping. Region splits are handled automatically: topology is recomputed from the new mask,
+  never carried over.
+- **Hard invariant now asserted.** `Render(A) → erase → rebuild` must be **identical** to
+  `fresh render of the final logical mask`, compared on the live Tilemap by sprite identity and
+  visual cell coordinate, not by tile count. R13 reported "neighbor rebuild YES / ghost visual NONE"
+  while this was broken, because the logical mask and the plan were always correct and only the map
+  was stale. Re-running the R15 probe against the unfixed renderer fails **22 assertions** and still
+  passes every erase-input, logical-mask and asset-protection check, which is the proof that the new
+  tests cover the fault the old ones missed.
 - **Exterior-boundary invariant (R13).** For every Raised cell, a side whose neighbour is not Raised
   MUST be drawn, and only a genuinely Raised neighbour may remove an edge. Being in the same
   connected region, or having stopped being isolated, may never remove an edge. This is asserted
   per cell on every fixture and on the live map.
-- `Raised` erase immediately re-runs the per-cell production projection, so neighbours are
-  recomputed and no ghost hill, cliff, top edge or stale outside-mask tile can survive.
+- `Raised` erase re-runs the per-cell production projection, so neighbours are recomputed from the
+  new logical mask. That claim was correct about the *plan* but wrong about the *map* until R15:
+  the plan was always recomputed while the previously drawn tiles were never withdrawn. Read the
+  R15 bullet above, not this sentence, for the guarantee.
 
 Verified on the live user map: every Raised cell closes on all four sides and carries an author hill
 tile, with zero renderer faults. The map itself is user-owned and was not modified.
 
-| metric | R11 baseline | R12 | R13 |
-|---|---|---|---|
-| Raised cells | 283 | 283 | user-owned, now 364 |
-| cells drawn with author Hills | 48 | 283 | **all of them** |
-| cells with no hill art | 235 | 0 | 0 |
-| `HEIGHT_NOT_PROVEN` (8×4 plateau) | 32 refused | 0, all drawn | 0 |
-| cells with a broken exterior boundary | not measured | not measured | **0** |
+| metric | R11 baseline | R12 | R13 | R14 | R15 |
+|---|---|---|---|---|---|
+| Raised cells | 283 | 283 | user-owned, now 364 | user-owned | user-owned, now 373 |
+| cells drawn with author Hills | 48 | 283 | **all of them** | **all of them** | **all of them** |
+| cells with no hill art | 235 | 0 | 0 | 0 | 0 |
+| `HEIGHT_NOT_PROVEN` (8×4 plateau) | 32 refused | 0, all drawn | 0 | 0 | 0 |
+| cells with a broken exterior boundary | not measured | not measured | **0** | **0** | **0** |
+| stale hill tiles left behind by an erase | not measured | not measured | **not measured** | not measured | **0** |
+| erase result equals fresh render of the final mask | not measured | not measured | **not asserted** | not asserted | **exact, every case** |
 
 Current user map baseline (read-only, re-read at the start of every card):
-- `FirstIsland_TerrainData.asset` SHA256 `8E9320A600034AA562BBE5040F88280802BD9ABCE1DA0F1C4D37FF96D092F43`
-- **364 Raised cells**. Earlier 004S figures (44, then 283) are historical; the user keeps painting.
-  **The live file is the only authority.** Worker automated tests never modify it.
+- `FirstIsland_TerrainData.asset` SHA256 `084C402E02E6A3C95F0A1C6F035C8541CCC0A902D917E0ECB408E550D3CDF421`
+- **373 Raised cells**. Earlier 004S figures (44, then 283, 364, 375) are historical; the user keeps
+  painting. **The live file is the only authority.** Worker automated tests never modify it.
 
 Extending the grammar is **evidence-first**, in this order and no other:
 ```
