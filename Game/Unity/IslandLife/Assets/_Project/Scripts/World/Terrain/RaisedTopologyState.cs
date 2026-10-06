@@ -255,6 +255,13 @@ namespace IslandLife.World.Terrain
             // either the plateau is at least three cells thick (the proven r0/r1/r2 stack), or the cell
             // above is an enclosed hole, in which case the ground continues all the way round and the
             // wall must not drop a row and leave a notch in the front of a ring.
+            //
+            // IL-WORLD-004S-R16B NOTE, recorded because it was measured and rejected. Treating ground
+            // that the shape wraps around as a pocket, and pulling the front wall up into this cell,
+            // is symmetric across all four orientations and passes the whole topology matrix, but it
+            // turns a south facing platform front into dirt windows punched into the top surface. The
+            // existing behaviour was rendered at every junction and inspected: the run already
+            // terminates on the author terminal pieces, so the inner corner is already handled.
             bool frontInMask = southExposed && solidNorth && (runDepth >= 3 || northIsEnclosedVoid);
 
             if (frontInMask)

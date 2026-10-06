@@ -91,9 +91,40 @@ PM reviews:
 
 **004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED` · `RAISED ERASE AVAILABLE` ·
 `CONNECTED OUTLINES CLOSED` · `T-JUNCTION INNER CORNERS FIXED` ·
-`RAISED ERASE VISUAL REBUILD FIXED`.**
+`RAISED ERASE VISUAL REBUILD FIXED` · `JUNCTION GRAMMAR MEASURED AND LOCKED`.**
 Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13;
-the T-junction inner corner by R14; the erase visual rebuild by R15.
+the T-junction inner corner by R14; the erase visual rebuild by R15; the junction and concave corner
+grammar audited and locked by R16B.
+
+- **Junction grammar (R16B): measured, and left unchanged on purpose.** All **256 neighbourhoods** of a
+  Raised cell were swept in two column contexts (512 cases) and every junction class was rendered and
+  inspected. The result is that the grammar is already unified and local: the front run always
+  terminates on the author's own `r2c0` / `r2c2` terminal pieces, in all four branch orientations and
+  all four L orientations, with no shape name anywhere in the resolver.
+  One alternative was implemented, measured and **rejected**: treating ground the shape wraps around as
+  a "pocket" and pulling the front wall up into its own cell. It is perfectly symmetric across all four
+  orientations and passes the entire topology matrix, but it turns a south-facing platform front into
+  dirt windows punched into the top surface. The reasoning is recorded in `RaisedTopologyState.RoleFor`
+  so it is not re-attempted.
+  An earlier claim that the L orientations were broken was **wrong**: it came from a mis-framed render
+  that cut off the top row. With correct framing all four L orientations are clean.
+- **What the author art can and cannot express (measured).** All 99 `Hills` slices are exactly
+  `16 x 16 px` on one `176 x 144` atlas, so "narrow" is an art *variant*, not a smaller cell. Rows
+  r0..r3 columns c0..c3 are the proven grammar. Everything else on the sheet is decorative: soft fade
+  gradients, empty cells, and two 2 px silhouette slivers at `r2c9` / `r2c10`. There is **no east/west
+  soil face and no corner primitive anywhere in the sheet**. An automated edge scan appeared to find 46
+  corner primitives; all 46 were false positives on blend cells and the sheet's outer edge, confirmed by
+  rendering each candidate.
+- **Two measured families, pinned rather than "fixed".** 32 of 512 neighbourhoods put a displaced cliff
+  beside a cap row on the same row; all 32 are cells touching only **diagonally**, i.e. two separate
+  masses meeting at a corner, never a connected junction. 192 of 512 mix the narrow `c3` stack with the
+  wide `c0..c2` stack inside one author column wherever a column's width changes with height; renders of
+  every L and every branch orientation show no visible seam. Both counts are asserted in the committed
+  harness so any future change is visible.
+- **`ILW004SR16BJunctionGrammarLock` is the committed harness.** It never counts tiles: for every
+  junction it asserts `LOCAL TOPOLOGY -> EXPECTED AUTHOR ROLE -> ACTUAL SPRITE`, naming the exact author
+  slice on every visual cell together with its `OutsideLogicalMask`, and a surplus tile fails as hard as
+  a missing one.
 
 Current production model: **Author Hills Composition System, per cell.**
 - `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
