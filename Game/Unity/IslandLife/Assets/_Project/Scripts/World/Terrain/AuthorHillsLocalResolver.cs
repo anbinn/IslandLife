@@ -146,14 +146,26 @@ namespace IslandLife.World.Terrain
                         continue;
                     }
 
+                    // The slot must be settled BEFORE the Sprite is chosen, because the slot decides which
+                    // author slice is used. IL-WORLD-004S-R14.
+                    HillColumnSlot selfSlot = topology.Slot;
+                    if (topology.DrawsFrontCliffInMask)
+                    {
+                        // A front cliff that sits inside its own mask still ends wherever the cliff run
+                        // ends, so its slot comes from the run extent too.
+                        selfSlot = CliffSlotFor(grid, x, y, selfSlot, y);
+                    }
+
                     // The cell's own tile.
-                    Sprite sprite = PickSprite(compositionSet, topology, diagnostics, x, y);
+                    Sprite sprite = PickSprite(
+                        compositionSet, topology, selfSlot, diagnostics, x, y);
                     if (sprite == null)
                     {
                         continue;
                     }
 
-                    if (!TryClaim(claimed, new Vector3Int(x, y, 0), topology, sprite, diagnostics))
+                    if (!TryClaim(
+                            claimed, new Vector3Int(x, y, 0), topology, sprite, selfSlot, diagnostics))
                     {
                         continue;
                     }
@@ -163,7 +175,7 @@ namespace IslandLife.World.Terrain
                         false,
                         sprite,
                         TileRow(topology),
-                        topology.Slot));
+                        selfSlot));
 
                     // The front cliff, when the plateau is too thin to hold it inside its own mask.
                     if (topology.DrawsFrontCliffBelow)
@@ -172,15 +184,19 @@ namespace IslandLife.World.Terrain
                         RaisedTopologyState cliffTopology =
                             RaisedTopologyState.ForFrontCliffBelow(topology, grid, x, y - 1);
 
-                        Sprite cliffSprite =
-                            PickSprite(compositionSet, cliffTopology, diagnostics, x, y - 1);
+                        HillColumnSlot cliffSlot = CliffSlotFor(
+                            grid, x, y, cliffTopology.Slot, y - 1);
+
+                        Sprite cliffSprite = PickSprite(
+                            compositionSet, cliffTopology, cliffSlot, diagnostics, x, y - 1);
                         if (cliffSprite == null)
                         {
                             continue;
                         }
 
                         if (!TryClaim(
-                                claimed, cliffPosition, cliffTopology, cliffSprite, diagnostics))
+                                claimed, cliffPosition, cliffTopology, cliffSprite, cliffSlot,
+                                diagnostics))
                         {
                             continue;
                         }
@@ -190,7 +206,7 @@ namespace IslandLife.World.Terrain
                             true,
                             cliffSprite,
                             TileRow(cliffTopology),
-                            cliffTopology.Slot));
+                            CliffSlotFor(grid, x, y, cliffTopology.Slot, y - 1)));
                         outside++;
                     }
                 }
@@ -199,21 +215,102 @@ namespace IslandLife.World.Terrain
             return new Report(raisedCells, output.Count, outside, diagnostics);
         }
 
+        /// <summary>
+        /// The slot of one front-cliff tile, decided by how far the cliff RUN that tile belongs to
+        /// actually extends.
+        ///
+        /// IL-WORLD-004S-R14. This is the inner-corner fix, and it is derived purely from local
+        /// adjacency. A cliff exists for every Raised cell whose south is open, so where a vertical
+        /// branch meets a horizontal front boundary the branch cell has NO cliff and the horizontal run
+        /// simply stops. Previously the tile at that last column still asked its own owner cell for a
+        /// slot, and because the owner had Raised neighbours on both sides it answered BODY: a straight
+        /// cliff band ran head-on into the branch and left the square gap the user reported.
+        ///
+        /// Instead the run is walked west and east through neighbours that emit a cliff onto the SAME
+        /// visual row. The two ends of that run are the author terminal pieces, so the horizontal front
+        /// boundary leaves the straight band and turns into the side of the branch. No shape name is
+        /// involved, no T is detected, and the same walk handles U, notch, staircase and anything else
+        /// with the same local topology.
+        ///
+        /// A run only one cell wide keeps the slot it inherited, which is what preserves the author
+        /// one-wide c3 column and every proven narrow composition byte for byte.
+        /// </summary>
+        private static HillColumnSlot CliffSlotFor(
+            TerrainGridData grid,
+            int x,
+            int y,
+            HillColumnSlot fallback,
+            int cliffVisualY)
+        {
+            int start = x;
+            int end = x;
+
+            while (CliffVisualRow(grid, start - 1, y) == cliffVisualY
+                && EmitsAnyCliff(grid, start - 1, y))
+            {
+                start--;
+            }
+
+            while (CliffVisualRow(grid, end + 1, y) == cliffVisualY
+                && EmitsAnyCliff(grid, end + 1, y))
+            {
+                end++;
+            }
+
+            if (end - start + 1 < 2)
+            {
+                return fallback;
+            }
+
+            if (x == start)
+            {
+                return HillColumnSlot.LEFT_TERMINAL;
+            }
+
+            return x == end ? HillColumnSlot.RIGHT_TERMINAL : HillColumnSlot.BODY;
+        }
+
+        private static bool EmitsAnyCliff(TerrainGridData grid, int x, int y)
+        {
+            return CliffVisualRow(grid, x, y) != int.MinValue;
+        }
+
+        /// <summary>
+        /// The visual row this cell's front cliff lands on, or int.MinValue when it emits no cliff.
+        /// Read straight from the same topology the projection uses, so the run walk can never disagree
+        /// with what is actually emitted.
+        /// </summary>
+        private static int CliffVisualRow(TerrainGridData grid, int x, int y)
+        {
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y))
+            {
+                return int.MinValue;
+            }
+
+            RaisedTopologyState topology = RaisedTopologyState.Resolve(grid, x, y);
+            if (topology.DrawsFrontCliffInMask)
+            {
+                return y;
+            }
+
+            return topology.DrawsFrontCliffBelow ? y - 1 : int.MinValue;
+        }
         private static Sprite PickSprite(
             AuthorHillsCompositionSet set,
             RaisedTopologyState topology,
+            HillColumnSlot slot,
             List<RaisedVisualDiagnostic> diagnostics,
             int x,
             int y)
         {
             Sprite sprite;
-            if (topology.Slot == HillColumnSlot.NARROW)
+            if (slot == HillColumnSlot.NARROW)
             {
                 sprite = set.GetNarrow(NarrowOffset(topology.Role));
             }
             else
             {
-                sprite = set.GetWide(ToCompositionRow(topology.Role), topology.Slot);
+                sprite = set.GetWide(ToCompositionRow(topology.Role), slot);
             }
 
             if (sprite == null)
@@ -221,7 +318,7 @@ namespace IslandLife.World.Terrain
                 diagnostics.Add(new RaisedVisualDiagnostic(
                     RaisedVisualDiagnosticCodes.MissingAuthorPrimitive,
                     new Vector3Int(x, y, 0),
-                    $"no author slice for {topology.Role}/{topology.Slot}"));
+                    $"no author slice for {topology.Role}/{slot}"));
             }
 
             return sprite;
@@ -232,6 +329,7 @@ namespace IslandLife.World.Terrain
             Vector3Int position,
             RaisedTopologyState topology,
             Sprite sprite,
+            HillColumnSlot slot,
             List<RaisedVisualDiagnostic> diagnostics)
         {
             if (claimed.TryGetValue(position, out HillVisualTile existing))
@@ -244,7 +342,7 @@ namespace IslandLife.World.Terrain
             }
 
             claimed[position] = new HillVisualTile(
-                position, false, sprite, TileRow(topology), topology.Slot);
+                position, false, sprite, TileRow(topology), slot);
             return true;
         }
 

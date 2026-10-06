@@ -90,8 +90,9 @@ PM reviews:
 ### IL-WORLD-004S — Author Hills Composition System
 
 **004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED` · `RAISED ERASE AVAILABLE` ·
-`CONNECTED OUTLINES CLOSED`.**
-Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13.
+`CONNECTED OUTLINES CLOSED` · `T-JUNCTION INNER CORNERS FIXED`.**
+Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13;
+the T-junction inner corner by R14.
 
 Current production model: **Author Hills Composition System, per cell.**
 - `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
@@ -115,6 +116,17 @@ second front row · outside-logical-mask cliff projection · **two-wide runs** �
 notch, staircase, zigzag, cross, blob and irregular masses** · **plateaus 4 cells and taller** ·
 **rings and holes, with the hole left unfilled**.
 
+- **Inner corners (R14).** A front cliff is emitted for every Raised cell whose south is open, so where
+  a vertical branch meets a horizontal front boundary the branch cell has no cliff and the horizontal
+  run simply stops. The end of that run is the inner corner. It is drawn with the author's own
+  terminal cliff piece — `Hills_r2c2` where the run stops on its right, `Hills_r2c0` where it stops on
+  its left — because those are the only author slices whose soil band actually pulls back at that edge
+  (measured: bottom-row soil width 16 px for `r2c1` versus 14 px for `r2c0` and `r2c2`). Nothing is
+  drawn, mirrored, rotated or stretched, and no composition slot was added.
+  The rule walks neighbours through the shared cliff-run extent and contains **no shape name**, so U,
+  notch, staircase, zigzag and any concave freeform outline get the same treatment for free. A branch
+  at a platform end, or one that splits the front into runs too short to turn, correctly has no inner
+  corner at all.
 - Raised has a **Paint** and an **Erase** mode, toggled in the Island Map Authoring window and always
   shown in the UI and in the Scene View status line. Erase is a mode of the existing High Ground
   brush, not a second brush system. It writes `ElevationLevel.Normal` only: `TerrainType` is never
