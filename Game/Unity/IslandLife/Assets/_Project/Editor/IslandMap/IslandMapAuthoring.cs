@@ -806,22 +806,23 @@ namespace IslandLife.EditorTools.IslandMap
         // ---------------------------------------------------------------- scene overlay
 
         /// <summary>
-        /// The exact text drawn over a region whose hills visual is unresolved. IL-WORLD-004S-R11.
+        /// The exact text drawn over a cell whose hill visual could not be produced.
+        /// IL-WORLD-004S-R12.
         ///
-        /// The PRIMARY line is HILLS VISUAL UNRESOLVED, which must never read as "your data was
-        /// rejected" or "this shape is illegal". The second line is the technical reason, for
-        /// whoever extends the grammar next. Extracted into its own method so the diagnostic can be
-        /// asserted by tests without needing a live Scene View repaint.
+        /// From R12 this is only ever a real implementation fault - a missing author primitive, an
+        /// unreachable canonical topology, a visual conflict or a broken asset reference. A shape
+        /// category is no longer a reason, so a freeform L, T, U, notch, ring, two-wide run or tall
+        /// plateau produces no overlay at all.
+        ///
+        /// The PRIMARY line stays HILLS VISUAL UNRESOLVED and must never read as "your data was
+        /// rejected": the Raised cells are valid and are kept either way.
         /// </summary>
-        internal static string BuildUnresolvedHillsLabel(RaisedRegion region)
+        internal static string BuildUnresolvedHillsLabel(RaisedVisualDiagnostic diagnostic)
         {
-            RaisedRegionUnsupportedReason reason =
-                region.UnsupportedReason ?? RaisedRegionUnsupportedReason.WIDTH_NOT_PROVEN;
             return string.Format(
-                "HILLS VISUAL UNRESOLVED\n{0}  {1}\n{2}x{3}, {4} Raised cells kept",
-                RaisedRegionReasons.ShortCode(reason),
-                RaisedRegionReasons.Explain(reason),
-                region.Width, region.Height, region.CellCount);
+                "HILLS VISUAL UNRESOLVED\n{0}  {1}\nRaised cell kept",
+                diagnostic.Code,
+                diagnostic.Message);
         }
 
         /// <summary>
@@ -838,7 +839,7 @@ namespace IslandLife.EditorTools.IslandMap
         private static void DrawUnresolvedHillsDiagnostics()
         {
             RaisedVisualPlan plan = RaisedPlan;
-            if (plan == null || plan.UnsupportedRegions.Count == 0 || s_Grid == null
+            if (plan == null || plan.VisualDiagnostics.Count == 0 || s_Grid == null
                 || s_PreviewGrass == null)
             {
                 return;
@@ -849,31 +850,27 @@ namespace IslandLife.EditorTools.IslandMap
             Color fill = new Color(1f, 0.25f, 0.2f, 0.35f);
             Color edge = new Color(1f, 0.15f, 0.1f, 1f);
 
-            foreach (RaisedRegion region in plan.UnsupportedRegions)
+            foreach (RaisedVisualDiagnostic diagnostic in plan.VisualDiagnostics)
             {
-                // One translucent cell per Raised cell, so the user sees exactly what they painted.
-                foreach (Vector2Int cell in region.Cells)
+                // Outline exactly the cell that has the fault, so the user sees what was not drawn
+                // without being told their shape was wrong.
+                Vector2Int cell = new Vector2Int(diagnostic.Position.x, diagnostic.Position.y);
+                if (!s_Grid.IsInside(cell.x, cell.y))
                 {
-                    if (!s_Grid.IsInside(cell.x, cell.y))
-                    {
-                        continue;
-                    }
-
-                    Vector3 c = CellCenterWorld(new Vector3Int(cell.x, cell.y, 0));
-                    Handles.DrawSolidRectangleWithOutline(
-                        new[]
-                        {
-                            c + new Vector3(-w, -h, 0f), c + new Vector3(w, -h, 0f),
-                            c + new Vector3(w, h, 0f), c + new Vector3(-w, h, 0f),
-                        },
-                        fill, edge);
+                    continue;
                 }
 
-                // One label per region, anchored above its bounding box.
-                Vector3 top = CellCenterWorld(new Vector3Int(region.MinX, region.MaxY, 0));
+                Vector3 c = CellCenterWorld(diagnostic.Position);
+                Handles.DrawSolidRectangleWithOutline(
+                    new[]
+                    {
+                        c + new Vector3(-w, -h, 0f), c + new Vector3(w, -h, 0f),
+                        c + new Vector3(w, h, 0f), c + new Vector3(-w, h, 0f),
+                    },
+                    fill, edge);
                 Handles.Label(
-                    top + new Vector3(0f, h + 0.35f, 0f),
-                    BuildUnresolvedHillsLabel(region),
+                    c + new Vector3(0f, h + 0.35f, 0f),
+                    BuildUnresolvedHillsLabel(diagnostic),
                     EditorStyles.whiteBoldLabel);
             }
         }
@@ -930,7 +927,7 @@ namespace IslandLife.EditorTools.IslandMap
             RaisedVisualPlan planForPanel = RaisedPlan;
             if (planForPanel != null)
             {
-                unsupportedCount = planForPanel.UnsupportedRegions.Count;
+                unsupportedCount = planForPanel.VisualDiagnostics.Count;
             }
 
             var area = new Rect(12f, 12f, 460f, unsupportedCount > 0 ? 94f : 74f);
@@ -957,9 +954,9 @@ namespace IslandLife.EditorTools.IslandMap
                 var warn = new Rect(area.x + 6f, area.y + 62f, area.width - 12f, 30f);
                 GUI.Box(warn, GUIContent.none);
                 GUI.Label(warn, string.Format(
-                        "{0} Raised region(s): hills visual UNRESOLVED (outlined). "
-                        + "Your Raised data is valid and fully kept; only the verified Hills "
-                        + "composition is missing. No hill art is invented.",
+                        "{0} Raised cell(s) could not be drawn (outlined). Your Raised data is valid and "
+                        + "fully kept. This is a renderer fault, not a shape verdict: no hill art is "
+                        + "invented and no data is changed.",
                         unsupportedCount),
                     EditorStyles.wordWrappedMiniLabel);
             }

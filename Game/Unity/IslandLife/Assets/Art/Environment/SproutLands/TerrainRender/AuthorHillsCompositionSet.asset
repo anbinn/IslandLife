@@ -21,6 +21,9 @@ MonoBehaviour:
   hillsR2C0: {fileID: 21300000, guid: f7f2bd15110daf64faf9d76ef175a531, type: 2}
   hillsR2C1: {fileID: 21300000, guid: cf8b8d240411f7d4895b3b68cf7c5ac0, type: 2}
   hillsR2C2: {fileID: 21300000, guid: 9cf21598901c8f8418ed62949bad9649, type: 2}
+    hillsR3C0: {fileID: 21300000, guid: d4ad6ce6b204bcc48a3bae1e56e4e1ac, type: 2}
+    hillsR3C1: {fileID: 21300000, guid: 197691f33bebe40478f6edc113b834bf, type: 2}
+    hillsR3C2: {fileID: 21300000, guid: 9c85181aacd26b5409d7c7b299417381, type: 2}
   hillsR0C3: {fileID: 21300000, guid: bd22ecb1c56132041b0866e9e7afc6d9, type: 2}
   hillsR1C3: {fileID: 21300000, guid: 18bde4ea58bf90243a5019686db37a87, type: 2}
   hillsR2C3: {fileID: 21300000, guid: 622c4980b09787b429aa6734b5b30fb5, type: 2}

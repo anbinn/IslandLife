@@ -102,7 +102,7 @@ namespace IslandLife.EditorTools.IslandMap
                 LoadAuthorSprites();
 
                 TestProvenCompositionsStillWork();
-                TestUnresolvedNeverMutatesData();
+                TestFreeformShapesKeepDataAndDraw();
                 TestNoInventedArt();
                 TestUserMapIsReadOnlyAndDecoupled();
 
@@ -319,44 +319,42 @@ namespace IslandLife.EditorTools.IslandMap
         // ---------------------------------------------------------------- data / visual decoupling
 
         /// <summary>
-        /// R11 requirements 1 to 4 and 12 to 14. For every shape the current grammar cannot draw, the
-        /// logical Raised mask must come out of the projection completely unchanged, and the plan
-        /// must emit zero hill tiles.
+        /// IL-WORLD-004S-R12 replaced this test. It used to assert that an L, a T, a U, a ring, a
+        /// two-wide run and a four-tall plateau produced ZERO hill tiles, which was correct under the
+        /// old region-level grammar and is exactly the behaviour R12 was written to remove.
+        ///
+        /// The data-preservation half of the old test is kept verbatim and is still the important half:
+        /// an arbitrary mask must survive projection byte-identically. The expectation that flipped is
+        /// only the tile count, which must now be greater than zero for every freeform shape.
         /// </summary>
-        private static void TestUnresolvedNeverMutatesData()
+        private static void TestFreeformShapesKeepDataAndDraw()
         {
             Line("");
-            Line("-- [1,2,3,4,12,13] unresolved shapes keep their data and emit zero hill art --");
+            Line("-- [1,2,3,4,12,13] freeform shapes keep their data AND are now drawn --");
 
-            UnresolvedCase("L shape", new[] { "X..", "X..", "XXX" },
-                RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION);
-            UnresolvedCase("T shape", new[] { "XXX", ".X.", ".X." },
-                RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION);
-            UnresolvedCase("U shape", new[] { "X.X", "X.X", "XXX" },
-                RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION);
-            UnresolvedCase("hole / ring", new[] { "XXX", "X.X", "XXX" },
-                RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION);
-            UnresolvedCase("concave notch", new[] { "XXXX", "X..X", "XXXX" },
-                RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION);
-            UnresolvedCase("non-rect blob", new[] { "XX..", "XXX.", ".XX." },
-                RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION);
-            UnresolvedCase("2x1", new[] { "XX" }, RaisedRegionUnsupportedReason.TWO_CELL_WIDTH);
-            UnresolvedCase("2x2", new[] { "XX", "XX" },
-                RaisedRegionUnsupportedReason.TWO_CELL_WIDTH);
-            UnresolvedCase("2x3", new[] { "XX", "XX", "XX" },
-                RaisedRegionUnsupportedReason.TWO_CELL_WIDTH);
-            UnresolvedCase("3x4", new[] { "XXX", "XXX", "XXX", "XXX" },
-                RaisedRegionUnsupportedReason.HEIGHT_NOT_PROVEN);
-            UnresolvedCase("5x4", new[] { "XXXXX", "XXXXX", "XXXXX", "XXXXX" },
-                RaisedRegionUnsupportedReason.HEIGHT_NOT_PROVEN);
+            FreeformCase("L shape", new[] { "X..", "X..", "XXX" });
+            FreeformCase("T shape", new[] { "XXX", ".X.", ".X." });
+            FreeformCase("U shape", new[] { "X.X", "X.X", "XXX" });
+            FreeformCase("hole / ring", new[] { "XXX", "X.X", "XXX" });
+            FreeformCase("concave notch", new[] { "XXXX", "X..X", "XXXX" });
+            FreeformCase("non-rect blob", new[] { "XX..", "XXX.", ".XX." });
+            FreeformCase("staircase", new[] { "XX..", ".XX.", "..XX" });
+            FreeformCase("zigzag", new[] { "XX.", ".XX", "..X" });
+            FreeformCase("cross", new[] { ".X.", "XXX", ".X." });
+            FreeformCase("2x1", new[] { "XX" });
+            FreeformCase("2x2", new[] { "XX", "XX" });
+            FreeformCase("2x3", new[] { "XX", "XX", "XX" });
+            FreeformCase("2x5", new[] { "XX", "XX", "XX", "XX", "XX" });
+            FreeformCase("3x4", new[] { "XXX", "XXX", "XXX", "XXX" });
+            FreeformCase("5x4", new[] { "XXXXX", "XXXXX", "XXXXX", "XXXXX" });
+            FreeformCase("8x4", new[] { "XXXXXXXX", "XXXXXXXX", "XXXXXXXX", "XXXXXXXX" });
         }
 
-        private static void UnresolvedCase(
-            string id, string[] mask, RaisedRegionUnsupportedReason expectedReason)
+        private static void FreeformCase(string id, string[] mask)
         {
             int w = mask[0].Length;
             int h = mask.Length;
-            TerrainGridData grid = NewGrid(0, w + 4, h + 4);
+            TerrainGridData grid = NewGrid(0, w + 8, h + 8);
             int raised = 0;
             for (int y = 0; y < h; y++)
             {
@@ -364,7 +362,7 @@ namespace IslandLife.EditorTools.IslandMap
                 {
                     if (mask[y][x] == 'X')
                     {
-                        grid.SetElevation(x, y, ElevationLevel.Raised);
+                        grid.SetElevation(3 + x, 3 + y, ElevationLevel.Raised);
                         raised++;
                     }
                 }
@@ -378,49 +376,27 @@ namespace IslandLife.EditorTools.IslandMap
                 $"{raised} Raised cells in, {RaisedRegionAnalyzer.CountRaisedCells(grid)} out; "
                 + "the whole elevation field is byte-identical before and after projection");
 
-            Check($"{id}_ZERO_HILL_TILES", plan.Tiles.Count == 0,
-                $"{plan.Tiles.Count} hill tiles emitted");
+            Check($"{id}_NOW_DRAWN_WITH_AUTHOR_HILLS", plan.Tiles.Count > 0,
+                $"{plan.Tiles.Count} hill tiles emitted; under the old region grammar this shape "
+                + "produced zero");
 
-            Check($"{id}_REPORTED_AS_UNRESOLVED",
-                plan.UnsupportedRegions.Count == 1
-                && plan.UnsupportedRegions[0].UnsupportedReason == expectedReason,
-                plan.UnsupportedRegions.Count == 0
-                    ? "no region reported"
-                    : $"{RaisedRegionReasons.ShortCode(expectedReason)} expected, got "
-                      + RaisedRegionReasons.ShortCode(
-                          plan.UnsupportedRegions[0].UnsupportedReason.Value));
+            Check($"{id}_EVERY_RAISED_CELL_VISUALIZED",
+                plan.VisualizedRaisedCells == raised,
+                $"{plan.VisualizedRaisedCells} of {raised} Raised cells carry an author hill tile");
 
-            Check($"{id}_PRIMARY_STATUS_IS_UNRESOLVED_COMPOSITION",
-                RaisedRegionReasons.StatusCode == "UNRESOLVED_HILLS_COMPOSITION",
-                $"primary status = {RaisedRegionReasons.StatusCode}");
+            Check($"{id}_NO_RENDERER_FAULT", plan.VisualDiagnostics.Count == 0,
+                plan.VisualDiagnostics.Count == 0
+                    ? "no MISSING_AUTHOR_PRIMITIVE / VISUAL_CONFLICT / other fault"
+                    : string.Join("; ", plan.VisualDiagnostics));
 
-            Check($"{id}_REASON_TEXT_DOES_NOT_BLAME_AUTHOR_OR_DATA", ReasonTextIsHonest(expectedReason),
-                RaiseRegionReasonsExplain(expectedReason));
+            Check($"{id}_NO_SHAPE_VERDICT_ANY_MORE", plan.UnsupportedRegions.Count == 0,
+                $"{plan.UnsupportedRegions.Count} regions refused; region geometry no longer blocks "
+                + "any cell");
 
-            Check($"{id}_NO_AUTOMATIC_RECTANGLE_FILL", plan.Tiles.Count == 0
-                && RaisedRegionAnalyzer.CountRaisedCells(grid) == raised,
-                $"{plan.Tiles.Count} tiles, {RaisedRegionAnalyzer.CountRaisedCells(grid)} cells: "
-                + "the shape was neither filled out to a rectangle nor thinned");
-        }
-
-        private static bool ReasonTextIsHonest(RaisedRegionUnsupportedReason reason)
-        {
-            string text = RaiseRegionReasonsExplain(reason).ToLowerInvariant();
-            foreach (string banned in new[] { "you drew", "invalid", "illegal", "not allowed",
-                "forbidden", "the author never", "author has no", "cannot be drawn" })
-            {
-                if (text.Contains(banned))
-                {
-                    return false;
-                }
-            }
-
-            return text.Contains("your raised cells are kept");
-        }
-
-        private static string RaiseRegionReasonsExplain(RaisedRegionUnsupportedReason reason)
-        {
-            return RaisedRegionReasons.Explain(reason);
+            Check($"{id}_NO_AUTOMATIC_RECTANGLE_FILL",
+                RaisedRegionAnalyzer.CountRaisedCells(grid) == raised,
+                $"{RaisedRegionAnalyzer.CountRaisedCells(grid)} cells: the shape was neither filled "
+                + "out to a rectangle nor thinned");
         }
 
         // ---------------------------------------------------------------- no invented art
@@ -442,6 +418,10 @@ namespace IslandLife.EditorTools.IslandMap
                 "Assets/_Project/Scripts/World/Terrain/AuthorHillsCompositionResolver.cs",
                 "Assets/_Project/Scripts/World/Terrain/AuthorHillsCompositionSet.cs",
                 "Assets/_Project/Scripts/World/Terrain/HillVisualTile.cs",
+                "Assets/_Project/Scripts/World/Terrain/RaisedNeighborResolver.cs",
+                "Assets/_Project/Scripts/World/Terrain/RaisedTopologyState.cs",
+                "Assets/_Project/Scripts/World/Terrain/AuthorHillsLocalResolver.cs",
+                "Assets/_Project/Scripts/World/Terrain/RaisedVisualDiagnostic.cs",
                 "Assets/_Project/Scripts/World/Terrain/TerrainTilemapRenderer.cs",
             };
 
@@ -568,22 +548,15 @@ namespace IslandLife.EditorTools.IslandMap
             int raised = RaisedRegionAnalyzer.CountRaisedCells(grid);
             RaisedVisualPlan plan = RaisedVisualPlan.Build(grid, CompositionSet());
 
-            int supportedCells = 0;
-            int unresolvedCells = 0;
-            foreach (RaisedRegion r in plan.SupportedRegions)
-            {
-                supportedCells += r.CellCount;
-            }
-
-            foreach (RaisedRegion r in plan.UnsupportedRegions)
-            {
-                unresolvedCells += r.CellCount;
-            }
+            // IL-WORLD-004S-R12: per-cell accounting replaces the old region buckets. A region is no
+            // longer supported or unsupported as a whole, so the honest split is cells drawn vs cells
+            // with no author tile yet.
+            int supportedCells = plan.VisualizedRaisedCells;
+            int unresolvedCells = raised - plan.VisualizedRaisedCells;
 
             Line($"   {plan.Describe()}");
-            Line($"   regions: {plan.SupportedRegions.Count} proven, "
-                + $"{plan.UnsupportedRegions.Count} unresolved");
-            Line($"   cells:   {supportedCells} proven, {unresolvedCells} unresolved, {raised} total");
+            Line($"   connected regions: {plan.Regions.Count}");
+            Line($"   cells:   {supportedCells} drawn with author hills, {unresolvedCells} without, {raised} total");
             foreach (RaisedRegion r in plan.UnsupportedRegions)
             {
                 Line("   " + r);
@@ -594,11 +567,10 @@ namespace IslandLife.EditorTools.IslandMap
                 $"{supportedCells} + {unresolvedCells} == {raised} Raised cells, no cell lost "
                 + "or double counted between the proven and unresolved buckets");
 
-            Check("USER_MAP_EVERY_REGION_ACCOUNTED_FOR",
-                plan.SupportedRegions.Count + plan.UnsupportedRegions.Count
-                    == RaisedRegionAnalyzer.Analyze(grid).Count,
-                $"{plan.SupportedRegions.Count} + {plan.UnsupportedRegions.Count} regions == "
-                + $"{RaisedRegionAnalyzer.Analyze(grid).Count} connected regions");
+            Check("USER_MAP_NO_REGION_IS_REFUSED_WHOLE",
+                plan.UnsupportedRegions.Count == 0,
+                $"{plan.UnsupportedRegions.Count} regions refused as a whole; region geometry no "
+                + "longer blocks any cell");
 
             Check("USER_MAP_LOGICAL_DATA_UNTOUCHED_BY_PROJECTION",
                 RaisedRegionAnalyzer.CountRaisedCells(grid) == raised,
@@ -611,43 +583,28 @@ namespace IslandLife.EditorTools.IslandMap
                 + $"origin ({copy.OriginX}, {copy.OriginY})");
             sb.AppendLine($"Raised cells    : {raised}");
             sb.AppendLine($"regions total   : {RaisedRegionAnalyzer.Analyze(grid).Count}");
-            sb.AppendLine($"proven regions  : {plan.SupportedRegions.Count} ({supportedCells} cells)");
-            sb.AppendLine($"unresolved      : {plan.UnsupportedRegions.Count} ({unresolvedCells} cells)");
+            sb.AppendLine($"cells drawn     : {supportedCells}");
+            sb.AppendLine($"cells no art    : {unresolvedCells}");
             sb.AppendLine($"HillVisualTile  : {plan.Tiles.Count}");
             sb.AppendLine($"outside mask    : {plan.TilesOutsideLogicalMask}");
             sb.AppendLine("");
-            sb.AppendLine("PROVEN COMPOSITION REGIONS");
-            foreach (RaisedRegion r in plan.SupportedRegions)
-            {
-                sb.AppendLine("  " + r);
-            }
-
-            sb.AppendLine("");
-            sb.AppendLine("UNRESOLVED HILLS COMPOSITION REGIONS  (Raised data kept, 0 hill tiles)");
-            foreach (RaisedRegion r in plan.UnsupportedRegions)
+            sb.AppendLine("LEGACY REGION CLASSIFICATION - reported only, no longer gates rendering");
+            foreach (RaisedRegion r in plan.Regions)
             {
                 sb.AppendLine("  " + r);
             }
 
             sb.AppendLine("");
             sb.AppendLine("SHAPE DEMAND LIST - what the user map actually needs next");
-            var byReason = new Dictionary<string, int>();
             var byShape = new Dictionary<string, int>();
-            foreach (RaisedRegion r in plan.UnsupportedRegions)
+            foreach (RaisedRegion r in plan.Regions)
             {
-                string code = RaisedRegionReasons.ShortCode(r.UnsupportedReason.Value);
-                byReason[code] = byReason.TryGetValue(code, out int a) ? a + r.CellCount : r.CellCount;
                 int area = r.Width * r.Height;
                 string shape = area == r.CellCount
                     ? $"solid {r.Width}x{r.Height}"
                     : $"{r.Width}x{r.Height} bounding box, {r.CellCount} cells "
                       + $"({r.CellCount * 100 / area}% filled)";
                 byShape[shape] = byShape.TryGetValue(shape, out int b) ? b + r.CellCount : r.CellCount;
-            }
-
-            foreach (KeyValuePair<string, int> kv in byReason)
-            {
-                sb.AppendLine($"  reason {kv.Key,-24} {kv.Value,4} cells");
             }
 
             foreach (KeyValuePair<string, int> kv in byShape)

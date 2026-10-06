@@ -5,56 +5,80 @@ using UnityEngine;
 namespace IslandLife.World.Terrain
 {
     /// <summary>
-    /// The complete Raised visual projection for one grid: every author visual tile that will be
-    /// drawn, plus a diagnostic line for every region that has no verified composition.
-    /// IL-WORLD-004S-R6, semantics locked by IL-WORLD-004S-R11.
+    /// The complete Raised visual projection for one grid. IL-WORLD-004S-R6, freeform from R12.
     ///
-    /// This is pure projection, and it is strictly one-directional. Building it does not touch the
-    /// logical Raised mask, does not touch TerrainData, and cannot throw for an unresolved shape: an
-    /// unresolved region produces a diagnostic line and ZERO tiles, which is exactly what keeps an
-    /// arbitrarily shaped user map editable and lossless.
+    /// R12 CHANGED THE PRODUCTION MODEL. The projection used to run
+    /// RaisedRegionAnalyzer -> AuthorHillsCompositionResolver, so one connected region that was not a
+    /// proven rectangle or column produced zero hill tiles for ALL of its cells. That is what left 235
+    /// of the 283 Raised cells on the user's map with no visual at all.
     ///
-    /// "Unsupported" in the member names below is a historical name only. Read it as "no verified
-    /// Author Hills Composition", i.e. UNRESOLVED_HILLS_COMPOSITION. The Raised cells of such a
-    /// region are valid and are never removed.
+    /// It now runs AuthorHillsLocalResolver, which is per cell: every Raised cell projects from its own
+    /// 8-neighbour topology. RaisedRegionAnalyzer is still called, but only to REPORT the legacy
+    /// region classification. It no longer decides whether anything is drawn, and its reasons are no
+    /// longer diagnostics the user sees.
+    ///
+    /// The projection is pure and one-directional. It only reads the logical elevation, so an arbitrary
+    /// user mask survives untouched: nothing is snapped, filled, thinned, deleted or normalised, whether
+    /// or not it happens to be drawable.
     /// </summary>
     public sealed class RaisedVisualPlan
     {
         private RaisedVisualPlan(
             List<HillVisualTile> tiles,
-            List<RaisedRegion> supportedRegions,
-            List<RaisedRegion> unsupportedRegions,
-            List<string> unsupportedDiagnostics)
+            List<RaisedRegion> regions,
+            List<RaisedVisualDiagnostic> diagnostics,
+            int raisedCellCount,
+            int visualizedRaisedCells,
+            int tilesOutsideLogicalMask)
         {
             Tiles = tiles;
-            SupportedRegions = supportedRegions;
-            UnsupportedRegions = unsupportedRegions;
-            UnsupportedDiagnostics = unsupportedDiagnostics;
+            Regions = regions;
+            VisualDiagnostics = diagnostics;
+            RaisedCellCount = raisedCellCount;
+            VisualizedRaisedCells = visualizedRaisedCells;
+            TilesOutsideLogicalMask = tilesOutsideLogicalMask;
         }
 
-        /// <summary>Author visual tiles, in emission order. Never contains a guess.</summary>
+        /// <summary>Author visual tiles, in a fixed deterministic order. Never contains a guess.</summary>
         public IReadOnlyList<HillVisualTile> Tiles { get; }
 
-        public IReadOnlyList<RaisedRegion> SupportedRegions { get; }
-
-        /// <summary>One line per unsupported region: bounds, size, cell count and the reason.</summary>
-        public IReadOnlyList<string> UnsupportedDiagnostics { get; }
-
         /// <summary>
-        /// The same unsupported regions as objects, with their real bounds. The Scene View
-        /// diagnostic needs coordinates to draw an outline; a preformatted string cannot supply
-        /// those. IL-WORLD-004S-R9.
+        /// The legacy per-region classification, kept for diagnostics and reporting only. It has no
+        /// effect on <see cref="Tiles"/>.
         /// </summary>
-        public IReadOnlyList<RaisedRegion> UnsupportedRegions { get; }
-
-        public int RaisedCellCount { get; private set; }
-
-        /// <summary>Tiles drawn south of their own region's logical mask. Proven necessary by R5.</summary>
-        public int TilesOutsideLogicalMask { get; private set; }
+        public IReadOnlyList<RaisedRegion> Regions { get; }
 
         /// <summary>
-        /// Builds the whole projection. Never throws for an unsupported shape; only a null argument
-        /// or a missing composition set is a programming error.
+        /// Real implementation problems only. Empty for every freeform shape: an L, T, U, notch, ring,
+        /// two-wide run or tall plateau is drawn, not reported.
+        /// </summary>
+        public IReadOnlyList<RaisedVisualDiagnostic> VisualDiagnostics { get; }
+
+        /// <summary>Logical Raised cells in the grid. This number is never changed by the renderer.</summary>
+        public int RaisedCellCount { get; }
+
+        /// <summary>Logical Raised cells that produced at least one author hill tile.</summary>
+        public int VisualizedRaisedCells { get; }
+
+        /// <summary>Tiles drawn south of their own logical mask. Proven necessary by R5.</summary>
+        public int TilesOutsideLogicalMask { get; }
+
+        /// <summary>
+        /// Retained so existing callers keep compiling. R12 no longer refuses a region as a whole, so
+        /// these are always empty: a region is not "unsupported" any more, and the shape of a region
+        /// never blocks a tile.
+        /// </summary>
+        public IReadOnlyList<RaisedRegion> UnsupportedRegions => System.Array.Empty<RaisedRegion>();
+
+        /// <summary>Retained for compatibility; always empty for the same reason as above.</summary>
+        public IReadOnlyList<string> UnsupportedDiagnostics => System.Array.Empty<string>();
+
+        /// <summary>Retained for compatibility; always empty for the same reason as above.</summary>
+        public IReadOnlyList<RaisedRegion> SupportedRegions => Regions;
+
+        /// <summary>
+        /// Builds the whole projection. Never throws for a shape; only a null argument or an unusable
+        /// composition set is a programming error.
         /// </summary>
         public static RaisedVisualPlan Build(
             TerrainGridData grid,
@@ -70,54 +94,49 @@ namespace IslandLife.World.Terrain
                 throw new ArgumentNullException(nameof(compositionSet));
             }
 
+            var tiles = new List<HillVisualTile>();
+            AuthorHillsLocalResolver.Report report =
+                AuthorHillsLocalResolver.Resolve(grid, compositionSet, tiles);
+
+            // Legacy region analysis. Reported, never consulted for eligibility.
             List<RaisedRegion> regions = RaisedRegionAnalyzer.Analyze(grid);
 
-            var tiles = new List<HillVisualTile>();
-            var supported = new List<RaisedRegion>();
-            var unsupportedRegions = new List<RaisedRegion>();
-            var unsupported = new List<string>();
-
-            foreach (RaisedRegion region in regions)
-            {
-                if (!AuthorHillsCompositionResolver.TryResolve(
-                        region, compositionSet, tiles, out string failure))
-                {
-                    unsupportedRegions.Add(region);
-                    unsupported.Add(region + "  ::  " + failure);
-                    continue;
-                }
-
-                supported.Add(region);
-            }
-
-            int outsideMask = 0;
+            int visualized = 0;
+            var seen = new HashSet<Vector3Int>();
             foreach (HillVisualTile tile in tiles)
             {
-                if (tile.OutsideLogicalMask)
+                if (RaisedNeighborResolver.IsRaised(grid, tile.VisualPosition.x, tile.VisualPosition.y))
                 {
-                    outsideMask++;
+                    if (seen.Add(tile.VisualPosition))
+                    {
+                        visualized++;
+                    }
                 }
             }
 
-            return new RaisedVisualPlan(tiles, supported, unsupportedRegions, unsupported)
-            {
-                RaisedCellCount = RaisedRegionAnalyzer.CountRaisedCells(grid),
-                TilesOutsideLogicalMask = outsideMask,
-            };
+            return new RaisedVisualPlan(
+                tiles,
+                regions,
+                report.Diagnostics,
+                report.RaisedCells,
+                visualized,
+                report.TilesOutsideLogicalMask);
         }
 
         /// <summary>One-line summary for the editor status bar and for diagnostics.</summary>
         public string Describe()
         {
             string text =
-                $"Raised cells {RaisedCellCount} in {SupportedRegions.Count} proven-composition + "
-                + $"{UnsupportedDiagnostics.Count} {RaisedRegionReasons.StatusCode} regions; "
-                + $"{Tiles.Count} hill visual tiles, {TilesOutsideLogicalMask} drawn south of "
-                + "their own logical mask. All Raised logical data is preserved.";
+                $"Raised cells {RaisedCellCount}; {VisualizedRaisedCells} of them drawn with author "
+                + $"Hills, {RaisedCellCount - VisualizedRaisedCells} without a hill tile; "
+                + $"{Tiles.Count} hill visual tiles, {TilesOutsideLogicalMask} drawn south of their own "
+                + $"logical mask; {Regions.Count} connected regions; "
+                + $"{VisualDiagnostics.Count} visual diagnostics. "
+                + "All Raised logical data is preserved.";
 
-            foreach (string line in UnsupportedDiagnostics)
+            foreach (RaisedVisualDiagnostic d in VisualDiagnostics)
             {
-                text += $" | {RaisedRegionReasons.StatusCode}: {line}";
+                text += $" | {d}";
             }
 
             return text;

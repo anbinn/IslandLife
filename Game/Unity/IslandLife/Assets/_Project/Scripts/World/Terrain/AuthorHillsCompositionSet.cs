@@ -14,6 +14,14 @@ namespace IslandLife.World.Terrain
 
         /// <summary>The author's front cliff, Hills sheet row r2.</summary>
         FRONT_CLIFF = 2,
+
+        /// <summary>
+        /// The author's second front row, Hills sheet row r3. Added by IL-WORLD-004S-R12.
+        /// IL-WORLD-004S-R4 reconstructed the author's own c0..c2 r0..r3 block 1:1, so a plateau four
+        /// cells thick has proven art for all four of its rows. It is a completion of the same author
+        /// stack, not a new composition and not an invented extension.
+        /// </summary>
+        SECOND_FRONT_CLIFF = 3,
     }
 
     /// <summary>
@@ -41,6 +49,9 @@ namespace IslandLife.World.Terrain
     ///     row r0  top surface     r0c0 left terminal | r0c1 body (self-repeating) | r0c2 right terminal
     ///     row r1  middle surface  r1c0 left terminal | r1c1 body (self-repeating) | r1c2 right terminal
     ///     row r2  front cliff     r2c0 left terminal | r2c1 body (self-repeating) | r2c2 right terminal
+    ///     row r3  second front    r3c0 left terminal | r3c1 body (self-repeating) | r3c2 right terminal
+    ///                             (IL-WORLD-004S-R12; R4 reconstructed the author's own c0..c2 r0..r3
+    ///                              block 1:1, so this row is proven author art, not an extension)
     ///
     ///   narrow, Hills column c3, the author's own 1-wide instance, exactly 4 cells tall:
     ///     r0c3 top surface | r1c3 middle surface | r2c3 front cliff | r3c3 second cliff row
@@ -84,6 +95,16 @@ namespace IslandLife.World.Terrain
         [SerializeField]
         private Sprite hillsR2C2;
 
+        [Header("Wide composition, Hills c0..c2 (row r3, second front row, IL-WORLD-004S-R4)")]
+        [SerializeField]
+        private Sprite hillsR3C0;
+
+        [SerializeField]
+        private Sprite hillsR3C1;
+
+        [SerializeField]
+        private Sprite hillsR3C2;
+
         [Header("Narrow composition, Hills column c3, the author's own 1-wide instance")]
         [SerializeField]
         private Sprite hillsR0C3;
@@ -117,6 +138,10 @@ namespace IslandLife.World.Terrain
                         : slot == HillColumnSlot.RIGHT_TERMINAL ? hillsR2C2
                         : hillsR2C1;
 
+                case HillCompositionRow.SECOND_FRONT_CLIFF:
+                    return slot == HillColumnSlot.LEFT_TERMINAL ? hillsR3C0
+                        : slot == HillColumnSlot.RIGHT_TERMINAL ? hillsR3C2
+                        : hillsR3C1;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(row), row, "Unknown composition row.");
             }
@@ -152,7 +177,7 @@ namespace IslandLife.World.Terrain
         /// </summary>
         public bool IsComplete()
         {
-            for (int row = 0; row <= 2; row++)
+            for (int row = 0; row <= 3; row++)
             {
                 for (int slot = 0; slot <= 2; slot++)
                 {
@@ -178,7 +203,7 @@ namespace IslandLife.World.Terrain
         public string DescribeMissingSlots()
         {
             var missing = new System.Collections.Generic.List<string>();
-            for (int row = 0; row <= 2; row++)
+            for (int row = 0; row <= 3; row++)
             {
                 for (int slot = 0; slot <= 2; slot++)
                 {

@@ -89,45 +89,46 @@ PM reviews:
 
 ### IL-WORLD-004S — Author Hills Composition System
 
-**004S status: `AUTHOR-GRAMMAR BASELINE LOCKED` — `FREEFORM VISUAL COVERAGE NOT COMPLETE`.**
+**004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED`.**
+Grammar baseline locked by R11; freeform coverage added by IL-WORLD-004S-R12.
 
-Locked by IL-WORLD-004S-R11 at commit `759b96e` + R11. The system is finished as a *system*; the
-grammar it can draw is deliberately not finished, and that is a recorded fact, not an oversight.
-
-Current production model: **Author Hills Composition System**.
+Current production model: **Author Hills Composition System, per cell.**
 - `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
-- The Hills visual renderer **only emits author-proven compositions**. It is a visual interpreter,
-  never a data editor.
+- The Hills visual renderer projects **per logical cell**, from that cell's own 8-neighbour Raised
+  topology. `RaisedRegionAnalyzer` is retained for reporting only and **no longer gates rendering**:
+  a connected region is never refused as a whole.
+- Pipeline: logical mask → `RaisedNeighborResolver` (8-neighbour, read-only) → the shared
+  `TerrainMaskNormalizer` → `RaisedTopologyState` (structural role, no art) →
+  `AuthorHillsLocalResolver` (author slices) → `HillVisualTile`.
 - Logical and visual footprints **may differ**. A front cliff may be drawn one visual row south of
   the logical mask and that cell stays `ElevationLevel.Normal` (`HillVisualTile.OutsideLogicalMask`).
-  This is a proven capability and must not be removed in the name of tidiness.
-- Shapes with no proven composition are reported as `UNRESOLVED_HILLS_COMPOSITION`: **Raised data
-  valid, visual composition unresolved**. Never "invalid", never "illegal", never auto-snapped,
-  auto-filled, auto-deleted or auto-rejected.
-- **IL-WORLD-004S-R10 direct Hills 47-state mapping: REJECTED.** R10 measured that the Sprout Lands
-  47-state coordinate chain resolves 47/47 with 47 unique coordinates, but only **13 of 47** of the
-  resulting Hills cells contain any cliff art at all; the sheet has **0** east- or west-facing soil
-  faces. No mirroring, rotation, stretching, generated cliff, nearest match or fallback is permitted
-  to work around this.
+- Only four diagnostics can ever be reported, and all four are renderer faults, never shape verdicts:
+  `MISSING_AUTHOR_PRIMITIVE`, `MISSING_CANONICAL_TOPOLOGY`, `VISUAL_CONFLICT`,
+  `INVALID_ASSET_REFERENCE`. There is no `NON_RECTANGULAR_REGION` any more.
+- **IL-WORLD-004S-R10 direct Hills 47-state mapping: REJECTED.** No mirroring, rotation, stretching,
+  generated cliff, nearest match or fallback is permitted.
 
-Proven capabilities (all pixel-verified, all in production):
-| capability | status |
-|---|---|
-| rectangle width ≥ 3 | PROVEN |
-| rectangle height 1 / 2 / 3 | PROVEN |
-| narrow column, width 1, height 1–4 | PROVEN |
-| south / front cliff | PROVEN |
-| outside-logical-mask cliff projection | PROVEN |
+Proven and shipped: rectangle width ≥ 3 at any height · height 1 / 2 / 3 unchanged and byte-identical
+to the R6/R9 oracle · narrow column width 1 height 1–4 · south/front cliff including the author's
+second front row · outside-logical-mask cliff projection · **two-wide runs** · **freeform L, T, U,
+notch, staircase, zigzag, cross, blob and irregular masses** · **plateaus 4 cells and taller** ·
+**rings and holes, with the hole left unfilled**.
 
-Unresolved (`NOT_PROVEN` — **not** "the author forbade it"): width 2 · rectangle height ≥ 4 ·
-convex turn · concave turn · arbitrary L · arbitrary T · U/notch · hole/ring.
+Verified on the live user map: **283 of 283 Raised cells now carry an author hill tile**, up from 48.
+The R11 baseline of 235 cells with no visual is gone.
 
-Current user map baseline (read-only, IL-WORLD-004S-R11):
+| metric | R11 baseline | R12 |
+|---|---|---|
+| Raised cells | 283 | 283 |
+| cells drawn with author Hills | 48 | **283** |
+| cells with no hill art | 235 | **0** |
+| `HEIGHT_NOT_PROVEN` (8×4 plateau) | 32 cells refused | **0, all 32 drawn** |
+| HillVisualTile | 75 | 325 |
+| outside-logical-mask tiles | 27 | 42 |
+
+Current user map baseline (read-only):
 - `FirstIsland_TerrainData.asset` SHA256 `BD27211ACDD639F513F3C36F27C2B3530AA5AF7148B5F483BC597D0A5370A4C8`
-- **283 Raised cells** in 15 connected regions → **9 proven (48 cells)** / **6 unresolved (235 cells)**
-- current renderer output: 75 `HillVisualTile`, 27 outside their own logical mask
-- The 44-cell figure from earlier 004S cards is **historical**, not the current baseline.
-- Cheapest next win: a **solid 8×4 rectangle, 32 cells**, blocked only by `HEIGHT_NOT_PROVEN`.
+- **283 Raised cells** in 15 connected regions. The 44-cell figure from early 004S cards is historical.
 
 Extending the grammar is **evidence-first**, in this order and no other:
 ```
@@ -137,8 +138,7 @@ Semantics must never be inferred from how something looks.
 
 ### IL-WORLD-005
 - Status: **HOLD**.
-- Do not start 005 while 004S freeform visual coverage is incomplete, and do not treat an
-  unresolved Raised shape as a blocker for unrelated work.
+- Do not start 005 while 004S is still accumulating Hills coverage evidence.
 
 ### Core world-grid / player placement principle
 IslandLife is a grid-based world. The same grid concept must support both authored initial scenery and later player modification of the island.
