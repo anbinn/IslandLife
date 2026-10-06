@@ -245,11 +245,13 @@ namespace IslandLife.EditorTools.IslandMap
 
             // The High Ground brush authors real logical data that is stored, loaded and kept for
             // future collision / occupancy queries. Since IL-WORLD-004S-R6 it also produces a hill
-            // VISUAL: RaisedRegionAnalyzer classifies the connected region and
-            // AuthorHillsCompositionResolver projects it onto the author's verified Hills.png cells
-            // in a separate pure-visual Tilemap. A region the author never drew - a 2-wide run, a
-            // turning outline, a concave notch, a rectangle taller than 3 - is reported as
-            // UNSUPPORTED_AUTHOR_GRAMMAR and draws no hill art at all; nothing is ever guessed.
+            // VISUAL: RaisedRegionAnalyzer classifies the connected region against our PROVEN
+            // Author Hills Composition set, and AuthorHillsCompositionResolver projects proven
+            // regions onto the author's verified Hills.png cells in a separate pure-visual Tilemap.
+            // A region with no verified composition yet - a 2-wide run, a turning outline, a concave
+            // notch, a rectangle taller than 3 - is reported as UNRESOLVED_HILLS_COMPOSITION: the
+            // region keeps every Raised logical cell, is never snapped or filled or deleted, and
+            // draws no hill art at all. Nothing is ever guessed.
             s_ElevationBrush = level;
             reason = string.Empty;
             SceneView.RepaintAll();
@@ -804,29 +806,36 @@ namespace IslandLife.EditorTools.IslandMap
         // ---------------------------------------------------------------- scene overlay
 
         /// <summary>
-        /// The exact text drawn over an unsupported Raised region. Extracted so the diagnostic can be
-        /// asserted by tests without needing a live Scene View repaint. IL-WORLD-004S-R9.
+        /// The exact text drawn over a region whose hills visual is unresolved. IL-WORLD-004S-R11.
+        ///
+        /// The PRIMARY line is HILLS VISUAL UNRESOLVED, which must never read as "your data was
+        /// rejected" or "this shape is illegal". The second line is the technical reason, for
+        /// whoever extends the grammar next. Extracted into its own method so the diagnostic can be
+        /// asserted by tests without needing a live Scene View repaint.
         /// </summary>
-        internal static string BuildUnsupportedRaisedLabel(RaisedRegion region)
+        internal static string BuildUnresolvedHillsLabel(RaisedRegion region)
         {
             RaisedRegionUnsupportedReason reason =
                 region.UnsupportedReason ?? RaisedRegionUnsupportedReason.WIDTH_NOT_PROVEN;
             return string.Format(
-                "Unsupported Raised Shape  [{0}]  {1}  ({2}x{3}, {4} cells)",
+                "HILLS VISUAL UNRESOLVED\n{0}  {1}\n{2}x{3}, {4} Raised cells kept",
                 RaisedRegionReasons.ShortCode(reason),
                 RaisedRegionReasons.Explain(reason),
                 region.Width, region.Height, region.CellCount);
         }
+
         /// <summary>
-        /// IL-WORLD-004S-R9. Draws the Raised cells the author CANNOT express, so that "no hill art"
-        /// never reads as "your work vanished".
+        /// IL-WORLD-004S-R9, wording locked by IL-WORLD-004S-R11. Outlines the Raised cells that
+        /// have no verified Author Hills Composition, so "no hill art" never reads as "your work
+        /// vanished" or "your data was refused".
         ///
-        /// This is an EDITOR DIAGNOSTIC ONLY. It draws nothing into the runtime terrain, generates no
-        /// hill Sprite, and never mutates TerrainMapData: no modal, no blocked painting, no undo of the
-        /// user's stroke, no automatic shape change. Every refused region keeps its logical Raised
-        /// cells and simply gets a visible outline plus a reason.
+        /// This is an EDITOR DIAGNOSTIC ONLY. It draws nothing into the runtime terrain, generates
+        /// no hill Sprite, and never mutates TerrainMapData: no modal, no blocked painting, no undo
+        /// of the user's stroke, no automatic shape change, no snap, no fill, no deletion. Every
+        /// unresolved region keeps all of its logical Raised cells and simply gets a visible outline
+        /// plus a reason.
         /// </summary>
-        private static void DrawUnsupportedRaisedDiagnostics()
+        private static void DrawUnresolvedHillsDiagnostics()
         {
             RaisedVisualPlan plan = RaisedPlan;
             if (plan == null || plan.UnsupportedRegions.Count == 0 || s_Grid == null
@@ -864,7 +873,7 @@ namespace IslandLife.EditorTools.IslandMap
                 Vector3 top = CellCenterWorld(new Vector3Int(region.MinX, region.MaxY, 0));
                 Handles.Label(
                     top + new Vector3(0f, h + 0.35f, 0f),
-                    BuildUnsupportedRaisedLabel(region),
+                    BuildUnresolvedHillsLabel(region),
                     EditorStyles.whiteBoldLabel);
             }
         }
@@ -906,7 +915,7 @@ namespace IslandLife.EditorTools.IslandMap
                     string.Format("({0}, {1})  {2}", s_Hover.x, s_Hover.y, type));
             }
 
-            DrawUnsupportedRaisedDiagnostics();
+            DrawUnresolvedHillsDiagnostics();
 
             // IL-WORLD-004R fix: this overlay is drawn from a Repaint-only code path.
             // GUILayout cannot be used here. GUILayout controls are positioned from the layout
@@ -948,8 +957,9 @@ namespace IslandLife.EditorTools.IslandMap
                 var warn = new Rect(area.x + 6f, area.y + 62f, area.width - 12f, 30f);
                 GUI.Box(warn, GUIContent.none);
                 GUI.Label(warn, string.Format(
-                        "{0} Raised region(s) cannot be drawn with the author's Hills art and are "
-                        + "outlined in red. Your Raised cells are kept; no hill art is invented.",
+                        "{0} Raised region(s): hills visual UNRESOLVED (outlined). "
+                        + "Your Raised data is valid and fully kept; only the verified Hills "
+                        + "composition is missing. No hill art is invented.",
                         unsupportedCount),
                     EditorStyles.wordWrappedMiniLabel);
             }

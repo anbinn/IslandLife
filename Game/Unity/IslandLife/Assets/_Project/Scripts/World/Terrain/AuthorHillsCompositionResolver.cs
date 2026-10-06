@@ -11,9 +11,10 @@ namespace IslandLife.World.Terrain
     /// The mapping is explicit and one-way:
     ///     logical Raised region -> author composition -> visual tile positions
     ///
-    /// It never writes to the logical mask, never picks a Sprite for an unsupported region, and
-    /// never stretches, mirrors, rotates or resamples author art. Each emitted tile is exactly one
-    /// of the 13 author Sprites held by <see cref="AuthorHillsCompositionSet"/>.
+    /// It never writes to the logical mask, never picks a Sprite for a region with no verified
+    /// composition, and never stretches, mirrors, rotates or resamples author art. Each emitted
+    /// tile is exactly one of the 13 author Sprites held by
+    /// <see cref="AuthorHillsCompositionSet"/>.
     ///
     /// Layout, straight from R5's verified author compositions:
     ///
@@ -64,7 +65,7 @@ namespace IslandLife.World.Terrain
 
             if (!region.IsSupported)
             {
-                failure = $"UNSUPPORTED_AUTHOR_GRAMMAR {region.UnsupportedReason}";
+                failure = $"{RaisedRegionReasons.StatusCode} {RaisedRegionReasons.ShortCode(region.UnsupportedReason.Value)}";
                 return false;
             }
 
@@ -238,9 +239,9 @@ namespace IslandLife.World.Terrain
             switch (region.Height)
             {
                 case 1:
-                    // Only the author's top surface plus its front cliff. The author drew no
-                    // two-row-tall narrow instance, so the middle surface row is omitted rather
-                    // than invented.
+                    // Only the top surface plus its front cliff. No two-row-tall narrow composition
+                    // has been pixel-verified, so the middle surface row is omitted rather than
+                    // invented. The Raised data is unaffected.
                     EmitNarrow(region, compositionSet, output, 0, region.MaxY);
                     EmitNarrow(region, compositionSet, output, 2, region.MinY - 1);
                     return;

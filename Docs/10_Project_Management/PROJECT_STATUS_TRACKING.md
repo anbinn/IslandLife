@@ -87,6 +87,59 @@ PM reviews:
 - Initial environment props such as Trees, Bushes, and Rocks remain normal Unity Prefab instances in the Scene for authoring: drag/place/move/copy/delete/Undo/Save.
 - Do not build a custom object-painting/database system merely for editor landscaping at this stage.
 
+### IL-WORLD-004S — Author Hills Composition System
+
+**004S status: `AUTHOR-GRAMMAR BASELINE LOCKED` — `FREEFORM VISUAL COVERAGE NOT COMPLETE`.**
+
+Locked by IL-WORLD-004S-R11 at commit `759b96e` + R11. The system is finished as a *system*; the
+grammar it can draw is deliberately not finished, and that is a recorded fact, not an oversight.
+
+Current production model: **Author Hills Composition System**.
+- `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
+- The Hills visual renderer **only emits author-proven compositions**. It is a visual interpreter,
+  never a data editor.
+- Logical and visual footprints **may differ**. A front cliff may be drawn one visual row south of
+  the logical mask and that cell stays `ElevationLevel.Normal` (`HillVisualTile.OutsideLogicalMask`).
+  This is a proven capability and must not be removed in the name of tidiness.
+- Shapes with no proven composition are reported as `UNRESOLVED_HILLS_COMPOSITION`: **Raised data
+  valid, visual composition unresolved**. Never "invalid", never "illegal", never auto-snapped,
+  auto-filled, auto-deleted or auto-rejected.
+- **IL-WORLD-004S-R10 direct Hills 47-state mapping: REJECTED.** R10 measured that the Sprout Lands
+  47-state coordinate chain resolves 47/47 with 47 unique coordinates, but only **13 of 47** of the
+  resulting Hills cells contain any cliff art at all; the sheet has **0** east- or west-facing soil
+  faces. No mirroring, rotation, stretching, generated cliff, nearest match or fallback is permitted
+  to work around this.
+
+Proven capabilities (all pixel-verified, all in production):
+| capability | status |
+|---|---|
+| rectangle width ≥ 3 | PROVEN |
+| rectangle height 1 / 2 / 3 | PROVEN |
+| narrow column, width 1, height 1–4 | PROVEN |
+| south / front cliff | PROVEN |
+| outside-logical-mask cliff projection | PROVEN |
+
+Unresolved (`NOT_PROVEN` — **not** "the author forbade it"): width 2 · rectangle height ≥ 4 ·
+convex turn · concave turn · arbitrary L · arbitrary T · U/notch · hole/ring.
+
+Current user map baseline (read-only, IL-WORLD-004S-R11):
+- `FirstIsland_TerrainData.asset` SHA256 `BD27211ACDD639F513F3C36F27C2B3530AA5AF7148B5F483BC597D0A5370A4C8`
+- **283 Raised cells** in 15 connected regions → **9 proven (48 cells)** / **6 unresolved (235 cells)**
+- current renderer output: 75 `HillVisualTile`, 27 outside their own logical mask
+- The 44-cell figure from earlier 004S cards is **historical**, not the current baseline.
+- Cheapest next win: a **solid 8×4 rectangle, 32 cells**, blocked only by `HEIGHT_NOT_PROVEN`.
+
+Extending the grammar is **evidence-first**, in this order and no other:
+```
+current user shape demand -> author asset evidence -> exact composition proof -> tests -> production support
+```
+Semantics must never be inferred from how something looks.
+
+### IL-WORLD-005
+- Status: **HOLD**.
+- Do not start 005 while 004S freeform visual coverage is incomplete, and do not treat an
+  unresolved Raised shape as a blocker for unrelated work.
+
 ### Core world-grid / player placement principle
 IslandLife is a grid-based world. The same grid concept must support both authored initial scenery and later player modification of the island.
 

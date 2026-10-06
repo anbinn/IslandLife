@@ -6,11 +6,17 @@ namespace IslandLife.World.Terrain
 {
     /// <summary>
     /// The complete Raised visual projection for one grid: every author visual tile that will be
-    /// drawn, plus a plain-text reason for every region that will not be drawn. IL-WORLD-004S-R6.
+    /// drawn, plus a diagnostic line for every region that has no verified composition.
+    /// IL-WORLD-004S-R6, semantics locked by IL-WORLD-004S-R11.
     ///
-    /// This is pure projection. Building it does not touch the logical Raised mask, does not touch
-    /// TerrainData, and cannot throw for an unsupported shape: an unsupported region produces a
-    /// diagnostic line and zero tiles, which is what keeps the map editable.
+    /// This is pure projection, and it is strictly one-directional. Building it does not touch the
+    /// logical Raised mask, does not touch TerrainData, and cannot throw for an unresolved shape: an
+    /// unresolved region produces a diagnostic line and ZERO tiles, which is exactly what keeps an
+    /// arbitrarily shaped user map editable and lossless.
+    ///
+    /// "Unsupported" in the member names below is a historical name only. Read it as "no verified
+    /// Author Hills Composition", i.e. UNRESOLVED_HILLS_COMPOSITION. The Raised cells of such a
+    /// region are valid and are never removed.
     /// </summary>
     public sealed class RaisedVisualPlan
     {
@@ -104,14 +110,14 @@ namespace IslandLife.World.Terrain
         public string Describe()
         {
             string text =
-                $"Raised cells {RaisedCellCount} in {SupportedRegions.Count} supported + "
-                + $"{UnsupportedDiagnostics.Count} unsupported regions; "
+                $"Raised cells {RaisedCellCount} in {SupportedRegions.Count} proven-composition + "
+                + $"{UnsupportedDiagnostics.Count} {RaisedRegionReasons.StatusCode} regions; "
                 + $"{Tiles.Count} hill visual tiles, {TilesOutsideLogicalMask} drawn south of "
-                + "their own logical mask.";
+                + "their own logical mask. All Raised logical data is preserved.";
 
             foreach (string line in UnsupportedDiagnostics)
             {
-                text += " | UNSUPPORTED: " + line;
+                text += $" | {RaisedRegionReasons.StatusCode}: {line}";
             }
 
             return text;

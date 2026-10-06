@@ -5,21 +5,29 @@ using UnityEngine;
 namespace IslandLife.World.Terrain
 {
     /// <summary>
-    /// Splits the logical Raised mask into connected regions and decides, per region, whether the
-    /// author's Hills.png grammar can express it. IL-WORLD-004S-R6.
+    /// Splits the logical Raised mask into connected regions and decides, per region, whether a
+    /// pixel-verified Author Hills Composition exists for it. IL-WORLD-004S-R6.
     ///
-    /// This class never picks a Sprite and never inspects a pixel. It reads only the logical
-    /// Raised mask, and it is the single place where SUPPORTED / UNSUPPORTED is decided.
+    /// ROLE, LOCKED BY IL-WORLD-004S-R11. This class is the CURRENT_PROVEN_COMPOSITION_CLASSIFIER.
+    /// It answers exactly one question: "is this connected region inside the set of shapes we have
+    /// already proven we can draw with the author's own Hills cells?" It is NOT the author's Hills
+    /// grammar, and it is NOT a validator of the user's map.
+    ///
+    /// What a null classification does and does not mean:
+    ///   - It does NOT mean the Raised data is invalid. The cells are valid, are stored in
+    ///     TerrainMapData, and are never deleted, snapped, filled or rejected.
+    ///   - It does NOT mean the author forbade the shape. It means no composition has been proven
+    ///     yet. Extending the grammar means proving more compositions, not relaxing this check.
+    ///
+    /// This class never picks a Sprite and never inspects a pixel. It reads only the logical Raised
+    /// mask, and it is the single place where a region is classified as proven or unresolved.
     ///
     /// Proven limits, each traceable to IL-WORLD-004S-R5:
     ///   - width &gt;= 3: LEFT_TERMINAL + BODY x (W-2) + RIGHT_TERMINAL, verified at W = 3, 5, 7,
     ///     and by the author's own 4-wide band at Hills r3c4..r3c7.
-    ///   - the author's stack is always 2 surface rows above the cliff row, so height 2 and 3 are
-    ///     the only heights that place the cliff deterministically. Height 4+ would need a body
-    ///     repeat that R5 did not prove, so it is refused rather than guessed.
+    ///   - height 1, 2 and 3 place the cliff deterministically. Height 1 was added by R9 after R8
+    ///     proved the composition pixel-exactly at widths 3, 5 and 8.
     ///   - width 1: the author's own narrow column Hills c3 r0..r3, exactly 4 cells tall.
-    ///   - width 2: the author drew no 2-wide instance and terminal|terminal is not an author
-    ///     adjacency, so it is refused.
     /// </summary>
     public static class RaisedRegionAnalyzer
     {
@@ -42,7 +50,8 @@ namespace IslandLife.World.Terrain
         /// <summary>
         /// Tallest proven rectangle. R5 proved a 3-tall plateau in-mask (author r0..r2). A fourth
         /// row would have to repeat the r3 tier body, and R5 measured that body as NOT
-        /// self-repeating (soil col0 = 8 vs col15 = 7), so this is refused instead of invented.
+        /// self-repeating (soil col0 = 8 vs col15 = 7), so height 4+ is left unresolved rather
+        /// than invented. This is a coverage limit, not a statement about the author.
         /// </summary>
         public const int MaximumRectangleHeight = 3;
 
@@ -210,8 +219,9 @@ namespace IslandLife.World.Terrain
             int width = maxX - minX + 1;
             int height = maxY - minY + 1;
 
-            // Not a solid rectangle. This is the check that catches L, T, notch and any outline
-            // that turns, without needing to name the shape.
+            // Not a solid rectangle, so the outline turns, notches or encloses a hole. This single
+            // check catches L, T, notch, U and ring without needing to name the shape, because no
+            // turn or notch composition has been pixel-verified yet. The Raised cells are kept.
             if (cells.Count != width * height)
             {
                 reason = RaisedRegionUnsupportedReason.NON_RECTANGULAR_REGION;
