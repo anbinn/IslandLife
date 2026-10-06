@@ -266,18 +266,27 @@ namespace IslandLife.EditorTools.IslandMap
                 "5,6=r0c0;6,6=r0c1;7,6=r0c2;4,5=r0c0;5,5=r1c1;6,5=r1c1;7,5=r1c2;"
                 + "4,4=r2c0*;5,4=r2c0;6,4=r2c1;7,4=r2c2");
 
+            // IL-WORLD-004S-R16C CORRECTED. Both of these previously expected the BUG.
+            //
+            // U_BASIC: the crossbar's front wall used to be displaced one row south while the legs'
+            // walls stayed inside their own mask, so the outer front stepped down a row across the
+            // cavity. It now sits on row 4 with the legs, which is one continuous band.
+            //
+            // U_WITH_BRANCH: (5,5) and (7,5) are ONE CELL HOLES, Raised on all four sides, and the old
+            // expectation recorded a displaced cliff inside each of them. A hole is an interior
+            // boundary and the author never draws an interior face, so those soil tiles are gone.
+            // That is the same defect the user's real O sample exposed.
             Expect(set, "U_BASIC", new[] { "XXXXX", "X...X", "XXXXX" },
                 "4,6=r0c0;5,6=r0c1;6,6=r0c1;7,6=r0c1;8,6=r0c2;"
                 + "4,5=r1c3;5,5=r2c0*;6,5=r2c1*;7,5=r2c2*;8,5=r1c3;"
-                + "4,4=r2c0;5,4=r0c1;6,4=r0c1;7,4=r0c1;8,4=r2c2;"
-                + "5,3=r2c0*;6,3=r2c1*;7,3=r2c2*");
+                + "4,4=r2c0;5,4=r2c1;6,4=r2c1;7,4=r2c1;8,4=r2c2");
 
             Expect(set, "NOTCH_BASIC", new[] { "X.X", "XXX" },
                 "4,5=r0c0;5,5=r0c1;6,5=r0c2;4,4=r1c3;5,4=r2c1*;6,4=r1c3;4,3=r2c3*;6,3=r2c3*");
 
             Expect(set, "U_WITH_BRANCH", new[] { "XX.XX", "X.X.X", "XXXXX" },
                 "4,6=r0c0;5,6=r0c1;6,6=r0c1;7,6=r0c1;8,6=r0c2;"
-                + "4,5=r1c0;5,5=r2c1*;6,5=r1c1;7,5=r2c1*;8,5=r1c2;"
+                + "4,5=r1c0;6,5=r1c1;8,5=r1c2;"
                 + "4,4=r2c0;5,4=r2c2;6,4=r2c1*;7,4=r2c0;8,4=r2c2");
 
             // Card section 5 and 18, asserted per junction rather than by shape name: no straight

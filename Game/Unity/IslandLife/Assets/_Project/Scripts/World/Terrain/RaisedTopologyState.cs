@@ -50,6 +50,7 @@ namespace IslandLife.World.Terrain
             bool northIsEnclosedVoid,
             bool eastIsEnclosedVoid,
             bool westIsEnclosedVoid,
+            bool southIsEnclosedVoid,
             RaisedSurfaceRole role,
             HillColumnSlot slot)
         {
@@ -64,6 +65,7 @@ namespace IslandLife.World.Terrain
             NorthIsEnclosedVoid = northIsEnclosedVoid;
             EastIsEnclosedVoid = eastIsEnclosedVoid;
             WestIsEnclosedVoid = westIsEnclosedVoid;
+            SouthIsEnclosedVoid = southIsEnclosedVoid;
             Role = role;
             Slot = slot;
         }
@@ -97,6 +99,18 @@ namespace IslandLife.World.Terrain
         /// <summary>True when the cell directly west is a single-cell hole.</summary>
         public bool WestIsEnclosedVoid { get; }
 
+        /// <summary>
+        /// True when the cell directly south is a single-cell hole.
+        ///
+        /// IL-WORLD-004S-R16C. This is the fourth member of a family that already had three members,
+        /// and it was the missing one. A hole is an INTERIOR boundary, so ground continues across it
+        /// and it must never be mistaken for open sky. The author never draws an interior face, exactly
+        /// as it never draws an east or west face, and the real FirstIsland O sample proved the
+        /// consequence of leaving it out: the cell above a one-cell hole dropped its front cliff one row
+        /// south and painted a block of soil INSIDE the hole.
+        /// </summary>
+        public bool SouthIsEnclosedVoid { get; }
+
         /// <summary>Which row of the author vertical stack this cell becomes.</summary>
         public RaisedSurfaceRole Role { get; }
 
@@ -109,7 +123,7 @@ namespace IslandLife.World.Terrain
         /// </summary>
         public bool SolidNorth => ConnectedNorth || NorthIsEnclosedVoid;
 
-        public bool SolidSouth => ConnectedSouth;
+        public bool SolidSouth => ConnectedSouth || SouthIsEnclosedVoid;
 
         public bool SolidEast => ConnectedEast || EastIsEnclosedVoid;
 
@@ -172,6 +186,7 @@ namespace IslandLife.World.Terrain
                 false,
                 false,
                 false,
+                false,
                 RaisedSurfaceRole.FRONT_CLIFF,
                 source.Slot);
         }
@@ -194,14 +209,121 @@ namespace IslandLife.World.Terrain
             bool northVoid = IsEnclosedVoid(grid, x, y + 1);
             bool eastVoid = IsEnclosedVoid(grid, x + 1, y);
             bool westVoid = IsEnclosedVoid(grid, x - 1, y);
+            bool southVoid = IsEnclosedVoid(grid, x, y - 1);
 
             HillColumnSlot slot = SlotFor(w || westVoid, e || eastVoid);
+
+            // IL-WORLD-004S-R16C. A front wall must stay on ONE visual row. The author grammar decides
+            // that row from the column's own thickness: a column three deep or more carries its wall
+            // inside its own mask, a thinner one drops it one row south. Where a thick column and a thin
+            // column meet on the same logical row the two rules disagree, and the front boundary steps
+            // down by a row at the junction so the two soil bands never meet. The real FirstIsland L
+            // sample showed exactly that: a four deep corner column with its wall inside its own mask,
+            // and a one deep arm with its wall dropped a row below, leaving a gap between them.
+            //
+            // So if a horizontal neighbour on this same row is Raised, also has an exposed south, and
+            // already carries its wall inside its own mask, this cell's wall belongs on that same row
+            // too. It reads only the neighbour's own locally derivable thickness, and walks at most two
+            // cells so the answer is bounded and no recursive Resolve is needed.
+            bool frontContinues = !s && (FrontContinuesInMask(grid, x, y, 0));
+
             RaisedSurfaceRole role = RoleFor(
-                n || northVoid, !s, runDepth, offset, northVoid, slot == HillColumnSlot.NARROW);
+                n || northVoid, !s, runDepth, offset, northVoid,
+                slot == HillColumnSlot.NARROW, frontContinues);
 
             return new RaisedTopologyState(
                 raw, canonical, n, s, e, w, runDepth, offset,
-                northVoid, eastVoid, westVoid, role, slot);
+                northVoid, eastVoid, westVoid, southVoid, role, slot);
+        }
+
+        /// <summary>
+        /// True when this cell's front wall must join a front row that a horizontal neighbour has already
+        /// committed to. Bounded to <see cref="MaxFrontWalk"/> cells so it always terminates.
+        /// </summary>
+        private const int MaxFrontWalk = 2;
+
+        private static bool FrontContinuesInMask(
+            TerrainGridData grid, int x, int y, int depth)
+        {
+            if (depth >= MaxFrontWalk)
+            {
+                return false;
+            }
+
+            if (ThickNeighbourEndsTheRow(grid, x - 1, y, -1)
+                || ThickNeighbourEndsTheRow(grid, x + 1, y, 1))
+            {
+                return true;
+            }
+
+            // One step further along the same row, so a thin arm two cells long still joins a thick
+            // column's front instead of stepping down half way along.
+            if (RaisedNeighborResolver.IsRaised(grid, x - 1, y)
+                && FrontContinuesInMask(grid, x - 1, y, depth + 1))
+            {
+                return true;
+            }
+
+            return RaisedNeighborResolver.IsRaised(grid, x + 1, y)
+                && FrontContinuesInMask(grid, x + 1, y, depth + 1);
+        }
+
+        /// <summary>
+        /// Whether this thick neighbour carries its wall inside its own mask AND sits at the END of the
+        /// front on this row rather than in the middle of it.
+        ///
+        /// This end test is what separates the two real cases that are otherwise identical in topology.
+        /// In the real L the four deep corner column is at the END of its row and a thin arm butts up
+        /// against it, so the arm's wall must join the corner's row or the front steps down a row and
+        /// leaves a gap. In the R14 T the three deep branch column is in the MIDDLE of its row with
+        /// thin cells on BOTH sides, and there the two runs must stay on their own row and terminate on
+        /// the author's r2c2 and r2c0 terminals, which is the corner treatment R14 already proved.
+        /// Joining a middle column would raise three cells of front instead of one and destroy it.
+        /// </summary>
+        private static bool ThickNeighbourEndsTheRow(
+            TerrainGridData grid, int x, int y, int dirX)
+        {
+            if (!NeighbourCarriesWallInMask(grid, x, y))
+            {
+                return false;
+            }
+
+            return !EmitsFrontAnywhere(grid, x + dirX, y);
+        }
+
+        /// <summary>True when this cell has a south facing front at all, wherever the wall lands.</summary>
+        private static bool EmitsFrontAnywhere(TerrainGridData grid, int x, int y)
+        {
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y)
+                || RaisedNeighborResolver.IsRaised(grid, x, y - 1))
+            {
+                return false;
+            }
+
+            return !IsEnclosedVoid(grid, x, y - 1);
+        }
+
+        /// <summary>
+        /// Whether this cell, on its own thickness alone, carries its front wall inside its own mask.
+        /// Deliberately the NON recursive half of the rule: thickness three or more, or ground above it
+        /// that is an enclosed hole. That is enough to recognise a thick column without consulting the
+        /// junction rule and so without recursing.
+        /// </summary>
+        private static bool NeighbourCarriesWallInMask(TerrainGridData grid, int x, int y)
+        {
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y)
+                || RaisedNeighborResolver.IsRaised(grid, x, y - 1))
+            {
+                return false;
+            }
+
+            bool northVoid = IsEnclosedVoid(grid, x, y + 1);
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y + 1) && !northVoid)
+            {
+                return false;
+            }
+
+            return RaisedNeighborResolver.MeasureRunDepth(grid, x, y) >= 3 || northVoid;
         }
 
         /// <summary>
@@ -249,7 +371,8 @@ namespace IslandLife.World.Terrain
             int runDepth,
             int offsetFromRunBottom,
             bool northIsEnclosedVoid,
-            bool isNarrow)
+            bool isNarrow,
+            bool frontContinuesInMask)
         {
             // A front wall belongs inside the mask whenever there is ground above it to sit under:
             // either the plateau is at least three cells thick (the proven r0/r1/r2 stack), or the cell
@@ -262,7 +385,19 @@ namespace IslandLife.World.Terrain
             // turns a south facing platform front into dirt windows punched into the top surface. The
             // existing behaviour was rendered at every junction and inspected: the run already
             // terminates on the author terminal pieces, so the inner corner is already handled.
-            bool frontInMask = southExposed && solidNorth && (runDepth >= 3 || northIsEnclosedVoid);
+            //
+            // IL-WORLD-004S-R16C adds the one case that real FirstIsland data proved was missing: a
+            // thick column and a thin one meeting on the same row, where the front must not step.
+            //
+            // When the front continues, the support does not have to be directly overhead. In the real
+            // L sample the cell at the inside of the bend has open ground to its north, which is the
+            // notch, yet its neighbour on the same row carries the wall on the row this cell must join.
+            // Requiring solid north as well would leave that cell behind and reintroduce the step, so a
+            // continuing front supplies its own support. The only art given up is the rounded cap on
+            // that one cell, and the author has no north facing soil face to replace it with anyway.
+            bool frontInMask = southExposed
+                && (runDepth >= 3 || northIsEnclosedVoid || frontContinuesInMask)
+                && (solidNorth || frontContinuesInMask);
 
             if (frontInMask)
             {

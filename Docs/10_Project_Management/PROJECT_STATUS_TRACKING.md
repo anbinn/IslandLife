@@ -129,13 +129,29 @@ grammar audited and locked by R16B.
   in hex and bits, the normalised mask, `RaisedTopologyState`, role, slot, the in-mask versus displaced
   cliff decision and every emitted `HillVisualTile`. Categories are **local mask only** — `CONCAVE_WRAP`,
   `JUNCTION_MEET`, `DIAGONAL_ONLY_TOUCH`, `TERMINAL_TRANSITION`, `DISPLACED_CLIFF_BESIDE_CAP` — with no
-  region walk, no span and no shape name.
-- **R16C measurement result: the live map currently holds ZERO Raised cells**, so there is no real
-  junction topology present to diagnose. This is recorded as a fact, not as a reproduction. Searched
-  and confirmed absent: any backup or undo copy of the asset, any other asset in the project carrying
-  an `elevations` payload, and any committed revision of the asset with hills (both committed revisions
-  are 19-line stubs with no `elevations` field). **The production renderer was not modified in R16C and
-  the visual problem is NOT solved.**
+  region walk, no span and no shape name. It also segments the real map into connected components and
+  renders each one zoomed from the live asset.
+- **R16C measurement on the user's three real samples (18 Raised cells, 3 components).** Read straight
+  out of the live asset, not approximated: a 4 cell T, a 6 cell L and an 8 cell O. Two real defects were
+  reproduced and fixed, and one is not expressible.
+  - **O, inner boundary — FIXED.** Cell `(3,-4)`, raw mask `0xB8`, dropped its front cliff one row south
+    and painted a block of **soil inside the ring's one-cell hole**. `IsEnclosedVoid` recognised holes
+    on the north, east and west sides of a cell but not the **south**, so the hole was treated as open
+    sky. `SolidSouth` now includes `SouthIsEnclosedVoid`, which makes an interior boundary behave like
+    the three that already did. The hole is now empty.
+  - **L, concave corner — FIXED.** Cell `(3,-11)`, raw mask `0x19`, `NOTCH`. The four-deep corner column
+    carries its wall **inside** its own mask while the one-deep arm beside it drops its wall a row
+    lower, so the front boundary stepped down and left a gap. The author's row choice follows column
+    thickness, so at a thickness discontinuity the two rules disagreed. A wall now joins its neighbour's
+    row when that thick neighbour sits at the **END** of the row. The end test is essential: without it
+    the same rule fires on the R14 T, whose three-deep branch column is in the **middle** of its row,
+    and it destroys both inner-corner terminals. The front is now one continuous band.
+  - **T, junction — NOT EXPRESSIBLE, precisely.** Cells `(-2,-11)` raw `0x90`, `(0,-11)` raw `0x28`,
+    bar middle `(-1,-11)` raw `0x58`, stem `(-1,-12)` raw `0x07`. A one-wide stem hanging off a bar
+    protrudes one cell further south, so its front is genuinely one row lower, and the junction needs
+    the stem's **east and west faces**. The author sheet has no east or west soil face at all, so the
+    two soil bands either side of the stem meet it at a hard right angle. Unchanged, and left that way
+    deliberately rather than faked.
 - **Projection ownership is structurally safe.** Across all 512 neighbourhoods the maximum number of
   owners reaching for a single visual coordinate is **1**. `AuthorHillsLocalResolver` claims through a
   dictionary under a fixed north-to-south then west-to-east traversal, so a second claimant is refused
