@@ -215,6 +215,76 @@ namespace IslandLife.EditorTools.IslandMap
                 byPosition[t.VisualPosition] = t;
             }
 
+            // Component segmentation over the real data, four connected because that is what the user
+            // paints as one mass. This only groups cells for reporting; nothing below it changes how
+            // the resolver decides anything.
+            var comp = new Dictionary<Vector2Int, int>();
+            var members = new List<List<Vector2Int>>();
+            for (int y = grid.OriginY; y < grid.OriginY + grid.Height; y++)
+            {
+                for (int x = grid.OriginX; x < grid.OriginX + grid.Width; x++)
+                {
+                    if (!RaisedNeighborResolver.IsRaised(grid, x, y)
+                        || comp.ContainsKey(new Vector2Int(x, y)))
+                    {
+                        continue;
+                    }
+
+                    int id = members.Count;
+                    var list = new List<Vector2Int>();
+                    members.Add(list);
+                    var queue = new Queue<Vector2Int>();
+                    queue.Enqueue(new Vector2Int(x, y));
+                    comp[new Vector2Int(x, y)] = id;
+                    while (queue.Count > 0)
+                    {
+                        Vector2Int cur = queue.Dequeue();
+                        list.Add(cur);
+                        foreach (Vector2Int step in new[]
+                        {
+                            new Vector2Int(0, 1), new Vector2Int(0, -1),
+                            new Vector2Int(1, 0), new Vector2Int(-1, 0),
+                        })
+                        {
+                            var nx = new Vector2Int(cur.x + step.x, cur.y + step.y);
+                            if (RaisedNeighborResolver.IsRaised(grid, nx.x, nx.y)
+                                && !comp.ContainsKey(nx))
+                            {
+                                comp[nx] = id;
+                                queue.Enqueue(nx);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Line($"   REAL connected components found: {members.Count}");
+            for (int i = 0; i < members.Count; i++)
+            {
+                int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+                foreach (Vector2Int m in members[i])
+                {
+                    minX = Math.Min(minX, m.x);
+                    maxX = Math.Max(maxX, m.x);
+                    minY = Math.Min(minY, m.y);
+                    maxY = Math.Max(maxY, m.y);
+                }
+
+                Line("");
+                Line($"   COMPONENT_{i + 1:000}  {members[i].Count} cells, bounding box "
+                    + $"x {minX}..{maxX}, y {minY}..{maxY}");
+                for (int y = maxY; y >= minY; y--)
+                {
+                    var row = new StringBuilder("        ");
+                    for (int x = minX; x <= maxX; x++)
+                    {
+                        row.Append(RaisedNeighborResolver.IsRaised(grid, x, y) ? '#' : '.');
+                    }
+
+                    Line($"      y={y,4} {row}");
+                }
+            }
+
             int idx = 0;
             int concave = 0;
             int junction = 0;
@@ -370,6 +440,38 @@ namespace IslandLife.EditorTools.IslandMap
                     Line("   visual output  : " + (emitted.Count == 0
                         ? "NONE"
                         : string.Join(" | ", emitted)));
+
+                    // card 10, checked on the real data: does a displaced cliff land on a cell that is
+                    // not part of the shape, and what surrounds that cell?
+                    if (st.DrawsFrontCliffBelow)
+                    {
+                        var cliff = new Vector2Int(x, y - 1);
+                        bool cliffIsRaised = RaisedNeighborResolver.IsRaised(grid, cliff.x, cliff.y);
+                        if (!cliffIsRaised)
+                        {
+                            int raisedNeighbours = 0;
+                            foreach (Vector2Int step in new[]
+                            {
+                                new Vector2Int(0, 1), new Vector2Int(0, -1),
+                                new Vector2Int(1, 0), new Vector2Int(-1, 0),
+                            })
+                            {
+                                if (RaisedNeighborResolver.IsRaised(
+                                        grid, cliff.x + step.x, cliff.y + step.y))
+                                {
+                                    raisedNeighbours++;
+                                }
+                            }
+
+                            Line($"   displaced cliff lands on open ground ({cliff.x},{cliff.y}) "
+                                + $"which has {raisedNeighbours} Raised neighbour(s): "
+                                + (raisedNeighbours >= 3
+                                    ? "an interior hole, so the soil is drawn INSIDE the hole"
+                                    : raisedNeighbours == 2
+                                        ? "a two sided pocket, the concave corner case"
+                                        : "a genuine exterior front, which is correct"));
+                        }
+                    }
 
                     // card 7: is this exact raw mask covered by the R16B 512 case matrix?
                     Line($"   R16B coverage  : raw mask 0x{(byte)raw:X2} is inside the swept set of all "
