@@ -121,10 +121,27 @@ grammar audited and locked by R16B.
   wide `c0..c2` stack inside one author column wherever a column's width changes with height; renders of
   every L and every branch orientation show no visible seam. Both counts are asserted in the committed
   harness so any future change is visible.
-- **`ILW004SR16BJunctionGrammarLock` is the committed harness.** It never counts tiles: for every
-  junction it asserts `LOCAL TOPOLOGY -> EXPECTED AUTHOR ROLE -> ACTUAL SPRITE`, naming the exact author
-  slice on every visual cell together with its `OutsideLogicalMask`, and a surplus tile fails as hard as
-  a missing one.
+- **`ILW004SR16CRealJunctionDiagnostic` reads the real map, not fixtures.** It loads the live
+  `FirstIsland_TerrainData`, takes a `CreateGridData` snapshot and never writes: the harness scans its
+  own source, with string literals and comments stripped, for `SaveAssets`, `SaveAssetAssets`,
+  `Undo.Record`, `SetDirty` and for `SetData`/`SetElevations` on the loaded asset, and SHA256, size,
+  mtime and the Raised count are all re-read afterwards. For every Raised cell it reports the raw mask
+  in hex and bits, the normalised mask, `RaisedTopologyState`, role, slot, the in-mask versus displaced
+  cliff decision and every emitted `HillVisualTile`. Categories are **local mask only** — `CONCAVE_WRAP`,
+  `JUNCTION_MEET`, `DIAGONAL_ONLY_TOUCH`, `TERMINAL_TRANSITION`, `DISPLACED_CLIFF_BESIDE_CAP` — with no
+  region walk, no span and no shape name.
+- **R16C measurement result: the live map currently holds ZERO Raised cells**, so there is no real
+  junction topology present to diagnose. This is recorded as a fact, not as a reproduction. Searched
+  and confirmed absent: any backup or undo copy of the asset, any other asset in the project carrying
+  an `elevations` payload, and any committed revision of the asset with hills (both committed revisions
+  are 19-line stubs with no `elevations` field). **The production renderer was not modified in R16C and
+  the visual problem is NOT solved.**
+- **Projection ownership is structurally safe.** Across all 512 neighbourhoods the maximum number of
+  owners reaching for a single visual coordinate is **1**. `AuthorHillsLocalResolver` claims through a
+  dictionary under a fixed north-to-south then west-to-east traversal, so a second claimant is refused
+  and reported as `VISUAL_CONFLICT` rather than silently overwriting, and no `OutsideLogicalMask` tile
+  ever lands on a logical Raised cell. This means a "complex real map differs from a small fixture
+  because of write order" explanation is ruled out by measurement, not merely by argument.
 
 Current production model: **Author Hills Composition System, per cell.**
 - `Raised` logical data supports **arbitrary authored masks**. Any shape the user paints is stored.
