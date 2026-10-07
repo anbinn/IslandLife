@@ -132,7 +132,37 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
-- **R21 author corner continuation grammar SHIPPED. `Hills_r3c5` (no continuation) and `Hills_r2c4`
+- **R22 grammar stability audit — DIAGNOSTIC ONLY, no production change. The headline result is
+  NEGATIVE and it corrects the card's premise.**
+  - **There is currently NO observed remote sprite mutation.** Sweeping lengths 1,2,3,4,5,6,7,8,16,32,
+    64,100 on a plain vertical line, a plain horizontal line, both arms of a correct L, and the
+    junction arm, and diffing every previously existing cell at every step, produced **411 records
+    where a cell's 3x3 mask was UNCHANGED yet its resolver output record changed — and in 411 of 411
+    the ROLE, the SLOT, the SPRITE and the VISUAL COORDINATE were all identical.** Not one Sprite moved
+    on a cell that gained no neighbour.
+  - **What is real, and is the actual finding: `MeasureRunDepth` rewrites `runDepth` on EVERY cell of a
+    column whenever that column gets longer.** It is an unbounded whole-column walk in both directions,
+    and `runBottom` likewise. So one Paint at the top of a 100-tall column mutates the resolver input
+    of 63 of the 99 existing cells, none of which changed its local topology and none of which changed
+    its picture. Growth is exactly linear: 1,1,2,3,4,5,6,7,15,31,63 mask-unchanged mutations at
+    2,3,4,5,6,7,8,16,32,64,100.
+  - **So `runDepth` is a volatile, region-sized input that is currently INERT, not currently harmful.**
+    `RoleFor`'s depth branches happen to collapse to the same answer for a 1-wide column at every
+    depth, which is why nothing visible moved. It is nonetheless the only mechanism by which a
+    threshold crossing anywhere in `RoleFor` could flip a role on a cell whose own 3x3 never changed.
+    That is a latent coupling, and it is the thing to remove, not a live bug.
+  - **`offsetFromRunBottom` is clean.** It is `y - runBottom`, so extending a column upward does NOT move
+    it for any existing cell. Confirmed by measurement: the horizontal arm sweep shows **0**
+    mask-unchanged mutations at every length, and the vertical arm's mutations are entirely `runDepth`.
+  - **No hidden remote coupling across a gap.** Extending a single edge far away in all eight
+    directions N, S, E, W, NE, NW, SE, SW at distances 1,2,3,4,8,16,32,64 left a fixed corner target
+    `(4,4)` **completely stable in all 8 x 8 = 64 probes**. So neither `FrontContinuesInMask`
+    (`MaxFrontWalk = 2`) nor `IsAuthorCornerJunction`'s two-step-east probe leaks across empty ground.
+  - **TWO OF MY OWN MEASUREMENT BUGS, both found and fixed before any of the above was believed.** The
+    first diff read the "before" cell from the *after* dictionary, so every comparison was trivially
+    equal and it reported 0 changes of any kind; a raw snapshot dump disproved it. The second was a
+    ragged-row crash. Both are recorded because the first one would have produced a confident and
+    completely false "the system is stable" report.- **R21 author corner continuation grammar SHIPPED. `Hills_r3c5` (no continuation) and `Hills_r2c4`
   (continuation).** The junction is the cell where a **vertical Raised boundary on the west meets a
   Raised platform running east**, and the vertical boundary ends immediately below it. Measured on the
   real resolver path at `(4,5)`:
