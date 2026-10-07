@@ -164,7 +164,74 @@ author left and right **top** corners by R20.
   - **Consequence for R23B:** the blocker is no longer architectural. It is that the current slot
     derivation must be replaced by a raw-cardinal derivation, and that replacement has to be proven
     against the R18/R19/R20 oracles one piece at a time. Nothing was implemented this round, per
-    section 7.- **R23B local topology semantic core (`a12a8e9` -> this card). Author semantics now derive from ONE cell's
+    section 7.- **R24: the author's r2c4 junction is restored from LOCAL topology, and it is now a LOCKED_USER_VISUAL_ORACLE.
+  The live cell the user's screenshot marked draws `Hills_r2c4` instead of `Hills_r1c0`, from a six-bit
+  predicate over its own 3x3.**
+  - **TARGET_RAW_3x3 = 0xD2** (production bit order: NW 0x01, N 0x02, NE 0x04, W 0x08, E 0x10, SW 0x20,
+    S 0x40, SE 0x80) = **N, E, S, SE raised; NW, NE, W, SW open**.
+    **TARGET_CANONICAL = 0xD2.** Live cell **(0,-10)**, 7-deep ring wall, on the user's map.
+    R21 recorded this same junction at raw 0xD2 independently, and the live asset produced it
+    independently this round, so the number was confirmed by two routes rather than chosen from a table.
+  - **BEFORE: role MIDDLE_SURFACE, slot LEFT_TERMINAL, sprite Hills_r1c0.** The junction cell has N and S
+    both Raised, so the R23B cardinal ladder classified it as an interior body row and emitted the plain
+    body. That is the whole defect, and it is why a length-free grammar could not have found it: the
+    ladder was right about the topology and wrong about the art, because the art needed the handover fact.
+  - **AFTER: role JUNCTION_VERTICAL_CONTINUATION, sprite Hills_r2c4**, tagged `FRONT_CLIFF` because r2c4
+    is a row r2 slice. **R2C4_STATUS: LOCKED_USER_VISUAL_ORACLE.** No longer HISTORICAL, no longer
+    UNRESOLVED. Exactly **1** live cell draws r2c4, and the other live r1c0 cell (16,-2) still draws r1c0.
+  - **USES_ONLY_LOCAL_3X3: YES. RUN_DEPTH_SEMANTICS: NO. X2_Y2_LOOKAHEAD: NO.** The rule is six bits:
+    W open, N raised, S raised, E raised, SE raised, NE open. No depth, no offset, no walk, no
+    width/height, no shape name, no x+/-2, no y+/-2. The old R21 predicate needed (x,y-2), (x+2,y) and
+    (x+2,y-1) and was **not** restored.
+  - **THE DISCRIMINATOR IS ONE BIT, MEASURED. Sixteen raw masks draw the author's r1c0 body. Four are the
+    junction - 0xD2, 0xD3, 0xF2, 0xF3, which are only the NW and SW variants of each other - and all
+    four now emit r2c4. The other twelve stay r1c0 and split cleanly:**
+    `0xD6 0xD7 0xF6 0xF7` **NE raised** = a wide plateau edge, the body row is right;
+    `0x52 0x53 0x56 0x57 0x72 0x73 0x76 0x77` **SE open** = the top of the boundary, nothing to hand over to.
+    **So "NE open together with SE raised" IS the handover, and it is a single neighbour one cell away.**
+    That is exactly why the rule can be 3x3-only, and it is also why the vertical BODY is not disturbed:
+    only the handover leaves r1c0.
+    NW and SW are deliberately left unconstrained, so the four variants are one topology and one rule
+    names it. Pinning them would assert the junction only exists where the boundary happens to be one
+    cell wide, which is a shape assumption about the surroundings.
+  - **R18 41/0 · R19 33/0 · R20 59/0 · R11 172/0/1 SKIP · R15 PASS (R18 live Paint/Erase/Undo/Redo) ·
+    R16C 13/0 · R23B 108/0 · R24 audit 21/0.** All frozen oracles run unchanged in their own processes.
+    Plain vertical bodies are re-asserted at widths 2, 3 and 5 and keep the exact r0c0/r1c0/r2c0 stack;
+    width 2 is included deliberately because it has no interior column and is the case most likely to be
+    over-captured.
+  - **LENGTH_1_TO_100: PASS.** The junction neighbourhood is read OFF THE LIVE MAP and rebuilt with every
+    arm 1, 2, 3, 4, 5, 8, 16, 32, 64, 100 cells long. The raw 3x3 stays 0xD2 at all ten reaches and the
+    sprite stays r2c4 as JUNCTION_VERTICAL_CONTINUATION at all ten. It never reverts to r1c0.
+  - **A BIT-ORDER DEFECT WAS FOUND IN MY OWN R23B HARNESS AND FIXED, AND IT HAD BEEN MASKING TWO BAD
+    FIXTURES.** `ILW004SR23BLocalCore` numbered its eight neighbours N-first while production numbers them
+    NW-first, so a production mask such as 0xD2 decoded as a completely different topology. Two
+    consequences, both real and both now fixed rather than papered over:
+      - the junction sweep tested NE,S,SW,NW and the cell *correctly* resolved to the author's r0c7 top
+        corner, which looked like the rule failing when the rule had never been tested;
+      - `EXTEND_ONE_ARM_STABLE` was **passing for the wrong reason**: `0x01` meant NW, so the arm ran
+        north-west and the cell answered SECOND_FRONT_CLIFF / r3c3, matching the assertion by accident.
+        With the mask stated in production order it is a genuine one-wide column bottom and answers
+        r2c3, which is what R18 locks at any length.
+    **The lesson recorded: a fixture can pass by testing the wrong topology.** Every raw mask in that
+    harness is now decoded in production's order, the identity literals were converted to named shifts,
+    and the junction fixtures are discovered from data by the predicate rather than hard-coded by
+    coordinate.
+  - **Two R24 audit assertions were also re-baselined, because they were asserting the PRE-FIX world.**
+    One required every selected mask to "draw r1c0 today" and the other located the junction by searching
+    for the r1c0 sprite - so both reported the successful fix as a failure. **Asserting a pre-fix sprite
+    snapshot is how a harness ends up defending a bug.** Both now locate and judge the junction by its
+    topology and role.
+  - **A silent arm-truncation bug was caught by the read-back assertion in the R24 harness**: sizing a
+    probe grid from the target cell instead of the origin let south arms run off the bottom, clamping
+    18240 arm cells away while the mask read-back still looked perfect. Fixed by insetting the target on
+    its west AND south extents; 0 truncated cells over all 2048 probes.
+  - **r3c5 is untouched, as the card requires.** `CORNER_NO_UPPER_CONTINUATION` stays unreachable, r3c5
+    stays wired and unwired-from-any-rule, and nothing was inferred from r2c4's confirmation.
+  - **FirstIsland READ ONLY, no paint session started.** SHA256
+    `5281BA5186CA8A73C4786C48366EC180782EA3FB9F97AAAED2A6FE674F26647F`, 12248b, Raised 50 - identical at
+    card start and card end. `FirstIsland_Prototype.unity` byte-identical. `Hills.png` byte-identical, and
+    so is every Sprite rect, pivot and PPU: the composition-set **asset** was not modified at all, only
+    the C# accessor that names the role.- **R23B local topology semantic core (`a12a8e9` -> this card). Author semantics now derive from ONE cell's
   own 3x3. The run walk, the runDepth ladder, MaxFrontWalk and the R21 junction test are GONE from the
   semantic path; Layer A / Layer B / Layer C are separated and the role is now a pure function of the raw
   3x3.**

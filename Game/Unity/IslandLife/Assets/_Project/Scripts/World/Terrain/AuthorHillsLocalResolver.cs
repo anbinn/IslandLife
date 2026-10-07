@@ -258,11 +258,20 @@ namespace IslandLife.World.Terrain
             {
                 sprite = set.GetRightCorner();
             }
+            else if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION)
+            {
+                // IL-WORLD-004S-R24. The user's screenshot-confirmed junction, LOCKED_USER_VISUAL_ORACLE.
+                // This is the author's own r2c4 slice, in its original orientation; nothing is mirrored,
+                // rotated, stretched, generated or nearest-matched to reach it.
+                sprite = set.GetJunctionContinuation();
+            }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
                 // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable: no rule produces this role, because
                 // proving a junction needs cells beyond 3x3. Kept wired so the author slice stays
-                // reachable-in-principle and IsComplete keeps holding.
+                // reachable-in-principle and IsComplete keeps holding. The SLICE is not lost - the same
+                // author's r2c4 is now reached through JUNCTION_VERTICAL_CONTINUATION above, which proves
+                // it from local topology alone.
                 sprite = set.GetCornerWithUpperContinuation();
             }
             else if (topology.Role == RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION)
@@ -360,6 +369,14 @@ namespace IslandLife.World.Terrain
             }
 
             if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
+            {
+                return HillCompositionRow.FRONT_CLIFF;
+            }
+
+            // IL-WORLD-004S-R24. The junction continuation is the author's r2c4, so it is tagged with its
+            // OWN row r2 and not lumped in with the unreachable R21 roles above. Reporting the row it
+            // actually came from is the whole point of the tag.
+            if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION)
             {
                 return HillCompositionRow.FRONT_CLIFF;
             }

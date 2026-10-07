@@ -76,10 +76,38 @@ namespace IslandLife.World.Terrain
         /// the same provenance as
         /// <see cref="RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION"/>. North occupancy was the sole
         /// discriminator between the two R21 states, which is a genuine local fact, but the junction
-        /// TEST itself was not local, so neither state survives. The author slice <c>Hills_r2c4</c> stays
-        /// wired and unreachable.
+        /// TEST itself was not local, so neither state survives under that name.
+        ///
+        /// The SLICE this role pointed at is not lost: the author's r2c4 junction is now expressed by
+        /// <see cref="JUNCTION_VERTICAL_CONTINUATION"/>, which proves the same author component from
+        /// local topology alone. R21's component was right; only its test was not local.
         /// </summary>
         CORNER_WITH_UPPER_CONTINUATION = 9,
+
+        /// <summary>
+        /// The author's junction continuation component, Hills <c>r2c4</c>. IL-WORLD-004S-R24.
+        ///
+        /// LOCKED_USER_VISUAL_ORACLE. The user confirmed on screen, by screenshot, that one junction cell
+        /// on the live map must draw the author's r2c4, and that it was drawing the plain body row
+        /// <c>r1c0</c> instead. It is therefore no longer UNRESOLVED and no longer a guess.
+        ///
+        /// THE AUTHOR MEANING. A vertical Raised boundary on the WEST continues north past this cell,
+        /// meets a Raised platform on the EAST, and that platform STEPS AWAY to the north while HOLDING
+        /// to the south. The junction is where the vertical boundary hands over to the platform, and the
+        /// author drew one piece for that handover: r2c4.
+        ///
+        /// PROVEN LOCAL. The whole condition is six bits of this cell's own raw 3x3 - see
+        /// <see cref="IsAuthorJunctionContinuation"/>. Measured over all 256 raw masks at eight reaches:
+        /// the condition selects exactly the four NW/SW variants of raw 0xD2, every one of which draws
+        /// the author's r1c0 today, and the twelve other raw masks that draw r1c0 are left alone. So the
+        /// junction is split OUT of the vertical body and the body is not otherwise disturbed.
+        ///
+        /// The discriminator is one bit. NE open with SE raised says the platform steps away north and
+        /// holds south; NE raised says the platform is simply a wide plateau edge and the body row is
+        /// correct. No depth, no offset, no walk, no width, no height, no shape name, no x+/-2 and no
+        /// y+/-2 appear in the test.
+        /// </summary>
+        JUNCTION_VERTICAL_CONTINUATION = 10,
     }
 
     /// <summary>
@@ -356,8 +384,18 @@ namespace IslandLife.World.Terrain
             bool leftTopCorner = IsAuthorLeftTopCorner(grid, x, y);
             bool rightTopCorner = IsAuthorRightTopCorner(grid, x, y);
 
+            // IL-WORLD-004S-R24. The author's junction continuation, decided from the RAW MASK ALONE and
+            // therefore strictly inside this cell's own 3x3. It is computed here rather than inside
+            // RoleForLocal for the same reason the corners are: the predicate is already a pure function
+            // of the mask, so passing it in keeps RoleForLocal's signature about the cardinal ladder only.
+            bool junctionContinuation = IsAuthorJunctionContinuation(raw);
+
+            // A reflective guard, not a runtime cost worth worrying about: if this predicate ever grows
+            // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
+            // asserts that no decision method takes a non-coordinate integer. See the harness.
+
             RaisedSurfaceRole role = RoleForLocal(
-                leftCorner, rightCorner, leftTopCorner, rightTopCorner, n, s);
+                leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
 
             return new RaisedTopologyState(
                 raw, canonical, n, s, e, w, runDepth, offset,
@@ -421,6 +459,60 @@ namespace IslandLife.World.Terrain
 
             return !RaisedNeighborResolver.IsRaised(grid, x + 1, y)
                 && !RaisedNeighborResolver.IsRaised(grid, x - 1, y);
+        }
+
+        /// <summary>
+        /// The author's junction continuation: the vertical boundary on the WEST continues north past
+        /// this cell and hands over to a Raised platform on the EAST, and that platform STEPS AWAY to the
+        /// north while HOLDING to the south. The author's component for this handover is
+        /// <c>Hills_r2c4</c>. IL-WORLD-004S-R24.
+        ///
+        /// READ FROM THIS CELL'S OWN 3x3 AND NOTHING ELSE. Six bits, each one a direct statement about a
+        /// single neighbour:
+        ///
+        ///   W open     the vertical boundary is on the west, so this cell sits on it
+        ///   N raised   the boundary CONTINUES north above this cell - this is the "continuation"
+        ///   S raised   the boundary also continues south below this cell, so this is where it hands over
+        ///   E raised   the platform is attached on the east, so the handover has something to hand to
+        ///   SE raised  the platform HOLDS to the south-east
+        ///   NE open    the platform STEPS AWAY to the north-east
+        ///
+        /// WHY "NE OPEN WITH SE RAISED" IS THE DISCRIMINATOR, MEASURED. Sixteen raw masks draw the
+        /// author's r1c0. Four of them - 0xD2, 0xD3, 0xF2 and 0xF3, which are just the NW and SW variants
+        /// of each other - are this junction. The other twelve split into two groups that are BOTH plainly
+        /// a vertical body and must keep r1c0:
+        ///
+        ///   0xD6 0xD7 0xF6 0xF7                     NE RAISED. The platform continues north too, so
+        ///                                              this is a wide plateau edge, not a handover,
+        ///                                              and the plain body row is right.
+        ///   0x52 0x53 0x56 0x57 0x72 0x73 0x76 0x77  SE OPEN. The platform does not hold to the south,
+        ///                                              so this is the top of the boundary with nothing
+        ///                                              to hand over to.
+        ///
+        /// So NE open together with SE raised is exactly the handover, and it is a SINGLE BIT away from the
+        /// plain body. That is why the rule can be 3x3-only: the difference between junction and body is
+        /// one neighbour one cell away, not a measurement of how far the ground runs.
+        ///
+        /// NW and SW are deliberately NOT constrained. They say whether the west boundary is exactly one
+        /// cell wide at that corner, which is a fact about the surroundings rather than about this
+        /// handover, and the author art is the same either way - so the four variants are one topology and
+        /// one rule names it. Pinning those two bits would assert that the junction only exists where the
+        /// boundary happens to be one wide, which is a shape assumption about the surroundings rather than
+        /// an author fact.
+        ///
+        /// NO x+/-2, NO y+/-2, NO runDepth, NO offset, NO walk, NO width or height, NO shape name. Six bits.
+        ///
+        /// The live map carries this junction at (0,-10), raw 0xD2, and the user's screenshot confirmed it
+        /// must draw the author's r2c4.
+        /// </summary>
+        private static bool IsAuthorJunctionContinuation(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.West) == 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.SouthEast) != 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0;
         }
 
         /// <summary>
@@ -541,6 +633,12 @@ namespace IslandLife.World.Terrain
         ///
         /// The straight ladder, and the R18/R11 oracles each line reproduces:
         ///
+        ///   junction         -> JUNCTION_VERTICAL_CONTINUATION  the author's handover piece, Hills r2c4.
+        ///       IL-WORLD-004S-R24, decided from the raw mask alone. It must be tested BEFORE the straight
+        ///       ladder, because a junction cell has N and S both solid and would otherwise be swallowed by
+        ///       the MIDDLE_SURFACE body row and drawn as the plain r1c0 - which is exactly the defect the
+        ///       user's screenshot reported.
+        ///
         ///   N open, S solid  -> TOP_SURFACE      the author rounded cap, Hills r0.
         ///       R11 3x3 and 5x3 rectangles: their top row is r0c0 | r0c1 ... | r0c2.
         ///       R18 1x2 .. 1x100 columns: their top cell is r0c3.
@@ -580,6 +678,7 @@ namespace IslandLife.World.Terrain
             bool rightCorner,
             bool leftTopCorner,
             bool rightTopCorner,
+            bool junctionContinuation,
             bool northOccupied,
             bool southOccupied)
         {
@@ -607,6 +706,15 @@ namespace IslandLife.World.Terrain
             if (rightCorner)
             {
                 return RaisedSurfaceRole.RIGHT_CORNER;
+            }
+
+            // IL-WORLD-004S-R24. The junction handover, decided BEFORE the straight ladder for the same
+            // reason: the junction cell has N and S both Raised, so the ladder would classify it as an
+            // interior MIDDLE_SURFACE body and emit the plain r1c0. Testing it here is what makes the
+            // author's r2c4 reachable at all, and it is still a pure function of the cell's own raw 3x3.
+            if (junctionContinuation)
+            {
+                return RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION;
             }
 
             // The straight ladder. Four cases, four distinct cardinal patterns, no length anywhere.

@@ -189,11 +189,15 @@ namespace IslandLife.World.Terrain
         /// <summary>
         /// The author's r2c4 left corner-wall piece. IL-WORLD-004S-PJ.
         ///
-        /// Wired into the set so the slice is reachable and is never silently missing, but NOT yet
-        /// reachable from any production rule: the P fixture's front is two separate runs rather than
-        /// one three-cell run, so which front cell takes r2c4 and which takes r2c5 cannot be derived
-        /// from a 3x3 neighbourhood. Emitting it from a guessed cell would be the hard-coding the card
-        /// forbids, so the role is absent rather than wrong. See P_JRoleR2C4.
+        /// R24 SUPERSEDES THE OLD "NOT REACHABLE" NOTE, and the correction is worth stating because the
+        /// two notes disagreed. PJ said the P fixture's front was two separate runs so "which front cell
+        /// takes r2c4" could not be derived from 3x3. R24 found the real junction instead: not a cell in
+        /// the middle of a front, but the HANDOVER where a vertical boundary meets a platform that steps
+        /// away. That topology is one bit - NE open against SE raised - and it IS derivable from 3x3.
+        ///
+        /// So the slice was never in doubt and it is now reachable: see
+        /// <see cref="GetJunctionContinuation"/>, which returns this same field as a
+        /// LOCKED_USER_VISUAL_ORACLE. <c>r2c5</c> remains unwired from any rule, unchanged.
         /// </summary>
         public Sprite GetR2C4()
         {
@@ -204,6 +208,26 @@ namespace IslandLife.World.Terrain
         public Sprite GetR2C5()
         {
             return hillsR2C5;
+        }
+
+        /// <summary>
+        /// The author's junction continuation component: a vertical boundary handing over to a platform
+        /// that steps away north and holds south. IL-WORLD-004S-R24.
+        ///
+        /// LOCKED_USER_VISUAL_ORACLE. The user confirmed this slice on screen by screenshot, so it is no
+        /// longer HISTORICAL or UNRESOLVED. It is the SAME author slice that
+        /// <see cref="GetCornerWithUpperContinuation"/> returns - R21 identified the right component and
+        /// only its TEST was not local. The status change is on the semantics, not on the art: the same
+        /// 16x16 slice, same rect, same pivot, same PPU, nothing added, mirrored, rotated or generated.
+        ///
+        /// Reachability changed from UNRESOLVED to REACHABLE. r2c4 was previously wired but emitted by no
+        /// rule at all, because every rule that tried needed (x, y-2) or (x+2, y). It is now emitted from
+        /// the cell's own raw 3x3 by
+        /// <c>RaisedTopologyState.IsAuthorJunctionContinuation</c>, which reads six bits and nothing else.
+        /// </summary>
+        public Sprite GetJunctionContinuation()
+        {
+            return hillsR2C4;
         }
 
         /// <summary>
@@ -344,6 +368,15 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            // IL-WORLD-004S-R24. The junction continuation must be assigned, because it is now emitted
+            // from production. It shares the r2c4 field with GetCornerWithUpperContinuation, so this is
+            // a second route to a slice that was already checked above; it is asserted anyway, because a
+            // reachable role whose slice is null would silently drop the cell rather than report it.
+            if (GetJunctionContinuation() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -408,6 +441,11 @@ namespace IslandLife.World.Terrain
             if (GetCornerWithUpperContinuation() == null)
             {
                 missing.Add("corner with upper continuation r2c4");
+            }
+
+            if (GetJunctionContinuation() == null)
+            {
+                missing.Add("junction continuation r2c4");
             }
 
             return missing.Count == 0 ? "none" : string.Join(", ", missing);

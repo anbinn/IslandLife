@@ -61,16 +61,28 @@ namespace IslandLife.EditorTools.IslandMap
             Line((ok ? "PASS  " : "FAIL  ") + id + "  ::  " + detail);
         }
 
+        /// <summary>
+        /// The eight neighbours in PRODUCTION bit order, from RaisedNeighborResolver.NeighbourOffsets:
+        /// NorthWest 1&lt;&lt;0, North 1&lt;&lt;1, NorthEast 1&lt;&lt;2, West 1&lt;&lt;3, East 1&lt;&lt;4,
+        /// SouthWest 1&lt;&lt;5, South 1&lt;&lt;6, SouthEast 1&lt;&lt;7.
+        ///
+        /// IL-WORLD-004S-R24. This file previously used an N-FIRST order, which is a DIFFERENT numbering:
+        /// the same eight neighbours get different numbers. That is not a cosmetic difference - it means a
+        /// production mask such as 0xD2 decodes as a completely different topology here, and the junction
+        /// sweep silently tested NE,S,SW,NW and correctly resolved to the author's r0c7 top corner instead
+        /// of r2c4. Every raw mask in this file is now decoded in the same order production uses, so a
+        /// number read off production can be handed straight to a fixture here.
+        /// </summary>
         private static readonly (string Name, int DX, int DY, int Bit)[] Dirs =
         {
-            ("N", 0, 1, 0),
-            ("NE", 1, 1, 1),
-            ("E", 1, 0, 2),
-            ("SE", 1, -1, 3),
-            ("S", 0, -1, 4),
+            ("NW", -1, 1, 0),
+            ("N", 0, 1, 1),
+            ("NE", 1, 1, 2),
+            ("W", -1, 0, 3),
+            ("E", 1, 0, 4),
             ("SW", -1, -1, 5),
-            ("W", -1, 0, 6),
-            ("NW", -1, 1, 7),
+            ("S", 0, -1, 6),
+            ("SE", 1, -1, 7),
         };
 
         private static readonly int[] Reaches = { 1, 2, 3, 4, 8, 16, 64, 100 };
@@ -177,8 +189,16 @@ namespace IslandLife.EditorTools.IslandMap
                 // decision methods must take NO integer parameter at all. If any of them ever needed a
                 // length again it would have to take one, so this fails rather than letting the length
                 // come back quietly.
-                foreach (string method in new[] { "RoleForLocal", "SlotFor", "IsAuthorLeftCorner",
-                    "IsAuthorRightCorner", "IsAuthorLeftTopCorner", "IsAuthorRightTopCorner" })
+                // Some predicates take a mask and no grid, so they are looked up on either signature. Getting this
+                // wrong would silently SKIP a method, so a method that cannot be found at all is a
+                // FAILURE rather than a skip: a missing method means the rule under test is gone.
+                var wanted = new List<string>
+                {
+                    "RoleForLocal", "SlotFor", "IsAuthorLeftCorner", "IsAuthorRightCorner",
+                    "IsAuthorLeftTopCorner", "IsAuthorRightTopCorner", "IsAuthorJunctionContinuation",
+                };
+
+                foreach (string method in wanted)
                 {
                     System.Reflection.MethodInfo mi = typeof(RaisedTopologyState).GetMethod(
                         method,
@@ -186,6 +206,9 @@ namespace IslandLife.EditorTools.IslandMap
                             | System.Reflection.BindingFlags.Static);
                     if (mi == null)
                     {
+                        Check($"NO_LENGTH_PARAMETER_{method.ToUpperInvariant()}", false,
+                            $"{method} does not exist on RaisedTopologyState, so the rule under test "
+                                + "is missing. A missing method is a failure, not something to skip");
                         continue;
                     }
 
@@ -332,11 +355,18 @@ namespace IslandLife.EditorTools.IslandMap
             // The card's own worked example, asserted as an identity rather than argued. Every
             // candidate slot actually observed is printed, so a FAIL says which one disagreed instead
             // of only saying that something did.
+            //
+            // PRODUCTION BIT ORDER (R24): E is 1<<4 = 0x10 and W is 1<<3 = 0x08. Under the old N-first
+            // order this file used, the same two neighbours were 0x04 and 0x40, so these numbers had to
+            // move with the table. They are written as shifts rather than hex so the change cannot be
+            // half-applied later.
+            const int BitE = 1 << 4;
+            const int BitW = 1 << 3;
             var identity = new (int Raw, string Label, string Want)[]
             {
-                (0x04, "E only", HillColumnSlot.LEFT_TERMINAL.ToString()),
-                (0x44, "W + E", HillColumnSlot.BODY.ToString()),
-                (0x40, "W only", HillColumnSlot.RIGHT_TERMINAL.ToString()),
+                (BitE, "E only", HillColumnSlot.LEFT_TERMINAL.ToString()),
+                (BitE | BitW, "W + E", HillColumnSlot.BODY.ToString()),
+                (BitW, "W only", HillColumnSlot.RIGHT_TERMINAL.ToString()),
                 (0x00, "both open", HillColumnSlot.NARROW.ToString()),
             };
 
@@ -467,9 +497,16 @@ namespace IslandLife.EditorTools.IslandMap
 
             foreach (int reach in new[] { 1, 2, 3, 4, 8, 16, 64, 100 })
             {
-                // North arm only. The cell is the bottom of a column, and lengthening the column must
-                // not change it.
-                TerrainGridData g = Build(0x01, reach, out int tx, out int ty);
+                // North arm only, in PRODUCTION bit order (N is 1<<1). The cell is the bottom of a
+                // column and lengthening the column must not change it.
+                //
+                // This fixture was WRONG until R24 and was passing for the wrong reason: under the old
+                // N-first numbering, 0x01 meant NW, so the arm went north-WEST and the cell answered
+                // SECOND_FRONT_CLIFF / r3c3 - the answer for an isolated cell - which happened to match
+                // whatever the assertion was checking. Stating the mask in production order makes the
+                // fixture a genuine one-wide column bottom, and the answer becomes r2c3, which is what
+                // R18 locks for the bottom cell of a one-wide column at any length.
+                TerrainGridData g = Build(1 << 1, reach, out int tx, out int ty);
                 RaisedTopologyState t = RaisedTopologyState.Resolve(g, tx, ty);
                 string mine = SpriteAt(RaisedVisualPlan.Build(g, set), tx, ty);
                 Line($"   extend_north reach {reach,3}: raw 0x{Encode(g, tx, ty):X2} role {t.Role} "
@@ -477,8 +514,9 @@ namespace IslandLife.EditorTools.IslandMap
 
                 Check($"EXTEND_ONE_ARM_STABLE_REACH_{reach}",
                     mine == "Hills_r2c3" && t.Role == RaisedSurfaceRole.FRONT_CLIFF,
-                    $"bottom of a north arm of {reach} cell(s): {mine} as {t.Role}. The cell's raw 3x3 "
-                        + "is N-only at every reach, so the answer must not move as the column grows");
+                    $"bottom of a one-wide north arm of {reach} cell(s): {mine} as {t.Role}. The cell's "
+                        + "own raw 3x3 is N-only at every reach, so the answer must not move as the "
+                        + "column grows, and r2c3 is the bottom cell R18 locks for a one-wide column");
             }
 
             Line("");
@@ -527,6 +565,9 @@ namespace IslandLife.EditorTools.IslandMap
         /// </summary>
         private static void AuthorOracles(AuthorHillsCompositionSet set)
         {
+            Line("");
+            Line("-- 3c: the R24 junction, and that the vertical BODY around it is untouched --");
+            JunctionGrammar(set);
             Line("");
             Line("-- 4: author straight grammar, vertical and horizontal, lengths 1..100 --");
 
@@ -607,6 +648,227 @@ namespace IslandLife.EditorTools.IslandMap
             Line("-- R19 / R20 corner primitives are locked by their own unchanged harnesses --");
         }
 
+        /// <summary>
+        /// The R24 junction, asserted three ways, because the card's risk is not that the junction is
+        /// wrong but that fixing it swallows the plain vertical body around it.
+        ///
+        /// 1. the LIVE cell the user's screenshot marked must now draw the author's r2c4;
+        /// 2. the junction must be UNIQUE on the live map - if it also claimed an unrelated cell, the
+        ///    rule is too greedy and that has to be visible;
+        /// 3. a plain vertical body, and the wide plateau edge that differs from the junction by ONE
+        ///    bit, must still draw r1c*.
+        ///
+        /// The one-bit pair is the load-bearing case: 0xD2 (junction, NE open) and 0xD6 (plain body,
+        /// NE raised) are the same west-boundary vertical column one cell apart in topology, and the
+        /// author uses different pieces for them. Nothing but a 3x3 read can tell them apart, which is
+        /// exactly why this rule can be local.
+        /// </summary>
+        private static void JunctionGrammar(AuthorHillsCompositionSet set)
+        {
+            TerrainMapData data = AssetDatabase.LoadAssetAtPath<TerrainMapData>(
+                "Assets/_Project/World/Terrain/FirstIsland_TerrainData.asset");
+            if (data == null)
+            {
+                Check("R24_LIVE_MAP_READABLE", false, "could not load the live terrain asset");
+                return;
+            }
+
+            TerrainGridData live = data.CreateGridData();
+            RaisedVisualPlan livePlan = RaisedVisualPlan.Build(live, set);
+
+            var junctions = livePlan.Tiles
+                .Where(t => t.Sprite != null && t.Sprite.name == "Hills_r2c4")
+                .Select(t => t.VisualPosition)
+                .ToList();
+
+            Check("R24_LIVE_JUNCTION_NOW_DRAWS_R2C4", junctions.Contains(new Vector3Int(0, -10, 0)),
+                $"the live cell (0,-10) that the user's screenshot marked now draws the author's r2c4. "
+                    + $"On the live map {junctions.Count} cell(s) draw r2c4: "
+                    + string.Join(", ", junctions.Select(v => $"({v.x},{v.y})"))
+                    + ". Before this card that cell drew the plain body row r1c0");
+
+            Check("R24_LIVE_JUNCTION_IS_UNIQUE", junctions.Count == 1,
+                junctions.Count == 1
+                    ? "exactly one live cell draws r2c4, so the rule claimed the junction and nothing "
+                        + "else. A second one would mean the predicate is too greedy"
+                    : $"{junctions.Count} live cells draw r2c4, so the rule reached beyond the "
+                        + "junction: " + string.Join(", ", junctions.Select(v => $"({v.x},{v.y})")));
+
+            // The three live r1c0 cells, and which of them must keep r1c0.
+            var bodies = livePlan.Tiles
+                .Where(t => t.Sprite != null && t.Sprite.name == "Hills_r1c0")
+                .Select(t => t.VisualPosition)
+                .ToList();
+
+            Check("R24_LIVE_BODY_ROW_STILL_PRESENT", bodies.Count > 0,
+                $"{bodies.Count} live cell(s) still draw the author's r1c0 body: "
+                    + string.Join(", ", bodies.Select(v => $"({v.x},{v.y})"))
+                    + ". The junction is split OUT of the body, not substituted for it");
+
+            // Fixtures for the one-bit pair, written in TOP-LEFT order and verified against production's own
+            // bit order. The junction cell reads N,E,S,SE raised and NW,NE,W,SW open, which is
+            // ".X." / ".XX" / ".XX"; the plain edge differs by the single NE bit, which is
+            // ".XX" / ".XX" / ".XX". Both are DISCOVERED from the data by the predicate below rather
+            // than assumed, so a fixture that silently stopped containing a junction would fail.
+            ProbeJunctionCell(set, BuildMask(new[] { ".X.", ".XX", ".XX" }),
+                "JUNCTION_NE_OPEN_HANDOVER", expectR2C4: true);
+            // The negative case: a two-wide column whose cells all keep NE raised. Its bottom-left cell is the
+            // junction's neighbour with ONE bit flipped, and it must stay r1c0.
+            ProbeJunctionCell(set, BuildMask(new[] { ".XX", ".XX", ".XX" }),
+                "PLAIN_EDGE_NE_RAISED_ONE_BIT_AWAY", expectR2C4: false, expectPredicateMatch: false);
+
+            // The plain vertical body at several widths, which must never turn into r2c4. Note w = 2 is
+            // included deliberately: a two-wide rectangle has no interior column at all, so every one of
+            // its cells is an edge, and it is the case most likely to be over-captured by a junction rule.
+            foreach (int w in new[] { 2, 3, 5 })
+            {
+                var expect = new List<string>();
+                foreach (int row in new[] { 0, 1, 2 })
+                {
+                    expect.Add($"r{row}c0");
+                    expect.AddRange(Repeat($"r{row}c1", w - 2));
+                    expect.Add($"r{row}c2");
+                }
+
+                Expect(set, $"R24_PLAIN_BODY_{w}x3", Rect(w, 3), expect.ToArray(), 0);
+            }
+
+            // And the junction under every length, which is the card's section 7.
+            //
+            // THE BIT ORDER IS THE WHOLE TRAP HERE, so the fixture is built from the junction's OWN
+            // NEIGHBOURHOOD ON THE LIVE MAP rather than from a mask number. The general Build() helper in
+            // this file uses an N-first bit order while production uses NW-first, so passing the
+            // production number 0xD2 to it builds a different mask entirely - NE,S,SW,NW - and the cell
+            // then correctly resolves to the author's r0c7 top corner. Reading the neighbourhood off the
+            // real junction removes the possibility of testing the wrong topology by accident.
+            JunctionSeed seed = JunctionNeighbourhoodFromLive();
+            if (seed == null)
+            {
+                Check("R24_JUNCTION_SEED_FOUND_ON_LIVE_MAP", false,
+                    "the live map no longer contains the junction, so there is nothing to lengthen. "
+                        + "That is a BLOCKED_PM_DECISION condition");
+                return;
+            }
+
+            foreach (int reach in new[] { 1, 2, 3, 4, 5, 8, 16, 32, 64, 100 })
+            {
+                TerrainGridData g = ExtendArms(seed, reach, out int tx, out int ty);
+                int raw = Encode(g, tx, ty);
+                string sprite = SpriteAt(RaisedVisualPlan.Build(g, set), tx, ty);
+                RaisedTopologyState st = RaisedTopologyState.Resolve(g, tx, ty);
+                Check($"R24_JUNCTION_R2C4_REACH_{reach}",
+                    raw == seed.Raw && sprite == "Hills_r2c4"
+                        && st.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION,
+                    $"the junction with every arm {reach} cell(s) long keeps raw 0x{raw:X2} (the live "
+                        + $"junction's own mask was 0x{seed.Raw:X2}) and draws {sprite} as {st.Role}. The "
+                        + "raw 3x3 is unchanged at every reach, so neither the role nor the sprite may "
+                        + "move as the surrounding ground grows");
+            }
+        }
+
+        /// <summary>
+        /// Finds the cell in the fixture whose raw 3x3 actually matches the junction predicate, reports
+        /// the RAW MASKS it found, and checks whether that cell draws r2c4.
+        ///
+        /// The cell is DISCOVERED from the data via the same predicate production uses, rather than being
+        /// named in advance. That is the whole point: if the fixture were written to contain a known
+        /// junction at a known coordinate, the test would pass whether or not the rule is right, and a
+        /// fixture that silently stopped containing any junction would still "pass". So the assertion is
+        /// that the predicate finds at least one cell here and that exactly those cells changed role.
+        /// </summary>
+        /// <param name="expectR2C4">Whether this fixture is supposed to contain an r2c4 junction at all.</param>
+        /// <param name="expectPredicateMatch">
+        /// Whether the junction predicate is supposed to match any cell here. The NEGATIVE fixture must
+        /// match nothing, and that is asserted rather than assumed: a negative case whose predicate
+        /// matches zero cells for the wrong reason - a fixture that lost its junction, or a bit-order slip -
+        /// would pass while proving nothing.
+        /// </param>
+        private static void ProbeJunctionCell(
+            AuthorHillsCompositionSet set,
+            TerrainGridData grid,
+            string label,
+            bool expectR2C4,
+            bool expectPredicateMatch = true)
+        {
+            RaisedVisualPlan plan = RaisedVisualPlan.Build(grid, set);
+
+            var found = new List<string>();
+            var r2c4 = new List<string>();
+            foreach (HillVisualTile t in plan.Tiles)
+            {
+                int raw = Encode(grid, t.VisualPosition.x, t.VisualPosition.y);
+                if (!JunctionPredicateMatches(raw))
+                {
+                    continue;
+                }
+
+                found.Add($"({t.VisualPosition.x},{t.VisualPosition.y}) raw 0x{raw:X2} "
+                    + $"role {RaisedTopologyState.Resolve(grid, t.VisualPosition.x, t.VisualPosition.y).Role} "
+                    + $"-> {t.Sprite.name}");
+            }
+
+            foreach (HillVisualTile t in plan.Tiles)
+            {
+                if (t.Sprite != null && t.Sprite.name == "Hills_r2c4")
+                {
+                    r2c4.Add($"({t.VisualPosition.x},{t.VisualPosition.y})");
+                }
+            }
+
+            Line($"   {label}: predicate matched {found.Count} cell(s), r2c4 drawn at {r2c4.Count}");
+            foreach (string s in found)
+            {
+                Line("      " + s);
+            }
+
+            Check("R24_" + label + "_MATCHES_PREDICATE",
+                found.Count > 0 == expectPredicateMatch,
+                expectPredicateMatch
+                    ? found.Count > 0
+                        ? "the fixture really does contain a cell whose own raw 3x3 matches the junction "
+                            + "predicate, so this tests the rule and not a hard-coded coordinate"
+                        : "NO cell in this fixture matches the junction predicate, so the fixture proves "
+                            + "nothing about the rule and must be rejected rather than counted"
+                    : found.Count == 0
+                        ? "no cell matches the junction predicate, which is what this negative fixture is "
+                            + "for: the same shape with the single NE bit raised must NOT be a junction"
+                        : $"{found.Count} cell(s) match the junction predicate in a fixture that is "
+                            + "supposed to be a plain body, so the rule has over-captured: "
+                            + string.Join("; ", found));
+
+            Check("R24_" + label + (expectR2C4 ? "_IS_R2C4" : "_STAYS_BODY"),
+                expectR2C4 ? r2c4.Count == found.Count && r2c4.Count > 0 : r2c4.Count == 0,
+                expectR2C4
+                    ? $"every matching cell ({found.Count}) draws the author's r2c4 ({r2c4.Count})"
+                    : $"no cell draws r2c4 ({r2c4.Count}); the fixture's own art is "
+                        + string.Join(", ", plan.Tiles
+                            .Select(t => t.Sprite.name.Replace("Hills_", string.Empty)).Distinct())
+                        + ", so the plain body is untouched");
+        }
+
+        /// <summary>
+        /// The junction predicate, RE-DECLARED in the test from the six bits the card names, in the SAME
+        /// PRODUCTION bit order <see cref="Dirs"/> now uses. It is deliberately not a production call: a
+        /// test that asks production whether a cell is a junction cannot detect that production widened
+        /// the rule, because both would move together.
+        /// </summary>
+        private static bool JunctionPredicateMatches(int raw)
+        {
+            const int N = 1 << 1;
+            const int NE = 1 << 2;
+            const int W = 1 << 3;
+            const int E = 1 << 4;
+            const int S = 1 << 6;
+            const int SE = 1 << 7;
+
+            return (raw & W) == 0
+                && (raw & N) != 0
+                && (raw & S) != 0
+                && (raw & E) != 0
+                && (raw & SE) != 0
+                && (raw & NE) == 0;
+        }
+
         private static List<string> Repeat(string sprite, int count)
         {
             var list = new List<string>(count);
@@ -652,6 +914,128 @@ namespace IslandLife.EditorTools.IslandMap
         /// expected sequence, which is the only way a counted repetition like "r1 body however many
         /// times" can be stated without a mini-language that could quietly mis-parse.
         /// </summary>
+
+        /// <summary>A junction neighbourhood copied off the live map, with the target at the centre.</summary>
+        private sealed class JunctionSeed
+        {
+            /// <summary>The target's own raw 3x3, in THIS FILE's bit order, as encoded by <see cref="Encode"/>.</summary>
+            public int Raw;
+
+            /// <summary>Which of the eight neighbours are Raised, in THIS FILE's bit order.</summary>
+            public bool[] Raised = new bool[8];
+        }
+
+        /// <summary>
+        /// Finds the junction on the LIVE map and copies out which of its eight neighbours are Raised.
+        ///
+        /// Nothing here is a literal. The eight booleans are read off the real asset, so the sweep below
+        /// cannot be pointed at the wrong topology by a mistyped mask number, and the card's requirement
+        /// that only the real FirstIsland data is acceptable reproduction evidence is met directly.
+        /// </summary>
+        private static JunctionSeed JunctionNeighbourhoodFromLive()
+        {
+            TerrainMapData data = AssetDatabase.LoadAssetAtPath<TerrainMapData>(
+                "Assets/_Project/World/Terrain/FirstIsland_TerrainData.asset");
+            if (data == null)
+            {
+                return null;
+            }
+
+            TerrainGridData grid = data.CreateGridData();
+            // Indexed by the PRODUCTION bit order in Dirs, so seed.Raised[i] is the same bit the predicate reads.
+            for (int y = grid.OriginY; y < grid.OriginY + grid.Height; y++)
+            {
+                for (int x = grid.OriginX; x < grid.OriginX + grid.Width; x++)
+                {
+                    if (!RaisedNeighborResolver.IsRaised(grid, x, y))
+                    {
+                        continue;
+                    }
+
+                    int raw = Encode(grid, x, y);
+                    if (!JunctionPredicateMatches(raw))
+                    {
+                        continue;
+                    }
+
+                    var seed = new JunctionSeed { Raw = raw };
+                    for (int i = 0; i < Dirs.Length; i++)
+                    {
+                        seed.Raised[i] = RaisedNeighborResolver.IsRaised(
+                            grid, x + Dirs[i].DX, y + Dirs[i].DY);
+                    }
+
+                    Line($"   junction seed taken from the live map at ({x},{y}), raw 0x{raw:X2}");
+                    return seed;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Rebuilds the junction's neighbourhood with every Raised arm pushed out to
+        /// <paramref name="reach"/> cells. The target sits <c>west</c> cells in from the left edge and
+        /// <c>south</c> cells up from the bottom edge, so a south arm never runs off the grid.
+        /// </summary>
+        private static TerrainGridData ExtendArms(JunctionSeed seed, int reach, out int tx, out int ty)
+        {
+            int w = 0, e = 0, n = 0, s = 0;
+            for (int i = 0; i < Dirs.Length; i++)
+            {
+                if (!seed.Raised[i])
+                {
+                    continue;
+                }
+
+                if (Dirs[i].DX < 0)
+                {
+                    w = Math.Max(w, reach);
+                }
+                else if (Dirs[i].DX > 0)
+                {
+                    e = Math.Max(e, reach);
+                }
+
+                if (Dirs[i].DY > 0)
+                {
+                    n = Math.Max(n, reach);
+                }
+                else if (Dirs[i].DY < 0)
+                {
+                    s = Math.Max(s, reach);
+                }
+            }
+
+            tx = 1 + w;
+            ty = 1 + s;
+            var g = new TerrainGridData(tx + e + 2, ty + n + 2, 0, 0);
+            for (int y = 0; y < g.Height; y++)
+            {
+                for (int x = 0; x < g.Width; x++)
+                {
+                    g.SetTerrain(x, y, TerrainType.Grass);
+                }
+            }
+
+            g.SetElevation(tx, ty, ElevationLevel.Raised);
+            for (int i = 0; i < Dirs.Length; i++)
+            {
+                if (!seed.Raised[i])
+                {
+                    continue;
+                }
+
+                for (int k = 1; k <= reach; k++)
+                {
+                    g.SetElevation(
+                        tx + (Dirs[i].DX * k), ty + (Dirs[i].DY * k), ElevationLevel.Raised);
+                }
+            }
+
+            return g;
+        }
+
         private static void Expect(
             AuthorHillsCompositionSet set,
             string id,
