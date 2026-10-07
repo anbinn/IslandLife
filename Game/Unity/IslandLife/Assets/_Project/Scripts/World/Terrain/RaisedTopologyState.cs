@@ -693,8 +693,43 @@ namespace IslandLife.World.Terrain
 
             if (runDepth == 2)
             {
-                return offsetFromRunBottom == 1
-                    ? RaisedSurfaceRole.TOP_SURFACE
+                if (offsetFromRunBottom == 1)
+                {
+                    return RaisedSurfaceRole.TOP_SURFACE;
+                }
+
+                // IL-WORLD-004S-PJ. The bottom cell of a two-deep, two-or-more-wide column carries the
+                // author front wall INSIDE its own mask, on row r2.
+                //
+                // It used to return MIDDLE_SURFACE, which is below FRONT_CLIFF, and that is the ONLY
+                // condition under which RaisedTopologyState.DrawsFrontCliffBelow can fire. So this one
+                // branch is the sole origin of every visual tile the projection ever places at a
+                // coordinate other than its own logical cell: AuthorHillsLocalResolver.Resolve then
+                // emits an extra cliff at (x, y-1), one row south of the mask.
+                //
+                // MEASURED, across all 256 neighbourhoods in two column contexts: 128 of 512
+                // neighbourhoods emitted a displaced tile and 128 of 128 came from this branch, every one
+                // with runDepth == 2 and isNarrow == false.
+                //
+                // REPRODUCED on the locked P fixture. BEFORE [XXX / X..] resolved to 4 logical, 4 visual,
+                // 0 outside. Painting the fifth cell to give [XXX / XX.] produced 5 logical but 7 visual
+                // and 2 outside the mask: (4,3) = Hills_r2c0 emitted by (4,4) and (5,3) = Hills_r2c2
+                // emitted by (5,4). With this branch fixed the same fixture is 5 logical, 5 visual and
+                // 0 outside, and every visual tile sits on its own logical cell.
+                //
+                // The wall is the author's own proven row r2, reached through the existing slot walk, so
+                // nothing is mirrored, rotated, stretched or generated. The slot is decided by the same
+                // 3x3 adjacency as before, which makes the west end of this front a genuine LEFT_TERMINAL
+                // and therefore Hills_r2c0, the author left boundary plus front edge piece.
+                //
+                // HONEST SCOPE NOTE. The bottom row of a two-deep rectangle is locally indistinguishable
+                // from this P front: its west front cell has the identical raw mask 0x16. No rule that
+                // reads only a 3x3 neighbourhood can change one without changing the other, so the two
+                // and three cell wide rectangles also stop displacing. That is a measured consequence,
+                // not a choice, and their old outside-row oracles are marked
+                // DEFERRED_LEGACY_EXPECTATION rather than silently re-pinned.
+                return southExposed
+                    ? RaisedSurfaceRole.FRONT_CLIFF
                     : RaisedSurfaceRole.MIDDLE_SURFACE;
             }
 

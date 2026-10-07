@@ -132,6 +132,38 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
+- **P-junction projection FIXED. Out-of-mask visual tiles eliminated: 128 of 512 neighbourhoods -> 0.**
+  The locked fixture is now correct. BEFORE `[XXX / X..]` = 4 logical / 4 visual / 0 outside.
+  AFTER `[XXX / XX.]` = **5 logical / 5 visual / 0 outside**, and `(4,3)` / `(5,3)` no longer exist.
+  Every visual tile now sits on its own logical cell and traces to a logical cell plus an author role
+  plus an author Sprite.
+  - **The fix is one branch.** `RaisedTopologyState.RoleFor`, `if (runDepth == 2)`: the bottom cell of a
+    two-deep, two-or-more-wide column now returns `FRONT_CLIFF` when its south is exposed, so the
+    author front wall sits INSIDE its own mask on the proven row r2. It previously returned
+    `MIDDLE_SURFACE`, which is below `FRONT_CLIFF`, and that is the only condition under which
+    `DrawsFrontCliffBelow` can fire — which is in turn the only way the projection ever places a tile
+    at a coordinate other than its own logical cell. **Measured over all 512 neighbourhoods: displaced
+    tiles 128 -> 0, and 128 of the original 128 came from this one branch.**
+  - **P AFTER composition, per cell, read from the plan:**
+    `(4,4)` raw `0x16` canon `North, NorthEast, East` role `FRONT_CLIFF` slot `LEFT_TERMINAL` ->
+    **`Hills_r2c0`** · `(5,4)` raw `0x0F` canon `NorthWest, North, West` role `FRONT_CLIFF` slot
+    `RIGHT_TERMINAL` -> `Hills_r2c2` · `(4,5)` raw `0xD0` role `TOP_SURFACE` -> `Hills_r0c0` ·
+    `(5,5)` raw `0x78` role `TOP_SURFACE` -> `Hills_r0c1` · `(6,5)` raw `0x28` role
+    `SECOND_FRONT_CLIFF` slot `RIGHT_TERMINAL` -> `Hills_r3c2`, **unchanged from BEFORE**.
+    The west end of that front is a genuine `LEFT_TERMINAL` by 3x3 adjacency, which is what makes it
+    the author's own `r2c0`, the left boundary plus front edge piece.
+  - **`Hills_r2c4` and `Hills_r2c5` are now wired into the composition set** (rect (64,96) and (80,96))
+    and are covered by `IsComplete()`, so they can no longer be silently missing. **Neither is emitted
+    by any rule, and this is deliberate.** Two facts make it underivable rather than merely unfinished:
+    **(a)** the P fixture's west front cell `(4,4)` has raw mask `0x16`, *byte identical* to a 3x2
+    rectangle's west front cell, so no rule reading only a 3x3 neighbourhood can give them different art;
+    **(b)** the P's front is **two separate runs** — row 4 `[(4,4),(5,4)]` and row 5 `[(6,5)]` — not one
+    three-cell run, so PM's three row-r2 anchors cannot all be adjacent cells. Guessing a placement
+    would be the hard-coding the card forbids, so the slices are present and reachable but unattached.
+  - **Two legacy oracles are DEFERRED_LEGACY_EXPECTATION, not re-pinned:** R11's `2_DEEP_WIDE` and
+    R16B's `ORACLE_3x2`. Both pinned the displaced row this card removed. Because of fact (a) above,
+    rectangles cannot be left unchanged by any local rule, so their new composition is a measured
+    consequence and is left for PM and the user to judge in the Scene View rather than blessed here.
 - **R20 author top corner grammar — `Hills_r0c4` and `Hills_r0c7` shipped.** PM locked two more author
   cells against the source after a cell-by-cell comparison in Unity: **r0c4** is the LEFT TOP corner, a
   vertical left boundary that reaches the TOP and turns east into the horizontal top structure, and

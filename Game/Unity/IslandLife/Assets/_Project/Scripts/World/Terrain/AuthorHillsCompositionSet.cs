@@ -175,6 +175,33 @@ namespace IslandLife.World.Terrain
             return hillsR3C7;
         }
 
+        [Header("Author row r2 corner-wall pieces (IL-WORLD-004S-PJ)")]
+        [SerializeField]
+        private Sprite hillsR2C4;
+
+        [SerializeField]
+        private Sprite hillsR2C5;
+
+        /// <summary>
+        /// The author's r2c4 left corner-wall piece. IL-WORLD-004S-PJ.
+        ///
+        /// Wired into the set so the slice is reachable and is never silently missing, but NOT yet
+        /// reachable from any production rule: the P fixture's front is two separate runs rather than
+        /// one three-cell run, so which front cell takes r2c4 and which takes r2c5 cannot be derived
+        /// from a 3x3 neighbourhood. Emitting it from a guessed cell would be the hard-coding the card
+        /// forbids, so the role is absent rather than wrong. See P_JRoleR2C4.
+        /// </summary>
+        public Sprite GetR2C4()
+        {
+            return hillsR2C4;
+        }
+
+        /// <summary>The author's r2c5 internal connection piece. IL-WORLD-004S-PJ. See GetR2C4.</summary>
+        public Sprite GetR2C5()
+        {
+            return hillsR2C5;
+        }
+
         /// <summary>
         /// The author's LEFT TOP corner: a vertical left boundary reaching the top and turning east
         /// into the horizontal top structure. IL-WORLD-004S-R20.
@@ -281,6 +308,11 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            if (GetR2C4() == null || GetR2C5() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -325,6 +357,16 @@ namespace IslandLife.World.Terrain
             if (GetRightTopCorner() == null)
             {
                 missing.Add("right top corner r0c7");
+            }
+
+            if (GetR2C4() == null)
+            {
+                missing.Add("r2 left corner-wall r2c4");
+            }
+
+            if (GetR2C5() == null)
+            {
+                missing.Add("r2 internal connection r2c5");
             }
 
             return missing.Count == 0 ? "none" : string.Join(", ", missing);
