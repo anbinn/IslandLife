@@ -100,6 +100,38 @@ grammar audited and locked by R16B; the basic straight grammar corrected by R18 
 UNITY_PASS**); the author left and right front corners by R19 (**user-confirmed UNITY_PASS**); the
 author left and right **top** corners by R20.
 
+- **P-junction: ROOT CAUSE MEASURED, implementation BLOCKED pending PM.** PM confirmed the P topology is
+  **not** a missing-asset problem and locked three author anchors for it: user cell 1 = `Hills_r2c4`,
+  cell 2 = `Hills_r2c0`, cell 3 = `Hills_r2c5`. All three slices exist on the sheet as real author art
+  (`r2c0` rect (0,96) already proven; `r2c4` rect (64,96); `r2c5` rect (80,96)). **Measured: `r2c4` and
+  `r2c5` are NOT referenced by the production `AuthorHillsCompositionSet`, so nothing in the projection
+  can emit them today.**
+  - **Root cause, pinned to the branch and measured, not argued.**
+    `RaisedTopologyState.cs` / `RaisedTopologyState` / **`RoleFor`, the `if (runDepth == 2)` branch,
+    returning `MIDDLE_SURFACE` for `offsetFromRunBottom == 0` when `frontInMask == false`.**
+    Sweeping all 256 neighbourhoods in two column contexts, **128 of 512 neighbourhoods emit a displaced
+    tile and 128 of 128 of them come from that one branch, all with `runDepth = 2, isNarrow = False`**.
+    Example owner `(5,4)` raw `0x1A`, `runDepth 2`, `offset 0`, slot `BODY`, role `MIDDLE_SURFACE`,
+    emitting an extra tile at `(5,3)`.
+    Why it is wrong: `RaisedTopologyState.DrawsFrontCliffBelow` is defined as
+    `ExposedSouth && Role < FRONT_CLIFF`, and `AuthorHillsLocalResolver.Resolve` under
+    `if (topology.DrawsFrontCliffBelow)` is the **only** place in the whole projection that emits a
+    `HillVisualTile` at a coordinate other than its own logical cell. Painting one cell can raise a
+    column from depth 1 to depth 2 and make it two-wide at the front, at which point the author's wall no
+    longer fits that cell under the old depth test and the wall is pushed one row south instead.
+  - **Reproduced end to end on real fixtures.** L `XXX / X..` resolves to 4 visual tiles and **0 outside
+    the mask**, which matches "the L is visually correct". Painting the fifth cell to give
+    `XXX / XX.` produces **5 logical Raised cells but 7 visual tiles and 2 outside the mask** —
+    `(4,3) = Hills_r2c0` emitted by `(4,4)` and `(5,3) = Hills_r2c2` emitted by `(5,4)` — which is
+    exactly the reported "extra Hills block generated downward out of nowhere".
+  - **Why the implementation is BLOCKED and was not guessed.** Implementing the anchors requires two
+    things the card does not carry: the numbered fixture diagram that maps PM's user cell ids 1..5 onto
+    logical coordinates, and the *semantic* of `Hills_r2c4` and `Hills_r2c5` — i.e. which local adjacency
+    means the west corner-wall and which means the east one. The card states only the fixture-level
+    mapping ("cell 1 is r2c4"), and section 6 forbids deriving a production rule from the fixture, while
+    section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
+    alone would be the hard-coding the card forbids. Committed evidence harness:
+    `ILW004SPJunctionAudit` (read-only, no production change).
 - **R20 author top corner grammar — `Hills_r0c4` and `Hills_r0c7` shipped.** PM locked two more author
   cells against the source after a cell-by-cell comparison in Unity: **r0c4** is the LEFT TOP corner, a
   vertical left boundary that reaches the TOP and turns east into the horizontal top structure, and
