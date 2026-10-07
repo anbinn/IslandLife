@@ -130,6 +130,30 @@ namespace IslandLife.World.Terrain
         /// VISUAL_COORD_CHANGED are recorded as NOT_MEASURED, not as zero. Static verification only.
         /// </summary>
         JUNCTION_VERTICAL_CONTINUATION_MIRROR = 11,
+
+        /// <summary>
+        /// IL-WORLD-004S-R29, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c5 at
+        /// the LEFT end of the bottom horizontal front wall, where that wall meets the vertical
+        /// structure rising on its west. The user confirmed the cell and the Sprite from a screenshot.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE. The user picked Hills_r3c5 against this exact cell; the
+        /// Worker does not re-judge that and does not reinterpret r3c5 from any earlier discussion. This
+        /// is the author's own existing slice in its original orientation - nothing is mirrored,
+        /// rotated, stretched, generated or nearest-matched.
+        ///
+        /// ONE RAW MASK, MEASURED. Raw 0x16 occurs exactly ONCE in the 66 live Raised cells of
+        /// FirstIsland, at (0,-11), so no finite-context discriminator is needed and none was written. A
+        /// sweep of all 256 raw masks confirms the predicate selects exactly one of them.
+        /// </summary>
+        BOTTOM_JUNCTION_LEFT = 12,
+
+        /// <summary>
+        /// IL-WORLD-004S-R29, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c6 at
+        /// the RIGHT end of the same bottom wall. The exact occupancy MIRROR of
+        /// <see cref="BOTTOM_JUNCTION_LEFT"/>: 0x0B is 0x16 with north-west, west and south-west
+        /// swapped against north-east, east and south-east.
+        /// </summary>
+        BOTTOM_JUNCTION_RIGHT = 13,
     }
 
     /// <summary>
@@ -416,11 +440,22 @@ namespace IslandLife.World.Terrain
             // and shares no mask with it, so the two can never fight over the same cell.
             bool junctionContinuationMirror = IsAuthorJunctionContinuationMirror(raw);
 
+            // IL-WORLD-004S-R29. The two ends of the bottom horizontal front wall. Both are exact
+            // single-mask rules, asked ahead of the ladder because the ladder would otherwise draw the
+            // ordinary front-row terminals r2c0 and r2c2 here. They share no mask with each other or with
+            // the R24 and R28 junctions, so none of the four can ever fight over the same cell.
+            bool bottomJunctionLeft = IsAuthorBottomJunctionLeft(raw);
+            bool bottomJunctionRight = IsAuthorBottomJunctionRight(raw);
+
             // A reflective guard, not a runtime cost worth worrying about: if this predicate ever grows
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = junctionContinuationMirror
+            RaisedSurfaceRole role = bottomJunctionLeft
+                ? RaisedSurfaceRole.BOTTOM_JUNCTION_LEFT
+                : bottomJunctionRight
+                    ? RaisedSurfaceRole.BOTTOM_JUNCTION_RIGHT
+                    : junctionContinuationMirror
                 ? RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR
                 : RoleForLocal(
                 leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
@@ -571,6 +606,48 @@ namespace IslandLife.World.Terrain
                 && (raw & TerrainNeighborMask.West) != 0
                 && (raw & TerrainNeighborMask.South) != 0
                 && (raw & TerrainNeighborMask.SouthWest) != 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R29. The author's r3c5: the LEFT end of the bottom horizontal front wall, where
+        /// it meets the vertical structure on its west. Decided from the RAW MASK ALONE.
+        ///
+        /// ALL EIGHT BITS ARE CONSTRAINED, so the predicate selects exactly one of the 256 raw masks:
+        /// north, north-east and east Raised; north-west, west, south-west, south and south-east open.
+        /// The cell has ground above it and beside it, and nothing below it - it is the corner where a
+        /// wall coming down turns into the wall running across.
+        ///
+        /// IT TAKES A MASK AND NO GRID, so it cannot read past the cell. No 5x5, no x+/-2, no y+/-2, no
+        /// runDepth, no run walk, no length test and no shape name appear in the test.
+        /// </summary>
+        private static bool IsAuthorBottomJunctionLeft(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.NorthEast) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.West) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.South) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R29. The author's r3c6: the RIGHT end of the bottom wall, the exact occupancy
+        /// mirror of <see cref="IsAuthorBottomJunctionLeft"/>. Also all eight bits constrained, also one
+        /// mask of 256: north-west, north and west Raised; north-east, east, south-west, south and
+        /// south-east open.
+        /// </summary>
+        private static bool IsAuthorBottomJunctionRight(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.NorthWest) != 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.East) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.South) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
         }
 
         /// <summary>

@@ -245,6 +245,34 @@ namespace IslandLife.World.Terrain
             return hillsR2C7;
         }
 
+        /// <summary>
+        /// IL-WORLD-004S-R29, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c5 at
+        /// the left end of the bottom horizontal front wall.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE, confirmed from a screenshot against cell (0,-11) whose raw
+        /// 3x3 is 0x16. It shares the <c>hillsR3C5</c> field with
+        /// <see cref="GetCornerNoUpperContinuation"/>, exactly as R24's r2c4 shares its field with
+        /// <see cref="GetCornerWithUpperContinuation"/> - one slice, two named relations.
+        /// </summary>
+        public Sprite GetR3C5()
+        {
+            return hillsR3C5;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R29, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c6 at
+        /// the right end of the same bottom wall, cell (8,-11), raw 0x0B - the exact occupancy mirror of
+        /// r3c5's 0x16. The author's own second slice, in its original orientation.
+        /// </summary>
+        [SerializeField]
+        private Sprite hillsR3C6;
+
+        /// <summary>IL-WORLD-004S-R29. The author's r3c6, the mirror of r3c5.</summary>
+        public Sprite GetR3C6()
+        {
+            return hillsR3C6;
+        }
+
         public Sprite GetJunctionContinuation()
         {
             return hillsR2C4;
@@ -404,6 +432,13 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            // IL-WORLD-004S-R29. Both bottom-junction roles are reachable now, so each slice must be
+            // assigned or a reachable role would silently drop its cell instead of reporting it.
+            if (GetR3C6() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -481,6 +516,11 @@ namespace IslandLife.World.Terrain
                 missing.Add("junction continuation mirror r2c7");
             }
             return missing.Count == 0 ? "none" : string.Join(", ", missing);
+
+            if (GetR3C6() == null)
+            {
+                missing.Add("bottom junction right r3c6");
+            }
         }
     }
 }
