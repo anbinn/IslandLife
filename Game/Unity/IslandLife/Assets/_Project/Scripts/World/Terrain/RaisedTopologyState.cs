@@ -108,6 +108,28 @@ namespace IslandLife.World.Terrain
         /// y+/-2 appear in the test.
         /// </summary>
         JUNCTION_VERTICAL_CONTINUATION = 10,
+
+        /// <summary>
+        /// IL-WORLD-004S-R28, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r2c7: the
+        /// exact occupancy MIRROR of <see cref="JUNCTION_VERTICAL_CONTINUATION"/>, on a vertical boundary
+        /// sitting on the EAST instead of the west.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE. The user picked Hills_r2c7 in Unity against a real map
+        /// configuration; the Worker does not re-judge which slice this is. Nothing is mirrored, rotated,
+        /// stretched, generated or nearest-matched - where this role and the R24 role form an occupancy
+        /// mirror, the author's own second slice is emitted rather than a flipped copy of the first.
+        ///
+        /// WHY THIS IS SAFE, MEASURED. R25 measured that 0x6A and the R24 raw 0xD2 differ in exactly
+        /// W, E, SW and SE, all swapped, so the pair is a strict occupancy mirror. A sweep of all 256 raw
+        /// masks finds this predicate matching exactly ONE mask, 0x6A, which occurs exactly once on the
+        /// current map at (8,-10). One mask out of 256 cannot collide with any other topology, so no
+        /// 5x5 discriminator was needed and none was written.
+        ///
+        /// NOT EMPIRICALLY REGRESSION-TESTED. IL-WORLD-004S-R28 waived the Unity batch protection run
+        /// because the user's editor held the project lock, so OLD_CORRECT_ROLE / SLOT / SPRITE /
+        /// VISUAL_COORD_CHANGED are recorded as NOT_MEASURED, not as zero. Static verification only.
+        /// </summary>
+        JUNCTION_VERTICAL_CONTINUATION_MIRROR = 11,
     }
 
     /// <summary>
@@ -389,12 +411,18 @@ namespace IslandLife.World.Terrain
             // RoleForLocal for the same reason the corners are: the predicate is already a pure function
             // of the mask, so passing it in keeps RoleForLocal's signature about the cardinal ladder only.
             bool junctionContinuation = IsAuthorJunctionContinuation(raw);
+            // IL-WORLD-004S-R28. The right junction continuation, also decided from the RAW MASK ALONE.
+            // It is asked ahead of the ladder because it is a strict occupancy mirror of the R24 role
+            // and shares no mask with it, so the two can never fight over the same cell.
+            bool junctionContinuationMirror = IsAuthorJunctionContinuationMirror(raw);
 
             // A reflective guard, not a runtime cost worth worrying about: if this predicate ever grows
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = RoleForLocal(
+            RaisedSurfaceRole role = junctionContinuationMirror
+                ? RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR
+                : RoleForLocal(
                 leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
 
             return new RaisedTopologyState(
@@ -513,6 +541,36 @@ namespace IslandLife.World.Terrain
                 && (raw & TerrainNeighborMask.East) != 0
                 && (raw & TerrainNeighborMask.SouthEast) != 0
                 && (raw & TerrainNeighborMask.NorthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R28. The author's RIGHT junction continuation, decided from the RAW MASK
+        /// ALONE and therefore strictly inside this cell's own 3x3.
+        ///
+        /// IT TAKES A MASK AND NO GRID, so it is structurally incapable of reading past the cell - the
+        /// same argument the R23B harness makes for the corners, and the reason its reflective guard
+        /// still holds. Six bits, all of this cell's own neighbours: north, south and west Raised, the
+        /// south-west Raised, and east, north-east, north-west and south-east open.
+        ///
+        /// It is the exact occupancy mirror of <see cref="IsAuthorJunctionContinuation"/>, which reads the
+        /// same six relations with W and E swapped and SW and SE swapped. No x+/-2, no y+/-2, no
+        /// runDepth, no offset, no walk, no width or height, and no shape name appear in the test.
+        /// </summary>
+        private static bool IsAuthorJunctionContinuationMirror(TerrainNeighborMask raw)
+        {
+            // All EIGHT bits of this cell's own 3x3 are decided, so the predicate selects exactly one
+            // of the 256 raw masks. A FIRST DRAFT LEFT NORTH-EAST AND SOUTH-EAST UNCONSTRAINED and a
+            // 256-raw sweep caught it matching FOUR masks - 0x6A, 0x6E, 0xEA and 0xEE - not the single
+            // confirmed topology. Constraining them is what makes this the one-mask rule the card asks
+            // for, and it is why every bit is written out rather than left to a mask pattern.
+            return (raw & TerrainNeighborMask.East) == 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.SouthWest) != 0;
         }
 
         /// <summary>

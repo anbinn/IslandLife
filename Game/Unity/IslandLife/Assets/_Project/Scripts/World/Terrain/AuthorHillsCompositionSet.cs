@@ -225,6 +225,26 @@ namespace IslandLife.World.Terrain
         /// the cell's own raw 3x3 by
         /// <c>RaisedTopologyState.IsAuthorJunctionContinuation</c>, which reads six bits and nothing else.
         /// </summary>
+        /// <summary>
+        /// IL-WORLD-004S-R28, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r2c7.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE, picked in Unity against a real map configuration at cell
+        /// (8,-10), whose raw 3x3 is 0x6A. The Worker does not re-judge which slice this is and did not
+        /// re-select it. It is emitted in the author's original orientation - this is the author's own
+        /// second slice for the mirrored relation, not a flipped copy of r2c4.
+        ///
+        /// Reached by <c>IsAuthorJunctionContinuationMirror</c>, which is a PURE function of the cell's
+        /// own raw 3x3 and takes no grid.
+        /// </summary>
+        [SerializeField]
+        private Sprite hillsR2C7;
+
+        /// <summary>IL-WORLD-004S-R28. The author's r2c7, the occupancy mirror of the r2c4 junction.</summary>
+        public Sprite GetR2C7()
+        {
+            return hillsR2C7;
+        }
+
         public Sprite GetJunctionContinuation()
         {
             return hillsR2C4;
@@ -377,6 +397,13 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            // IL-WORLD-004S-R28. The r2c7 junction is reachable now, so its slice must be assigned or a
+            // reachable role would silently drop its cell instead of reporting a missing slice.
+            if (GetR2C7() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -448,6 +475,11 @@ namespace IslandLife.World.Terrain
                 missing.Add("junction continuation r2c4");
             }
 
+
+            if (GetR2C7() == null)
+            {
+                missing.Add("junction continuation mirror r2c7");
+            }
             return missing.Count == 0 ? "none" : string.Join(", ", missing);
         }
     }

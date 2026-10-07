@@ -265,6 +265,12 @@ namespace IslandLife.World.Terrain
                 // rotated, stretched, generated or nearest-matched to reach it.
                 sprite = set.GetJunctionContinuation();
             }
+            else if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR)
+            {
+                // IL-WORLD-004S-R28, PROVISIONAL. The user's r2c7 for the cell at (8,-10), raw 0x6A.
+                // The author's own slice in its original orientation; nothing is mirrored or rotated.
+                sprite = set.GetR2C7();
+            }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
                 // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable: no rule produces this role, because
@@ -381,6 +387,13 @@ namespace IslandLife.World.Terrain
                 return HillCompositionRow.FRONT_CLIFF;
             }
 
+
+            // IL-WORLD-004S-R28. The r2c7 junction is also the author's own row r2. It is tagged in a
+            // SEPARATE block so R24's block above stays byte identical.
+            if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR)
+            {
+                return HillCompositionRow.FRONT_CLIFF;
+            }
             if (topology.Slot != HillColumnSlot.NARROW)
             {
                 return ToCompositionRow(topology.Role);
