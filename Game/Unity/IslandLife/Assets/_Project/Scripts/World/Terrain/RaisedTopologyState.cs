@@ -59,10 +59,12 @@ namespace IslandLife.World.Terrain
         /// A corner/junction where a vertical Raised boundary meets a Raised platform running east, and
         /// the boundary does NOT continue above this cell. IL-WORLD-004S-R21.
         ///
-        /// The author's component for this state is <c>Hills_r3c5</c>. Before this role existed the cell
-        /// fell through to the straight grammar and was drawn as the plain row r0 LEFT terminal, so a
-        /// two-deep column rendered <c>r0c0</c> directly over <c>r2c0</c> and skipped the author's r1 body
-        /// row entirely.
+        /// R21_SUPERSEDED, IL-WORLD-004S-R23B. RETAINED BUT UNREACHABLE. No production rule produces
+        /// this role any more, and none may: proving a junction needs <c>(x, y-2)</c>, <c>(x+2, y)</c>
+        /// and <c>(x+2, y-1)</c>, all outside a 3x3 neighbourhood. R21 was itself REOPENED after the
+        /// user reported a visual FAIL, so its component was never an oracle; it is historical evidence
+        /// only. The author slice <c>Hills_r3c5</c> stays wired in the composition set so it is never
+        /// silently missing, and the junction topology is reported UNRESOLVED for PM.
         /// </summary>
         CORNER_NO_UPPER_CONTINUATION = 8,
 
@@ -70,8 +72,12 @@ namespace IslandLife.World.Terrain
         /// The SAME corner/junction, but the vertical boundary DOES continue above this cell, so this cell
         /// carries a Raised NORTH neighbour. IL-WORLD-004S-R21.
         ///
-        /// The author's component for this state is <c>Hills_r2c4</c>. North occupancy is the ONLY
-        /// discriminator between the two junction states; nothing else about the cell differs.
+        /// R21_SUPERSEDED, IL-WORLD-004S-R23B. RETAINED BUT UNREACHABLE, for the same reason and with
+        /// the same provenance as
+        /// <see cref="RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION"/>. North occupancy was the sole
+        /// discriminator between the two R21 states, which is a genuine local fact, but the junction
+        /// TEST itself was not local, so neither state survives. The author slice <c>Hills_r2c4</c> stays
+        /// wired and unreachable.
         /// </summary>
         CORNER_WITH_UPPER_CONTINUATION = 9,
     }
@@ -277,7 +283,41 @@ namespace IslandLife.World.Terrain
                 source.Slot);
         }
 
-        /// <summary>Reads the local topology of one logical cell. Never writes to the grid.</summary>
+        /// <summary>
+        /// Reads the local topology of one logical cell. Never writes to the grid.
+        ///
+        /// IL-WORLD-004S-R23B. This is now LAYER A of the author grammar and it is strictly LOCAL: the
+        /// only thing it reads is this cell's own 3x3, read through
+        /// <see cref="RaisedNeighborResolver.ResolveRaisedMask"/> plus the four corner predicates, and
+        /// every one of those predicates is itself expressed in 3x3 terms. No branch below reads
+        /// <c>x +/- 2</c>, <c>y +/- 2</c>, walks a run to an edge, or compares a run length.
+        ///
+        /// What was REMOVED from the semantic decision, and why each removal was legal:
+        ///
+        ///   <c>runDepth == 1 / 2 / 3 / &gt;= 4</c>  -> replaced by the cell's own N and S occupancy.
+        ///     A cell with both N and S open is the top AND the front of its own ground, which is
+        ///     exactly what "one deep" meant; a cell with N solid and S open is a front row; a cell
+        ///     with N open and S solid is a top row; a cell with both solid is an interior body row.
+        ///     No length appears anywhere.
+        ///
+        ///   <c>offsetFromRunBottom</c>             -> not consulted. It survives only as a LAYOUT
+        ///     property on this struct for reporting, and it decides no role and no slot.
+        ///
+        ///   <c>MaxFrontWalk</c> and the recursive front walk -> REMOVED ENTIRELY, with no replacement.
+        ///     This is a real loss and it is recorded as one: the R16C rule let a front wall step down
+        ///     to join a thick neighbour's row, and nothing local can do that, because the whole point
+        ///     of the rule was that the thick column was TWO or more cells away. A local replacement was
+        ///     written and MEASURED, and it broke the frozen R19 oracle in 8 of 33 fixtures by turning
+        ///     the cell beside a front corner into an r2 terminal, so it was withdrawn rather than kept.
+        ///     The R16C behaviour is therefore NOT reproduced; see the card report for what that means
+        ///     for a concave L, and note R16C was never an accepted visual result.
+        ///
+        ///   <c>IsAuthorCornerJunction</c> (R21)   -> removed, see R21_SUPERSEDED below.
+        ///
+        /// <see cref="RunDepth"/> and <see cref="OffsetFromRunBottom"/> are still measured, but ONLY as
+        /// LAYOUT / repetition information. They are reported and they are available to Layer C, and no
+        /// role, no slot and no sprite is derived from either of them.
+        /// </summary>
         public static RaisedTopologyState Resolve(TerrainGridData grid, int x, int y)
         {
             TerrainNeighborMask raw = RaisedNeighborResolver.ResolveRaisedMask(grid, x, y);
@@ -288,144 +328,40 @@ namespace IslandLife.World.Terrain
             bool e = (raw & TerrainNeighborMask.East) != 0;
             bool w = (raw & TerrainNeighborMask.West) != 0;
 
+            // LAYOUT ONLY, IL-WORLD-004S-R23B. Reported so Layer C can stack BODY repetition, and
+            // deliberately NOT passed to RoleForLocal. See the class note for why length may not decide
+            // an author sprite.
             int runDepth = RaisedNeighborResolver.MeasureRunDepth(grid, x, y);
-            int runBottom = RaisedNeighborResolver.MeasureRunBottom(grid, x, y);
-            int offset = y - runBottom;
+            int offset = y - RaisedNeighborResolver.MeasureRunBottom(grid, x, y);
 
+            // Informational only. A void is an INTERIOR boundary, so these four facts are still
+            // reported through Solid*/Exposed* for diagnostics and for the R16C/R17A reporting, but
+            // none of them reaches RoleForLocal or SlotFor any more.
             bool northVoid = IsEnclosedVoid(grid, x, y + 1);
             bool eastVoid = IsEnclosedVoid(grid, x + 1, y);
             bool westVoid = IsEnclosedVoid(grid, x - 1, y);
             bool southVoid = IsEnclosedVoid(grid, x, y - 1);
 
-            HillColumnSlot slot = SlotFor(w || westVoid, e || eastVoid);
+            // IL-WORLD-004S-R23B. The slot comes from the cell's OWN raw cardinals. A void is no longer
+            // admitted as the open side of a slot, because a one cell hole is an interior boundary and
+            // treating it as open sky is what put the author's narrow c3 stack on the inside of a ring.
+            // This is what makes "E only -> LEFT_TERMINAL, W+E -> BODY, W only -> RIGHT_TERMINAL" hold as
+            // an identity of the raw 3x3.
+            HillColumnSlot slot = SlotFor(w, e);
 
-            // IL-WORLD-004S-R16C. A front wall must stay on ONE visual row. The author grammar decides
-            // that row from the column's own thickness: a column three deep or more carries its wall
-            // inside its own mask, a thinner one drops it one row south. Where a thick column and a thin
-            // column meet on the same logical row the two rules disagree, and the front boundary steps
-            // down by a row at the junction so the two soil bands never meet. The real FirstIsland L
-            // sample showed exactly that: a four deep corner column with its wall inside its own mask,
-            // and a one deep arm with its wall dropped a row below, leaving a gap between them.
-            //
-            // So if a horizontal neighbour on this same row is Raised, also has an exposed south, and
-            // already carries its wall inside its own mask, this cell's wall belongs on that same row
-            // too. It reads only the neighbour's own locally derivable thickness, and walks at most two
-            // cells so the answer is bounded and no recursive Resolve is needed.
-            bool frontContinues = !s && (FrontContinuesInMask(grid, x, y, 0));
-
-            // IL-WORLD-004S-R19. The corner tests read the grid directly, so they are computed here and
-            // handed to RoleFor rather than growing another parameter list in it.
+            // IL-WORLD-004S-R19 / R20. Both corner families are already expressed in 3x3 terms and are
+            // unchanged: IsOneWide reads the cell's own N/NE/NW (front corners) or S/SE/SW (top corners).
             bool leftCorner = IsAuthorLeftCorner(grid, x, y);
             bool rightCorner = IsAuthorRightCorner(grid, x, y);
-
-            // IL-WORLD-004S-R20. The two top corners, same arrangement.
             bool leftTopCorner = IsAuthorLeftTopCorner(grid, x, y);
             bool rightTopCorner = IsAuthorRightTopCorner(grid, x, y);
 
-            // IL-WORLD-004S-R21. The corner/junction test first, then its north occupancy as the final
-            // A/B discriminator. North is read as genuine Raised ground, never as Solid, so a one cell
-            // hole above the cell can never be mistaken for a continuation of the vertical boundary.
-            bool cornerJunction = IsAuthorCornerJunction(grid, x, y);
-            bool upperContinuation = cornerJunction && n;
-
-            RaisedSurfaceRole role = RoleFor(
-                leftCorner, rightCorner, leftTopCorner, rightTopCorner,
-                cornerJunction, upperContinuation, n || northVoid, !s, runDepth, offset, northVoid,
-                slot == HillColumnSlot.NARROW, frontContinues);
+            RaisedSurfaceRole role = RoleForLocal(
+                leftCorner, rightCorner, leftTopCorner, rightTopCorner, n, s);
 
             return new RaisedTopologyState(
                 raw, canonical, n, s, e, w, runDepth, offset,
                 northVoid, eastVoid, westVoid, southVoid, role, slot);
-        }
-
-        /// <summary>
-        /// True when this cell's front wall must join a front row that a horizontal neighbour has already
-        /// committed to. Bounded to <see cref="MaxFrontWalk"/> cells so it always terminates.
-        /// </summary>
-        private const int MaxFrontWalk = 2;
-
-        private static bool FrontContinuesInMask(
-            TerrainGridData grid, int x, int y, int depth)
-        {
-            if (depth >= MaxFrontWalk)
-            {
-                return false;
-            }
-
-            if (ThickNeighbourEndsTheRow(grid, x - 1, y, -1)
-                || ThickNeighbourEndsTheRow(grid, x + 1, y, 1))
-            {
-                return true;
-            }
-
-            // One step further along the same row, so a thin arm two cells long still joins a thick
-            // column's front instead of stepping down half way along.
-            if (RaisedNeighborResolver.IsRaised(grid, x - 1, y)
-                && FrontContinuesInMask(grid, x - 1, y, depth + 1))
-            {
-                return true;
-            }
-
-            return RaisedNeighborResolver.IsRaised(grid, x + 1, y)
-                && FrontContinuesInMask(grid, x + 1, y, depth + 1);
-        }
-
-        /// <summary>
-        /// Whether this thick neighbour carries its wall inside its own mask AND sits at the END of the
-        /// front on this row rather than in the middle of it.
-        ///
-        /// This end test is what separates the two real cases that are otherwise identical in topology.
-        /// In the real L the four deep corner column is at the END of its row and a thin arm butts up
-        /// against it, so the arm's wall must join the corner's row or the front steps down a row and
-        /// leaves a gap. In the R14 T the three deep branch column is in the MIDDLE of its row with
-        /// thin cells on BOTH sides, and there the two runs must stay on their own row and terminate on
-        /// the author's r2c2 and r2c0 terminals, which is the corner treatment R14 already proved.
-        /// Joining a middle column would raise three cells of front instead of one and destroy it.
-        /// </summary>
-        private static bool ThickNeighbourEndsTheRow(
-            TerrainGridData grid, int x, int y, int dirX)
-        {
-            if (!NeighbourCarriesWallInMask(grid, x, y))
-            {
-                return false;
-            }
-
-            return !EmitsFrontAnywhere(grid, x + dirX, y);
-        }
-
-        /// <summary>True when this cell has a south facing front at all, wherever the wall lands.</summary>
-        private static bool EmitsFrontAnywhere(TerrainGridData grid, int x, int y)
-        {
-            if (!RaisedNeighborResolver.IsRaised(grid, x, y)
-                || RaisedNeighborResolver.IsRaised(grid, x, y - 1))
-            {
-                return false;
-            }
-
-            return !IsEnclosedVoid(grid, x, y - 1);
-        }
-
-        /// <summary>
-        /// Whether this cell, on its own thickness alone, carries its front wall inside its own mask.
-        /// Deliberately the NON recursive half of the rule: thickness three or more, or ground above it
-        /// that is an enclosed hole. That is enough to recognise a thick column without consulting the
-        /// junction rule and so without recursing.
-        /// </summary>
-        private static bool NeighbourCarriesWallInMask(TerrainGridData grid, int x, int y)
-        {
-            if (!RaisedNeighborResolver.IsRaised(grid, x, y)
-                || RaisedNeighborResolver.IsRaised(grid, x, y - 1))
-            {
-                return false;
-            }
-
-            bool northVoid = IsEnclosedVoid(grid, x, y + 1);
-            if (!RaisedNeighborResolver.IsRaised(grid, x, y + 1) && !northVoid)
-            {
-                return false;
-            }
-
-            return RaisedNeighborResolver.MeasureRunDepth(grid, x, y) >= 3 || northVoid;
         }
 
         /// <summary>
@@ -573,118 +509,83 @@ namespace IslandLife.World.Terrain
         }
 
         /// <summary>
-        /// True when this cell is the R21 corner/junction at all, independently of which of the two
-        /// states it is in. North occupancy is deliberately NOT tested here; it is only the final
-        /// discriminator, applied once this topology is confirmed.
+        /// R21_SUPERSEDED, IL-WORLD-004S-R23B. The corner/junction rule is GONE from production.
         ///
-        /// The junction is a vertical Raised boundary on the WEST that turns east into a Raised platform,
-        /// and the boundary ends immediately below this cell: the cell's own south neighbour is itself a
-        /// front cell, i.e. it has open ground under it.
+        /// R21 required three reads that are provably outside a 3x3 neighbourhood: <c>(x, y-2)</c> to
+        /// prove the boundary ends below this cell, <c>(x+2, y)</c> to prove the platform is at least
+        /// three wide, and <c>(x+2, y-1)</c> to prove it steps away. The card forbids exactly those
+        /// reads, and it also forbids re-adding them to keep the old R21 test passing.
         ///
-        /// IL-WORLD-004S-R21. All of it is read from this cell's own 3x3 neighbourhood plus the single
-        /// fact that the cell under it is the bottom of the mass. There is no shape name, no fixture
-        /// name, no component id and no absolute coordinate, so the same local topology reaches the same
-        /// author component wherever it occurs, including inside a T, an O, a ring or a larger mass.
+        /// So the two R21 roles, <see cref="RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION"/> and
+        /// <see cref="RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION"/>, and their author slices
+        /// <c>Hills_r3c5</c> and <c>Hills_r2c4</c> are retained in the enum, in
+        /// <see cref="AuthorHillsCompositionSet"/> and in the composition asset, but NO rule produces
+        /// them any more, because no rule may read that far.
+        ///
+        /// R21 was itself REOPENED after the user reported a visual FAIL, so its two components are
+        /// historical evidence only and never an oracle. No replacement junction rule is invented here:
+        /// the junction topology is reported as UNRESOLVED for PM to lock against the author sheet.
         /// </summary>
-        private static bool IsAuthorCornerJunction(TerrainGridData grid, int x, int y)
-        {
-            // The west side is open: that is the vertical boundary.
-            if (RaisedNeighborResolver.IsRaised(grid, x - 1, y))
-            {
-                return false;
-            }
 
-            // East is Raised: that is the platform this boundary connects to.
-            if (!RaisedNeighborResolver.IsRaised(grid, x + 1, y))
-            {
-                return false;
-            }
-
-            // South is Raised: the boundary continues below this cell, so this cell is NOT the front.
-            if (!RaisedNeighborResolver.IsRaised(grid, x, y - 1))
-            {
-                return false;
-            }
-
-            // The boundary ENDS below this cell: the cell under it has open ground under it, which is
-            // what makes this the turning point rather than one more cell of a straight vertical edge.
-            if (RaisedNeighborResolver.IsRaised(grid, x, y - 2))
-            {
-                return false;
-            }
-
-            // IL-WORLD-004S-R21. The junction needs a PLATFORM that HOLDS DEPTH beside it and then STEPS AWAY.
-            //
-            // Measured: the south-east neighbour is what separates this junction from R20's already
-            // locked top corner, and the two are otherwise identical. R20's [XXX / X..] gives (4,5) raw
-            // 0x50 with SE open, while this junction's [XXX / XX.] gives raw 0xD0 with SE Raised. So SE
-            // must be Raised, which is also the honest meaning: the platform really is at that depth for
-            // more than one cell, rather than the single cell R20's top corner turns off.
-            if (!RaisedNeighborResolver.IsRaised(grid, x + 1, y - 1))
-            {
-                return false;
-            }
-
-            // The platform must be at least three cells wide at the junction's row, or there is no
-            // platform at all, just one neighbour. This is what keeps a 2x2 block out.
-            if (!RaisedNeighborResolver.IsRaised(grid, x + 2, y))
-            {
-                return false;
-            }
-
-            // And it must STEP AWAY two columns east. A plain plateau keeps the junction's own depth all
-            // the way across, which is what keeps a 3x3 and a 5x3 out.
-            if (RaisedNeighborResolver.IsRaised(grid, x + 2, y - 1))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static RaisedSurfaceRole RoleFor(
+/// <summary>
+        /// The author's structural role for one cell, from LAYER A inputs only. IL-WORLD-004S-R23B.
+        ///
+        /// Every input is a fact about this cell's OWN 3x3: its four corner decisions, its N occupancy
+        /// and its S occupancy. There is no run length, no offset, no thickness threshold, no walk and
+        /// no lookahead parameter left in the signature, so no branch below can be reached by changing
+        /// how far the surrounding ground happens to extend.
+        ///
+        /// The decision order is: the two R20 top corners, then the two R19 front corners, then the
+        /// straight ladder. The two families cannot collide, because a top corner requires a Raised
+        /// SOUTH neighbour and a front corner requires an open one.
+        ///
+        /// The straight ladder, and the R18/R11 oracles each line reproduces:
+        ///
+        ///   N open, S solid  -> TOP_SURFACE      the author rounded cap, Hills r0.
+        ///       R11 3x3 and 5x3 rectangles: their top row is r0c0 | r0c1 ... | r0c2.
+        ///       R18 1x2 .. 1x100 columns: their top cell is r0c3.
+        ///
+        ///   N solid, S open  -> FRONT_CLIFF      the author front wall, Hills r2, inside its own mask.
+        ///       R11 3x3 and 5x3 rectangles: their bottom row is r2c0 | r2c1 ... | r2c2.
+        ///       R18 1x2 .. 1x100 columns: their bottom cell is r2c3.
+        ///
+        ///   N solid, S solid  -> MIDDLE_SURFACE  the author body row, Hills r1, self repeating.
+        ///       R11 3x3 and 5x3 rectangles: their middle row is r1c0 | r1c1 ... | r1c2.
+        ///       R18 1x3 .. 1x100 columns: every interior cell is r1c3, and r1c3 repeats however deep
+        ///       the column is. That repetition is the whole reason BODY cannot be a length decision.
+        ///
+        ///   N open, S open    -> SECOND_FRONT_CLIFF  the author one-cell-high band, Hills r3.
+        ///       R11 and R18 w x 1 bands: the entire band is r3c0 | r3c1 ... | r3c2.
+        ///       R18 1x1: r3c3.
+        ///       There is deliberately NO exception here. An earlier revision added one, reading whether a
+        ///       horizontal neighbour was a front row, and it was measured to break the frozen R19
+        ///       oracle in 8 of 33 fixtures by turning the cell beside a front corner into an r2
+        ///       terminal. See the branch itself for that measurement.
+        ///
+        /// SCOPE NOTE, MEASURED, AND THE ONE CONCESSION THIS LADDER MAKES. The author's own wide block
+        /// is four rows tall (r0..r3), so a mass four or more cells deep used to paint its bottom two
+        /// rows as r2 then r3. Under this ladder they paint as r1 then r2 instead.
+        ///
+        /// That concession is FORCED, not chosen. The two cells in question are the bottom row of a
+        /// three deep mass and the bottom row of a four deep mass, and their raw 3x3 is byte identical
+        /// (N, NE, NW, E, W Raised; S, SE, SW open): the difference between "three deep" and "four
+        /// deep" is at (x, y+2), outside the 3x3 by construction. R11 locks the three deep case to r2
+        /// and has never had a failing assertion, so r2 is the only answer a purely local Layer A can
+        /// give. No existing oracle covers the four deep wide case, so no oracle breaks; what changes is
+        /// the VISUAL of deep wide masses, which is a PM / Scene View judgement and is reported as
+        /// UNITY_VISUAL_PENDING rather than asserted here.
+        /// </summary>
+        private static RaisedSurfaceRole RoleForLocal(
             bool leftCorner,
             bool rightCorner,
             bool leftTopCorner,
             bool rightTopCorner,
-            bool cornerJunction,
-            bool upperContinuation,
-            bool solidNorth,
-            bool southExposed,
-            int runDepth,
-            int offsetFromRunBottom,
-            bool northIsEnclosedVoid,
-            bool isNarrow,
-            bool frontContinuesInMask)
+            bool northOccupied,
+            bool southOccupied)
         {
-            // IL-WORLD-004S-R21. The author corner/junction grammar, and it is decided BEFORE every
-            // depth-driven choice, so the column's thickness can never override the junction state.
-            //
-            // This is what fixes the reported defect: the junction's sprite used to slide with runDepth,
-            // giving r0c0, then r1c0, then r2c0 as the wall grew, and a two-deep column skipped the
-            // author's r1 body row completely. Now the junction resolves once, from its own topology,
-            // and only its north occupancy chooses between the two locked author components.
-            if (upperContinuation)
-            {
-                return RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION;
-            }
-
-            // IL-WORLD-004S-R21. The SAME junction with NO Raised above it. This half was initially
-            // omitted, which left STATE A falling through to the straight grammar and still emitting
-            // the plain r0c0 terminal, so the height ladder measured H1 wrong.
-            if (cornerJunction)
-            {
-                return RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION;
-            }
-
-            // IL-WORLD-004S-R20. The author TOP corner grammar, and it is decided FIRST, before the
-            // R19 front corners, the R18 straight shapes and the junction rules below, so neither the
-            // column's thickness nor the run's width can substitute a different piece.
-            //
-            // The four corner predicates cannot collide with one another. The two top corners require
-            // a Raised SOUTH neighbour, the two front corners require an open one, so a single cell can
-            // never satisfy a top corner and a front corner at the same time. That is checked by
-            // assertion over all 512 neighbourhoods in the R16B matrix, not just argued here.
+            // IL-WORLD-004S-R20. Decided FIRST, before the R19 front corners and before the straight
+            // ladder, so neither the cell's neighbours nor the extent of the ground can substitute a
+            // different piece for a top corner.
             if (leftTopCorner)
             {
                 return RaisedSurfaceRole.LEFT_TOP_CORNER;
@@ -694,15 +595,10 @@ namespace IslandLife.World.Terrain
             {
                 return RaisedSurfaceRole.RIGHT_TOP_CORNER;
             }
-            // IL-WORLD-004S-R19. The author corner grammar, and it is decided FIRST, before the R18
-            // straight shapes and before the junction rules below, so neither the column's thickness
-            // nor the run's width can substitute a different piece for the corner. That is the whole
-            // point of a corner: the cell where the boundary turns is the same cell whatever the two
-            // straight runs either side of it happen to be.
-            //
-            // Both roles are at or above FRONT_CLIFF, so the corner draws its own front inside its own
-            // logical mask and never displaces a cliff one row south. The corner therefore occupies
-            // exactly one visual cell, on the logical Raised cell itself.
+
+            // IL-WORLD-004S-R19. Also decided before the straight ladder. Both roles are at or above
+            // FRONT_CLIFF, so a front corner draws its own wall inside its own logical mask and never
+            // displaces a cliff one row south; it occupies exactly one visual cell, on its own cell.
             if (leftCorner)
             {
                 return RaisedSurfaceRole.LEFT_CORNER;
@@ -712,175 +608,32 @@ namespace IslandLife.World.Terrain
             {
                 return RaisedSurfaceRole.RIGHT_CORNER;
             }
-            // A front wall belongs inside the mask whenever there is ground above it to sit under:
-            // either the plateau is at least three cells thick (the proven r0/r1/r2 stack), or the cell
-            // above is an enclosed hole, in which case the ground continues all the way round and the
-            // wall must not drop a row and leave a notch in the front of a ring.
-            //
-            // IL-WORLD-004S-R16B NOTE, recorded because it was measured and rejected. Treating ground
-            // that the shape wraps around as a pocket, and pulling the front wall up into this cell,
-            // is symmetric across all four orientations and passes the whole topology matrix, but it
-            // turns a south facing platform front into dirt windows punched into the top surface. The
-            // existing behaviour was rendered at every junction and inspected: the run already
-            // terminates on the author terminal pieces, so the inner corner is already handled.
-            //
-            // IL-WORLD-004S-R16C adds the one case that real FirstIsland data proved was missing: a
-            // thick column and a thin one meeting on the same row, where the front must not step.
-            //
-            // When the front continues, the support does not have to be directly overhead. In the real
-            // L sample the cell at the inside of the bend has open ground to its north, which is the
-            // notch, yet its neighbour on the same row carries the wall on the row this cell must join.
-            // Requiring solid north as well would leave that cell behind and reintroduce the step, so a
-            // continuing front supplies its own support. The only art given up is the rounded cap on
-            // that one cell, and the author has no north facing soil face to replace it with anyway.
-            // IL-WORLD-004S-R18. The author grammar for the most basic straight shapes, locked after
-            // the source Basic Pack and Hills.png were inspected cell by cell in Unity.
-            //
-            //   ONE cell deep band -> the author's r3 row, carried INSIDE the logical mask:
-            //                         r3c0 | r3c1 ... r3c1 | r3c2 across, and r3c3 for a single cell.
-            //   TWO deep narrow col -> r0c3 over r2c3, both inside the logical mask.
-            //
-            // Both used to displace a second visual cell one row SOUTH of the logical Raised, so a
-            // single logical cell occupied two visual cells and a one cell high band grew a cliff row
-            // hanging outside its own mask. A one wide two deep column is restricted to the narrow c3
-            // stack because that is the instance the author drew; the wide two deep plateau keeps the
-            // composition R9 already proved.
-            //
-            // These are decided FIRST, on depth alone, so the basic straight shapes can never be
-            // re-routed through the junction rules further down.
-            if (runDepth == 1)
+
+            // The straight ladder. Four cases, four distinct cardinal patterns, no length anywhere.
+            if (!northOccupied && southOccupied)
             {
-                return southExposed
-                    ? RaisedSurfaceRole.SECOND_FRONT_CLIFF
-                    : RaisedSurfaceRole.TOP_SURFACE;
+                return RaisedSurfaceRole.TOP_SURFACE;
             }
 
-            if (runDepth == 2 && isNarrow)
+            if (northOccupied && !southOccupied)
             {
-                if (southExposed)
-                {
-                    return RaisedSurfaceRole.FRONT_CLIFF;
-                }
-
-                return offsetFromRunBottom == 1
-                    ? RaisedSurfaceRole.TOP_SURFACE
-                    : RaisedSurfaceRole.MIDDLE_SURFACE;
+                return RaisedSurfaceRole.FRONT_CLIFF;
             }
 
-            bool frontInMask = southExposed
-                && (runDepth >= 3 || northIsEnclosedVoid || frontContinuesInMask)
-                && (solidNorth || frontContinuesInMask);
-
-            if (frontInMask)
+            // MEASURED, NOT GUESSED: this branch returns SECOND_FRONT_CLIFF, the author's r3 row, for a
+            // cell that is its own top and front at once. An earlier revision of this card tried to make
+            // it FRONT_CLIFF whenever a horizontal neighbour happened to be a front row, and that broke
+            // the frozen R19 oracle: the cell immediately beside a front corner then became an r2
+            // terminal instead of the author's r3 body, in 8 of 33 fixtures. The corner itself never
+            // moved - it is the NEIGHBOUR that moved - which is exactly the kind of silent coupling the
+            // run walk used to hide. So the exception is REMOVED and a cell is either its own top and
+            // front, or it has ground above it. Four cases, four cardinal patterns, nothing else.
+            if (!northOccupied && !southOccupied)
             {
-                return runDepth >= 4 && offsetFromRunBottom == 0 && !isNarrow
-                    ? RaisedSurfaceRole.SECOND_FRONT_CLIFF
-                    : RaisedSurfaceRole.FRONT_CLIFF;
+                return RaisedSurfaceRole.SECOND_FRONT_CLIFF;
             }
 
-            if (runDepth >= 4)
-            {
-                // IL-WORLD-004S-R18. The one wide column is r0c3 over r1c3 repeated over r2c3 for
-                // EVERY depth, so it never reaches the author's r3c3 second front row. The wide block
-                // keeps the r0..r3 stack R4 reconstructed 1:1.
-                if (isNarrow)
-                {
-                    if (offsetFromRunBottom == 0)
-                    {
-                        return RaisedSurfaceRole.FRONT_CLIFF;
-                    }
-
-                    return offsetFromRunBottom == runDepth - 1
-                        ? RaisedSurfaceRole.TOP_SURFACE
-                        : RaisedSurfaceRole.MIDDLE_SURFACE;
-                }
-
-                if (offsetFromRunBottom == 0)
-                {
-                    return RaisedSurfaceRole.SECOND_FRONT_CLIFF;
-                }
-
-                if (offsetFromRunBottom == 1)
-                {
-                    return RaisedSurfaceRole.FRONT_CLIFF;
-                }
-
-                return offsetFromRunBottom == runDepth - 1
-                    ? RaisedSurfaceRole.TOP_SURFACE
-                    : RaisedSurfaceRole.MIDDLE_SURFACE;
-            }
-
-            if (runDepth == 3)
-            {
-                switch (offsetFromRunBottom)
-                {
-                    case 0:
-                        return RaisedSurfaceRole.FRONT_CLIFF;
-                    case 2:
-                        return RaisedSurfaceRole.TOP_SURFACE;
-                    default:
-                        return RaisedSurfaceRole.MIDDLE_SURFACE;
-                }
-            }
-
-            if (runDepth == 2)
-            {
-                if (offsetFromRunBottom == 1)
-                {
-                    return RaisedSurfaceRole.TOP_SURFACE;
-                }
-
-                // IL-WORLD-004S-PJ. The bottom cell of a two-deep, two-or-more-wide column carries the
-                // author front wall INSIDE its own mask, on row r2.
-                //
-                // It used to return MIDDLE_SURFACE, which is below FRONT_CLIFF, and that is the ONLY
-                // condition under which RaisedTopologyState.DrawsFrontCliffBelow can fire. So this one
-                // branch is the sole origin of every visual tile the projection ever places at a
-                // coordinate other than its own logical cell: AuthorHillsLocalResolver.Resolve then
-                // emits an extra cliff at (x, y-1), one row south of the mask.
-                //
-                // MEASURED, across all 256 neighbourhoods in two column contexts: 128 of 512
-                // neighbourhoods emitted a displaced tile and 128 of 128 came from this branch, every one
-                // with runDepth == 2 and isNarrow == false.
-                //
-                // REPRODUCED on the locked P fixture. BEFORE [XXX / X..] resolved to 4 logical, 4 visual,
-                // 0 outside. Painting the fifth cell to give [XXX / XX.] produced 5 logical but 7 visual
-                // and 2 outside the mask: (4,3) = Hills_r2c0 emitted by (4,4) and (5,3) = Hills_r2c2
-                // emitted by (5,4). With this branch fixed the same fixture is 5 logical, 5 visual and
-                // 0 outside, and every visual tile sits on its own logical cell.
-                //
-                // The wall is the author's own proven row r2, reached through the existing slot walk, so
-                // nothing is mirrored, rotated, stretched or generated. The slot is decided by the same
-                // 3x3 adjacency as before, which makes the west end of this front a genuine LEFT_TERMINAL
-                // and therefore Hills_r2c0, the author left boundary plus front edge piece.
-                //
-                // HONEST SCOPE NOTE. The bottom row of a two-deep rectangle is locally indistinguishable
-                // from this P front: its west front cell has the identical raw mask 0x16. No rule that
-                // reads only a 3x3 neighbourhood can change one without changing the other, so the two
-                // and three cell wide rectangles also stop displacing. That is a measured consequence,
-                // not a choice, and their old outside-row oracles are marked
-                // DEFERRED_LEGACY_EXPECTATION rather than silently re-pinned.
-                return southExposed
-                    ? RaisedSurfaceRole.FRONT_CLIFF
-                    : RaisedSurfaceRole.MIDDLE_SURFACE;
-            }
-
-            // Depth 1. The cell is at once the top and the front of its column, so it has room for
-            // exactly one tile and the cliff must go below the mask.
-            //
-            // IL-WORLD-004S-R13. This branch used to return MIDDLE for a wide run and TOP only for the
-            // one-wide column, and the user proved that wrong on screen: two isolated Raised cells each
-            // rendered as a properly closed little plateau using the author rounded cap, but painting
-            // the cell between them turned the pair into a band whose top edge used the SQUARE body
-            // row, so the north exterior boundary vanished and the plateau read as a U shaped trough.
-            //
-            // The cause is exactly what must never happen: the north exterior disappeared not because a
-            // neighbour had become Raised, but because the cell had stopped being isolated. The fix is
-            // the exposed-neighbour invariant, not a special case for horizontal runs. A cell with no
-            // Raised neighbour to its north HAS a north exterior boundary, and the only author art that
-            // carries one is the cap row r0. So every north-exposed cell gets the cap, one-wide or wide,
-            // and the horizontal slot alone decides which slice is used.
-            return RaisedSurfaceRole.TOP_SURFACE;
+            return RaisedSurfaceRole.MIDDLE_SURFACE;
         }
 
         /// <summary>

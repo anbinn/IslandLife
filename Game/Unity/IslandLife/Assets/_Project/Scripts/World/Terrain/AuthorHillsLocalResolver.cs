@@ -21,6 +21,19 @@ namespace IslandLife.World.Terrain
     ///       -> author Hills primitives                (this class)
     ///       -> HillVisualTile
     ///
+    /// IL-WORLD-004S-R23B: THE THREE LAYERS ARE NOW EXPLICIT.
+    ///
+    ///   LAYER A  local semantics.   RaisedTopologyState.Resolve reads this cell's own 3x3 and returns
+    ///                               AuthorRole + AuthorSlot. Strictly 3x3: no x+/-2, no y+/-2, no run
+    ///                               length, no walk, no lookahead.
+    ///   LAYER B  author component.  THIS CLASS. It is a pure dispatch table: role -> the PM-locked
+    ///                               author Hills slice. It may not widen, narrow or re-derive either
+    ///                               Layer A output, and it no longer does. CliffSlotFor and its run
+    ///                               walk are deleted, so the slot reaches Layer B untouched.
+    ///   LAYER C  repetition/layout. RunDepth and OffsetFromRunBottom still exist on the state struct,
+    ///                               but they are read by NOTHING here and they decide no role, no slot
+    ///                               and no sprite.
+    ///
     /// Invariants this class guarantees, all asserted by the R12 suite:
     ///   - it only READS the logical elevation; TerrainData is never mutated;
     ///   - every emitted tile is one of the author's own Hills slices, in its original orientation;
@@ -146,15 +159,19 @@ namespace IslandLife.World.Terrain
                         continue;
                     }
 
-                    // The slot must be settled BEFORE the Sprite is chosen, because the slot decides which
-                    // author slice is used. IL-WORLD-004S-R14.
+                    // IL-WORLD-004S-R23B, LAYER B. The slot is now taken STRAIGHT FROM LAYER A.
+                    //
+                    // CliffSlotFor used to overwrite it here by walking west and east until the cliff run
+                    // stopped, which is the unbounded run walk the card forbids: it decided an author
+                    // SLOT, and therefore an author SPRITE, from cells further than 3x3 away. It is gone,
+                    // and with it RunContinuesThrough, EmitsAnyCliff and CliffVisualRow, which existed
+                    // only to feed it.
+                    //
+                    // Layer A already reads the answer off the cell's own cardinals: east open and west
+                    // solid is a LEFT_TERMINAL, both solid is a BODY, west open and east solid is a
+                    // RIGHT_TERMINAL, and both open is the author's one-wide c3 column. Nothing here may
+                    // widen that decision.
                     HillColumnSlot selfSlot = topology.Slot;
-                    if (topology.DrawsFrontCliffInMask)
-                    {
-                        // A front cliff that sits inside its own mask still ends wherever the cliff run
-                        // ends, so its slot comes from the run extent too.
-                        selfSlot = CliffSlotFor(grid, x, y, selfSlot, y);
-                    }
 
                     // The cell's own tile.
                     Sprite sprite = PickSprite(
@@ -177,15 +194,19 @@ namespace IslandLife.World.Terrain
                         TileRow(topology),
                         selfSlot));
 
-                    // The front cliff, when the plateau is too thin to hold it inside its own mask.
+                    // IL-WORLD-004S-R23B. Reachable only while DrawsFrontCliffBelow can be true, which under the
+                    // local Layer A it no longer can be: the straight ladder only returns a role BELOW
+                    // FRONT_CLIFF (TOP_SURFACE or MIDDLE_SURFACE) for a cell whose SOUTH is solid, so
+                    // ExposedSouth is false and the condition can never hold. The path is KEPT, not
+                    // deleted, so the outside-mask invariant stays checkable rather than becoming an
+                    // unreachable assumption, and it stays a measured 0.
                     if (topology.DrawsFrontCliffBelow)
                     {
                         var cliffPosition = new Vector3Int(x, y - 1, 0);
                         RaisedTopologyState cliffTopology =
                             RaisedTopologyState.ForFrontCliffBelow(topology, grid, x, y - 1);
 
-                        HillColumnSlot cliffSlot = CliffSlotFor(
-                            grid, x, y, cliffTopology.Slot, y - 1);
+                        HillColumnSlot cliffSlot = cliffTopology.Slot;
 
                         Sprite cliffSprite = PickSprite(
                             compositionSet, cliffTopology, cliffSlot, diagnostics, x, y - 1);
@@ -206,7 +227,7 @@ namespace IslandLife.World.Terrain
                             true,
                             cliffSprite,
                             TileRow(cliffTopology),
-                            CliffSlotFor(grid, x, y, cliffTopology.Slot, y - 1)));
+                            cliffSlot));
                         outside++;
                     }
                 }
@@ -215,118 +236,6 @@ namespace IslandLife.World.Terrain
             return new Report(raisedCells, output.Count, outside, diagnostics);
         }
 
-        /// <summary>
-        /// The slot of one front-cliff tile, decided by how far the cliff RUN that tile belongs to
-        /// actually extends.
-        ///
-        /// IL-WORLD-004S-R14. This is the inner-corner fix, and it is derived purely from local
-        /// adjacency. A cliff exists for every Raised cell whose south is open, so where a vertical
-        /// branch meets a horizontal front boundary the branch cell has NO cliff and the horizontal run
-        /// simply stops. Previously the tile at that last column still asked its own owner cell for a
-        /// slot, and because the owner had Raised neighbours on both sides it answered BODY: a straight
-        /// cliff band ran head-on into the branch and left the square gap the user reported.
-        ///
-        /// Instead the run is walked west and east through neighbours that emit a cliff onto the SAME
-        /// visual row. The two ends of that run are the author terminal pieces, so the horizontal front
-        /// boundary leaves the straight band and turns into the side of the branch. No shape name is
-        /// involved, no T is detected, and the same walk handles U, notch, staircase and anything else
-        /// with the same local topology.
-        ///
-        /// A run only one cell wide keeps the slot it inherited, which is what preserves the author
-        /// one-wide c3 column and every proven narrow composition byte for byte.
-        /// </summary>
-        private static HillColumnSlot CliffSlotFor(
-            TerrainGridData grid,
-            int x,
-            int y,
-            HillColumnSlot fallback,
-            int cliffVisualY)
-        {
-            int start = x;
-            int end = x;
-
-            while (RunContinuesThrough(grid, start - 1, y, cliffVisualY))
-            {
-                start--;
-            }
-
-            while (RunContinuesThrough(grid, end + 1, y, cliffVisualY))
-            {
-                end++;
-            }
-
-            if (end - start + 1 < 2)
-            {
-                return fallback;
-            }
-
-            if (x == start)
-            {
-                return HillColumnSlot.LEFT_TERMINAL;
-            }
-
-            return x == end ? HillColumnSlot.RIGHT_TERMINAL : HillColumnSlot.BODY;
-        }
-
-        private static bool EmitsAnyCliff(TerrainGridData grid, int x, int y)
-        {
-            return CliffVisualRow(grid, x, y) != int.MinValue;
-        }
-
-        /// <summary>
-        /// Whether the cliff run continues through this cell on the same visual row.
-        ///
-        /// IL-WORLD-004S-R20. A cell normally joins the run only when it emits a cliff of its own on
-        /// that row. An author CORNER is the exception and it is load bearing: a top corner has a leg
-        /// below it, so its own south is NOT exposed, it emits no cliff, and the walk used to stop
-        /// there. The body cell immediately inside a corner was therefore made a run END and drawn as
-        /// the author's r3c0 or r3c2 terminal instead of the author's r3c1 BODY, which put an
-        /// unconfirmed piece in the middle of a plain straight top run.
-        ///
-        /// A corner is a whole-cell composition that occupies its own cell in the same visual row, so
-        /// the run genuinely does continue through it. The corner's own sprite is chosen from its ROLE
-        /// in <see cref="PickSprite"/> and never from this walk, so nothing here can overwrite it.
-        ///
-        /// This is a no-op for the two R19 front corners, which already emit a cliff on that row and so
-        /// already extended the run; it is measured by R19 staying at 33 PASS / 0 FAIL.
-        /// </summary>
-        private static bool RunContinuesThrough(TerrainGridData grid, int x, int y, int cliffVisualY)
-        {
-            if (EmitsAnyCliff(grid, x, y))
-            {
-                return CliffVisualRow(grid, x, y) == cliffVisualY;
-            }
-
-            if (!RaisedNeighborResolver.IsRaised(grid, x, y))
-            {
-                return false;
-            }
-
-            RaisedTopologyState t = RaisedTopologyState.Resolve(grid, x, y);
-            return t.IsLeftTopCorner || t.IsRightTopCorner
-                || t.IsLeftCorner || t.IsRightCorner;
-        }
-
-        /// <summary>
-        /// The visual row this cell's front cliff lands on, or int.MinValue when it emits no cliff.
-        /// Read straight from the same topology the projection uses, so the run walk can never disagree
-        /// with what is actually emitted.
-        /// </summary>
-        private static int CliffVisualRow(TerrainGridData grid, int x, int y)
-        {
-            if (!RaisedNeighborResolver.IsRaised(grid, x, y))
-            {
-                return int.MinValue;
-            }
-
-            RaisedTopologyState topology = RaisedTopologyState.Resolve(grid, x, y);
-            if (topology.DrawsFrontCliffInMask)
-            {
-                return y;
-            }
-
-            return topology.DrawsFrontCliffBelow ? y - 1 : int.MinValue;
-        }
         private static Sprite PickSprite(
             AuthorHillsCompositionSet set,
             RaisedTopologyState topology,
@@ -351,10 +260,14 @@ namespace IslandLife.World.Terrain
             }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
+                // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable: no rule produces this role, because
+                // proving a junction needs cells beyond 3x3. Kept wired so the author slice stays
+                // reachable-in-principle and IsComplete keeps holding.
                 sprite = set.GetCornerWithUpperContinuation();
             }
             else if (topology.Role == RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION)
             {
+                // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable, same reason as above.
                 sprite = set.GetCornerNoUpperContinuation();
             }
             else if (topology.Role == RaisedSurfaceRole.LEFT_TOP_CORNER)

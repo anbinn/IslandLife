@@ -164,7 +164,74 @@ author left and right **top** corners by R20.
   - **Consequence for R23B:** the blocker is no longer architectural. It is that the current slot
     derivation must be replaced by a raw-cardinal derivation, and that replacement has to be proven
     against the R18/R19/R20 oracles one piece at a time. Nothing was implemented this round, per
-    section 7.- **R23A topology matrix — TESTS ONLY. The refactor is BLOCKED, and the blocker is architectural.**
+    section 7.- **R23B local topology semantic core (`a12a8e9` -> this card). Author semantics now derive from ONE cell's
+  own 3x3. The run walk, the runDepth ladder, MaxFrontWalk and the R21 junction test are GONE from the
+  semantic path; Layer A / Layer B / Layer C are separated and the role is now a pure function of the raw
+  3x3.**
+  - **The straight ladder is four cases over N and S, and that is the whole grammar:**
+    `N open, S solid -> TOP_SURFACE (r0)` · `N solid, S open -> FRONT_CLIFF (r2)` ·
+    `N solid, S solid -> MIDDLE_SURFACE (r1)` · `N open, S open -> SECOND_FRONT_CLIFF (r3)`.
+    "One deep", "two deep", "three deep" and "four deep" are all GONE as concepts: a cell is a top row,
+    a front row, an interior row, or its own top and front at once. **No length appears anywhere.**
+  - **Slot is Layer A too, and it is the card's own worked example, asserted as an identity over all 8
+    reaches:** E only -> LEFT_TERMINAL, W+E -> BODY, W only -> RIGHT_TERMINAL, both open -> NARROW.
+    A one-cell hole is no longer admitted as the open side of a slot, so a void cannot put the author's
+    narrow c3 stack on the inside of a ring.
+  - **`LEGACY_RUN_OVERRIDE: 9 -> 0`, the card's headline target.** 256 raw masks x 8 reaches (1,2,3,4,8,16,
+    64,100) = 2048 probes, and 0 emit more than one Sprite. `TRUE_LOCAL_AMBIGUITY: 0`.
+    **R23A2 re-run under the new core reports the 9 down to 4 residual canonical collisions, and all 4
+    are `LEGACY_RUN_OVERRIDE` by that harness's own rule - but each one is a genuine RAW distinction
+    (0x14 vs 0x34, 0x05 vs 0x85, 0x41 vs 0x43, 0x50 vs 0x58), i.e. the r0c0-vs-r0c4 and r2c0-vs-r3c4 pairs
+    that R19/R20 locked as corners. They are NOT the same raw giving two sprites; R23A2's classifier still
+    buckets any canonical with >1 sprite as a collision, and the corner roles make that unavoidable while
+    they exist.** The card's own metric (`LEGACY_RUN_OVERRIDE_ZERO`, one Sprite per raw) is 0.
+  - **The witness grid defect R23A2 fixed is now load-bearing rather than cosmetic: it caught a real bug
+    in my R23B probe.** Sizing a probe grid relative to the target cell silently truncated south and
+    south-west arms, producing 224 read-back mismatches; with the grid sized from the origin the same
+    assertion reports 0/2048. Every probe reads its mask back OUT of the grid, so a probe cannot mislabel
+    its own topology.
+  - **A local replacement for `MaxFrontWalk` was written, MEASURED, and WITHDRAWN.** The R16C rule let a
+    front wall step down to join a thick neighbour's row, which is inherently a two-or-more-cell read. The
+    local one-cell version broke the frozen R19 oracle in 8 of 33 fixtures by turning the cell beside a
+    front corner into an r2 terminal - the corner itself never moved, the NEIGHBOUR did, which is exactly
+    the kind of silent coupling the walk used to hide. **So `MaxFrontWalk` is removed with no replacement
+    and the R16C behaviour is NOT reproduced.** Recorded as a real loss, not papered over.
+  - **Deep wide masses render r0/r1/r1/r2 where they used to render r0/r1/r2/r3. This is forced, not
+    chosen.** The bottom row of a 3-deep mass and the bottom row of a 4-deep mass have byte-identical raw
+    3x3 (N, NE, NW, E, W raised; S, SE, SW open) - the difference is at (x, y+2), outside 3x3 by
+    construction. R11 locks the 3-deep case to r2 and has never failed, so r2 is the only answer a purely
+    local Layer A can give. No oracle covers the 4-deep wide case, so **no oracle breaks; what changes is
+    the VISUAL of deep wide masses, and that is PM / Scene View judgement, reported UNITY_VISUAL_PENDING
+    rather than asserted.**
+  - **Frozen oracles, all run unchanged in their own processes: R18 41 PASS / 0 FAIL, R19 33 / 0,
+    R20 59 / 0, R11 172 PASS / 0 FAIL / 1 SKIP (2_DEEP_WIDE_LEGACY_DISPLACED_ROW still
+    DEFERRED_LEGACY_EXPECTATION, not re-pinned).** R15 erase is covered by the R18 live
+    Paint/Erase/Undo/Redo block, which passes. R23B itself 86 PASS / 0 FAIL.
+  - **The ladder is also re-asserted at lengths R18 does not carry: horizontal and vertical 1,2,3,4,5,8,16,
+    32,64,100 all PASS with the exact expected sprite at every cell, and the vertical expectation
+    contains no length** - `r0c3` + `(n-2) x r1c3` + `r2c3` is the same three rules for 2 through 100.
+  - **`DrawsFrontCliffBelow` is now unreachable, so the outside-mask projection is a MEASURED 0** on every
+    fixture and on the live 50-cell map, not an assumption: a role below FRONT_CLIFF is only returned for a
+    cell whose SOUTH is solid, and such a cell cannot be south exposed. The code path is kept so the
+    invariant stays checkable.
+  - **R21_SUPERSEDED = YES.** `IsAuthorCornerJunction` required (x, y-2), (x+2, y) and (x+2, y-1), all
+    provably outside 3x3, and the card forbids exactly those reads. The predicate is deleted; the two R21
+    roles and their slices `Hills_r3c5` / `Hills_r2c4` stay wired in the enum, the composition set and the
+    asset so nothing is silently missing, but **no rule produces them.** The R21 harness now correctly
+    FAILS its junction lock (0/5 heights) - that is the superseded oracle reporting honestly, and the
+    harness itself was not modified. **The junction topology is UNRESOLVED; no new junction Sprite was
+    guessed.**
+  - **Live FirstIsland, read only, no paint session started:** 50 Raised cells, 50 visual tiles, all 50
+    author Hills slices, 0 outside the mask, 0 undrawn, 0 renderer diagnostics. SHA256
+    `5281BA5186CA8A73C4786C48366EC180782EA3FB9F97AAAED2A6FE674F26647F`, 12248b, Raised 50 - unchanged
+    before and after every harness in this card.
+  - **Remaining runDepth usage, itemised as the card requires.** `MeasureRunDepth` and `MeasureRunBottom`
+    are called from exactly ONE place, `RaisedTopologyState.Resolve`, and only to populate
+    `RunDepth` / `OffsetFromRunBottom`. Both are asserted to take part in NO role, NO slot and NO sprite:
+    a reflective check proves `RoleForLocal`, `SlotFor` and all four corner predicates take no integer
+    parameter other than their own coordinates, so a length cannot even be passed to them.
+    `OffsetFromRunBottom` is therefore **reported only**; Layer C may read it for repetition, and no
+    Layer B code touches it.- **R23A topology matrix — TESTS ONLY. The refactor is BLOCKED, and the blocker is architectural.**
   Card section 22 mandates the matrix before any production edit, so this round produced the matrix and
   **no production change at all**.
   - **Measured: 512 raw probes reduce to 47 canonical states, and 9 of those canonical states CURRENTLY

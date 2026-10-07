@@ -468,8 +468,6 @@ namespace IslandLife.EditorTools.IslandMap
                 }
             }
 
-            int x = 2 + C;
-            int y = 2 + C;
             string nwNe = Bit(back, 7) + " " + Bit(back, 0) + " " + Bit(back, 1);
             string wcE = Bit(back, 6) + " C " + Bit(back, 2);
             string swSe = Bit(back, 5) + " " + Bit(back, 4) + " " + Bit(back, 3);
