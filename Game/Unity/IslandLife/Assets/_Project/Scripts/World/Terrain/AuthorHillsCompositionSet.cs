@@ -560,14 +560,14 @@ namespace IslandLife.World.Terrain
             {
                 missing.Add("junction continuation mirror r2c7");
             }
-            return missing.Count == 0 ? "none" : string.Join(", ", missing);
-
+            // IL-WORLD-004S-R31. The r3c6 bottom-wall slice must be assigned or a reachable role would
+            // silently drop its cell.
             if (GetR3C6() == null)
             {
                 missing.Add("bottom wall inner right r3c6");
             }
-        }
 
+            // IL-WORLD-004S-R32. All four upper-hill components must be assigned for the same reason.
             if (GetR0C5() == null)
             {
                 missing.Add("top wall inner left r0c5");
@@ -587,5 +587,8 @@ namespace IslandLife.World.Terrain
             {
                 missing.Add("side wall upper right r1c6");
             }
+
+            return missing.Count == 0 ? "none" : string.Join(", ", missing);
+        }
     }
 }
