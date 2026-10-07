@@ -216,7 +216,9 @@ namespace IslandLife.EditorTools.IslandMap
 
             foreach (int w in new[] { 3, 5, 8 })
             {
-                RectangleCase(w, 1, "r1", "r2", 1);
+                // IL-WORLD-004S-R18. Zero expected rows outside the mask, not one. A one cell high band
+                // is the author's r3 row only, so it no longer paints a cliff one row south of itself.
+                RectangleCase(w, 1, "r1", "r2", 0);
             }
 
             RectangleCase(3, 2, "r0", "r1", 1);
@@ -268,15 +270,14 @@ namespace IslandLife.EditorTools.IslandMap
             }
             else
             {
-                // IL-WORLD-004S-R13 CORRECTION. This used to expect the r1 body row here. The user proved
-                // on screen that a one-deep band drawn with the square body row loses its north exterior
-                // and reads as a U shaped trough, because its top edge is flat while its ends are
-                // rounded. A cell whose north neighbour is not Raised HAS a north exterior, and the only
-                // author art carrying one is the cap row r0, so every north-exposed cell now uses it.
-                // The sprites are still the author own cells and the cliff is still one row south; only
-                // the expected row changed, and it changed because the old expectation was wrong.
-                FillWideRow(expect, w, 0, "r0");
-                FillWideRow(expect, w, -1, "r2");
+                // IL-WORLD-004S-R18 SUPERSEDES the R13 correction that used to sit here, and the user
+                // proved the R13 expectation wrong a second time. R13 answered a height ONE band with
+                // the author cap row r0 over a front cliff one row SOUTH, so one logical cell produced
+                // two visual cells and the cliff hung outside the logical mask. PM locked the author
+                // grammar after the source Basic Pack and Hills.png were inspected cell by cell: a one
+                // cell high band is the author's r3 row ONLY, r3c0 | r3c1 ... r3c2, carried entirely
+                // inside the logical mask, so nothing is drawn south of it at all.
+                FillWideRow(expect, w, 0, "r3");
             }
 
             Check($"{id}_EXACT_AUTHOR_SPRITE_PER_VISUAL_POSITION", Exact(plan, expect),

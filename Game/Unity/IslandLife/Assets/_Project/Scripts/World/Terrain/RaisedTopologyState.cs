@@ -395,19 +395,68 @@ namespace IslandLife.World.Terrain
             // Requiring solid north as well would leave that cell behind and reintroduce the step, so a
             // continuing front supplies its own support. The only art given up is the rounded cap on
             // that one cell, and the author has no north facing soil face to replace it with anyway.
+            // IL-WORLD-004S-R18. The author grammar for the most basic straight shapes, locked after
+            // the source Basic Pack and Hills.png were inspected cell by cell in Unity.
+            //
+            //   ONE cell deep band -> the author's r3 row, carried INSIDE the logical mask:
+            //                         r3c0 | r3c1 ... r3c1 | r3c2 across, and r3c3 for a single cell.
+            //   TWO deep narrow col -> r0c3 over r2c3, both inside the logical mask.
+            //
+            // Both used to displace a second visual cell one row SOUTH of the logical Raised, so a
+            // single logical cell occupied two visual cells and a one cell high band grew a cliff row
+            // hanging outside its own mask. A one wide two deep column is restricted to the narrow c3
+            // stack because that is the instance the author drew; the wide two deep plateau keeps the
+            // composition R9 already proved.
+            //
+            // These are decided FIRST, on depth alone, so the basic straight shapes can never be
+            // re-routed through the junction rules further down.
+            if (runDepth == 1)
+            {
+                return southExposed
+                    ? RaisedSurfaceRole.SECOND_FRONT_CLIFF
+                    : RaisedSurfaceRole.TOP_SURFACE;
+            }
+
+            if (runDepth == 2 && isNarrow)
+            {
+                if (southExposed)
+                {
+                    return RaisedSurfaceRole.FRONT_CLIFF;
+                }
+
+                return offsetFromRunBottom == 1
+                    ? RaisedSurfaceRole.TOP_SURFACE
+                    : RaisedSurfaceRole.MIDDLE_SURFACE;
+            }
+
             bool frontInMask = southExposed
                 && (runDepth >= 3 || northIsEnclosedVoid || frontContinuesInMask)
                 && (solidNorth || frontContinuesInMask);
 
             if (frontInMask)
             {
-                return runDepth >= 4 && offsetFromRunBottom == 0
+                return runDepth >= 4 && offsetFromRunBottom == 0 && !isNarrow
                     ? RaisedSurfaceRole.SECOND_FRONT_CLIFF
                     : RaisedSurfaceRole.FRONT_CLIFF;
             }
 
             if (runDepth >= 4)
             {
+                // IL-WORLD-004S-R18. The one wide column is r0c3 over r1c3 repeated over r2c3 for
+                // EVERY depth, so it never reaches the author's r3c3 second front row. The wide block
+                // keeps the r0..r3 stack R4 reconstructed 1:1.
+                if (isNarrow)
+                {
+                    if (offsetFromRunBottom == 0)
+                    {
+                        return RaisedSurfaceRole.FRONT_CLIFF;
+                    }
+
+                    return offsetFromRunBottom == runDepth - 1
+                        ? RaisedSurfaceRole.TOP_SURFACE
+                        : RaisedSurfaceRole.MIDDLE_SURFACE;
+                }
+
                 if (offsetFromRunBottom == 0)
                 {
                     return RaisedSurfaceRole.SECOND_FRONT_CLIFF;
