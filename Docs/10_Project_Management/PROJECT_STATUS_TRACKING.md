@@ -164,7 +164,59 @@ author left and right **top** corners by R20.
   - **Consequence for R23B:** the blocker is no longer architectural. It is that the current slot
     derivation must be replaced by a raw-cardinal derivation, and that replacement has to be proven
     against the R18/R19/R20 oracles one piece at a time. Nothing was implemented this round, per
-    section 7.- **R25 STOPPED as `BLOCKED_PM_DECISION`. NO production file was changed.** The four-component joint
+    section 7.- **R26 STOPPED as `BLOCKED_PM_DECISION` again, at COMMIT A. NO production file was changed.** The R26
+  blocker from last card was not addressed by the card, and stage A established two further facts that
+  make it unaddressable by inference. Nothing was implemented, no role was named, no slice was wired.
+  - **THE LIVE MAP CHANGED AGAIN, by the user, mid-card.** R25 card end `6986B2C4…`, 53 Raised. R26 start
+    read `757A0A44AB3379E23FB1F21AFDA63BBD099A90A34634CD37C5723AE82275A607`, **41 Raised**, mtime 05:24.
+    The user removed several block corners and added a new cross/stair structure at x -20..-16,
+    y -7..-3. Treated as authority, never written, restored or reverted.
+  - **FINDING 1, AND IT IS NEW PROGRESS: THE R25 `0xD0` COLLISION IS NOT RESOLVED - BUT IT IS SEPARABLE
+    AT 5x5. Those are different statements and the difference matters.**
+    - **Not resolved:** the user's composition site `(0,-5)` and the R11-locked 3x3 rectangle's top-left
+      still have the **IDENTICAL raw 3x3 `0xD0`**. Deleting the four other corners removed the visible
+      copies, not the conflict, so the collision was **hidden rather than fixed** and a `0xD0` rule would
+      still break every 3x3 rectangle.
+    - **Separable at 5x5, measured:** the two 5x5 stamps genuinely differ -
+      user site `..... / ..... / ..### / ..##. / ..#..` versus rectangle `..... / ..... / ..### / ..### / ..###`.
+      The whole difference is that the user's mass **steps away to the south-east** where the rectangle
+      stays solid. That is a finite, named, explainable predicate inside 5x5, and R26 section 4 permits
+      exactly that radius. **So R25's blocker is real but soluble - at 5x5, not at 3x3.**
+    - **R25 ALSO HAD A BUG, now fixed.** Its `RECTANGLE_TOP_LEFT_IS_NOT_IDENTICAL_TO_FAMILY_C` check
+      passed for the wrong reason: it encoded the rectangle's **origin row instead of its top row**, so it
+      compared the wrong cell and reported "they differ" when they are in fact identical. R26A recomputes
+      it correctly and the correct answer is `0xD0 = 0xD0`.
+  - **FINDING 2, AND IT IS THE HARD BLOCKER: THE CARD SUPPLIES NO COORDINATE FOR 9 OF ITS 11 COMPONENTS,
+    and no screenshot reached the session.** Only `r2c4` is located anywhere - live `(0,-10)`, raw `0xD2`,
+    already reachable through R24's `JUNCTION_VERTICAL_CONTINUATION`. For `r2c7 r3c5 r3c6 r0c5 r0c6
+    r0c8 r1c4 r1c6 r3c8 r4c8` the card says only "the user pointed at this in a screenshot". The live
+    map proves which topologies EXIST; it cannot prove which cell was MEANT. Writing 11 rules would be
+    inventing all 11 mappings.
+  - **THE LIVE MAP ALSO CANNOT SUPPLY THEM ALL, WHICH IS INDEPENDENT OF THE MISSING COORDINATES.** It
+    contains **exactly ONE cross topology** - raw `0x5A` at `(-18,-5)`, all four cardinals Raised with all
+    four diagonals open - while the card requires **three** distinct junction components `r0c8 r3c8
+    r4c8` to be REACHABLE. One topology can select one Sprite, so at most one of the three could be
+    located from the live map even with a perfect coordinate. Similarly no cell on the map has the shape
+    my "flanked" search looked for (0 flanking candidates), so there is no obvious host for the four
+    "upper" components `r1c4 r0c5 r0c6 r1c6`.
+  - **The 15 composition-shaped live topologies, measured, so the next card starts from facts:** 15
+    handover/cross sites, raw `0x08 0x0B 0x10 0x16 0x2F 0x4B 0x56 0x5A 0x68 0x6A 0x97 0xD0 0xD2 0xE9 0xF4`.
+    `0xD2 (0,-10)` is the locked r2c4. `0x6A (8,-10)` and `0xD0 (0,-5)` / `0x68 (8,-5)` are the R25
+    candidates for r2c7 / r3c5 / r3c6 and are the natural mirror-and-drop-N families, but assigning them
+    is still an inference and was NOT made.
+  - **The cross, measured, because the user called it the lightning/stair shape:** `(-18,-5)` raw `0x5A`
+    is where the 5-cell horizontal bar at y=-5 meets the 1-wide column at x=-18 which continues from
+    y=-3 to y=-7. It currently draws **`Hills_r1c1`** as MIDDLE_SURFACE/BODY, which is plainly a body row
+    in the middle of a cross. Its two flanking column cells are `(-18,-4)` raw `0xE2` and `(-18,-6)`
+    raw `0x47`, both currently `Hills_r1c3`. **A cross body row is the clearest remaining defect the user
+    has actually reported, and it is the one site on the map whose coordinates need no guessing.**
+  - **No `STAIR_COMPOSITION_STABILITY` oracle could be written.** Its three states - baseline, extend
+    down, extend up - require knowing which cell must hold steady across the extension. On the live map
+    the cross is already extended BOTH ways, so there is no baseline instance of it to compare against,
+    and inventing one would mean choosing the author's stair myself.
+  - **Nothing was touched.** 0 production files modified, the composition-set asset unmodified, no slice
+    wired, no role added, `Hills.png` byte-identical, scene byte-identical, the 4 user-owned files
+    unstaged. Both new files are read-only diagnostics that build an in-memory grid and never write.- **R25 STOPPED as `BLOCKED_PM_DECISION`. NO production file was changed.** The four-component joint
   comparison RESOLVED, and in the process it proved that the natural rule for `r3c5` would over-capture.
   Reporting the resolution and the blocker; not guessing past either.
   - **THE LIVE MAP CHANGED UNDER THIS CARD, and that is the user's own doing.** Card start SHA
