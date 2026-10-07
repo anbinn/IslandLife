@@ -35,10 +35,3 @@ MonoBehaviour:
   hillsR2C4: {fileID: 21300000, guid: 84ab8d1096c818f41b845810b5c7e325, type: 2}
   hillsR2C5: {fileID: 21300000, guid: c4ae55a182fa3494ca398f0db77ce6cc, type: 2}
   hillsR3C5: {fileID: 21300000, guid: 2d5f345c757b5624685bb41342924da9, type: 2}
-  hillsR1C4: {fileID: 21300000, guid: b598ce6c6d91b0840bd13aa48b5124a4, type: 2}
-  hillsR0C5: {fileID: 21300000, guid: eee367ba3c5bdf04fb89b3a5b6b2bd07, type: 2}
-  hillsR0C6: {fileID: 21300000, guid: c0c3fe51bd138e2458d519fed9f19a5e, type: 2}
-  hillsR1C6: {fileID: 21300000, guid: 3133628c91bc6a844bf1c90c84f1137a, type: 2}
-  hillsR0C8: {fileID: 21300000, guid: c7236f265fa34e843a2d2d5f8d99fd14, type: 2}
-  hillsR3C8: {fileID: 21300000, guid: 5ac90e5ea98bb6d44ab4dc88059205e6, type: 2}
-  hillsR4C8: {fileID: 21300000, guid: a08fa67544634cb4db8f8c1b085c7597, type: 2}
