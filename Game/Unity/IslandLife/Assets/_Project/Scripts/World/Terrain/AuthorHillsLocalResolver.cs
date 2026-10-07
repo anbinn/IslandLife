@@ -260,10 +260,60 @@ namespace IslandLife.World.Terrain
             }
             else if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION)
             {
-                // IL-WORLD-004S-R24. The user's screenshot-confirmed junction, LOCKED_USER_VISUAL_ORACLE.
-                // This is the author's own r2c4 slice, in its original orientation; nothing is mirrored,
-                // rotated, stretched, generated or nearest-matched to reach it.
+                // IL-WORLD-004S-R24, LOCKED_USER_VISUAL_ORACLE. The user's screenshot-confirmed junction.
+                // The author's own r2c4 slice, in its original orientation; nothing is mirrored, rotated,
+                // stretched, generated or nearest-matched to reach it.
                 sprite = set.GetJunctionContinuation();
+            }
+            else if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. The mirror handover. The AUTHOR'S OWN r2c7 slice.
+                sprite = set.GetR2C7();
+            }
+            else if (topology.Role == RaisedSurfaceRole.JUNCTION_WEST_ENDED)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. Boundary ends, platform steps away. The author's r3c5.
+                sprite = set.GetR3C5();
+            }
+            else if (topology.Role == RaisedSurfaceRole.JUNCTION_EAST_ENDED)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. The mirror of the above. The author's r3c6.
+                sprite = set.GetR3C6();
+            }
+            else if (topology.Role == RaisedSurfaceRole.INNER_CORNER_WRAPS_SOUTH_WEST)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. Ground wraps around and runs south. The author's r0c5.
+                sprite = set.GetR0C5();
+            }
+            else if (topology.Role == RaisedSurfaceRole.INNER_CORNER_WRAPS_SOUTH_EAST)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. The mirror relation. The author's r0c6.
+                sprite = set.GetR0C6();
+            }
+            else if (topology.Role == RaisedSurfaceRole.INNER_CORNER_WRAPS_NORTH_WEST)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. Ground wraps around and runs north. The author's r1c4.
+                sprite = set.GetR1C4();
+            }
+            else if (topology.Role == RaisedSurfaceRole.INNER_CORNER_WRAPS_NORTH_EAST)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. The mirror relation. The author's r1c6.
+                sprite = set.GetR1C6();
+            }
+            else if (topology.Role == RaisedSurfaceRole.FOUR_WAY_CROSS_ONE_WIDE)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. A one-wide four-way crossing. The author's r0c8.
+                sprite = set.GetR0C8();
+            }
+            else if (topology.Role == RaisedSurfaceRole.FOUR_WAY_CROSS_LONG_ARM)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. A crossing with a longer arm. The author's r3c8.
+                sprite = set.GetR3C8();
+            }
+            else if (topology.Role == RaisedSurfaceRole.FOUR_WAY_CROSS_OTHER)
+            {
+                // IL-WORLD-004S-R26B, PROVISIONAL. The remaining crossing flavour. The author's r4c8.
+                sprite = set.GetR4C8();
             }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
@@ -380,6 +430,39 @@ namespace IslandLife.World.Terrain
             {
                 return HillCompositionRow.FRONT_CLIFF;
             }
+
+            // IL-WORLD-004S-R26B. Each composition component is tagged with the author sheet row its own
+            // slice lives on, rather than being lumped into one bucket. The tag is not bookkeeping: it
+            // is the only place the emitted row is recorded, so mis-tagging would hide which author
+            // piece was actually chosen.
+            switch (topology.Role)
+            {
+                case RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR:
+                    return HillCompositionRow.FRONT_CLIFF; // r2c7
+
+                case RaisedSurfaceRole.JUNCTION_EAST_ENDED:
+                    return HillCompositionRow.SECOND_FRONT_CLIFF; // r3c6
+
+                case RaisedSurfaceRole.INNER_CORNER_WRAPS_SOUTH_WEST:
+                case RaisedSurfaceRole.INNER_CORNER_WRAPS_SOUTH_EAST:
+                    return HillCompositionRow.TOP_SURFACE; // r0c5, r0c6
+
+                case RaisedSurfaceRole.INNER_CORNER_WRAPS_NORTH_WEST:
+                case RaisedSurfaceRole.INNER_CORNER_WRAPS_NORTH_EAST:
+                    return HillCompositionRow.MIDDLE_SURFACE; // r1c4, r1c6
+
+                case RaisedSurfaceRole.FOUR_WAY_CROSS_ONE_WIDE:
+                    return HillCompositionRow.TOP_SURFACE; // r0c8
+
+                case RaisedSurfaceRole.FOUR_WAY_CROSS_LONG_ARM:
+                case RaisedSurfaceRole.FOUR_WAY_CROSS_OTHER:
+                    return HillCompositionRow.SECOND_FRONT_CLIFF; // r3c8, r4c8
+
+                default:
+                    break;
+            }
+
+            // JUNCTION_WEST_ENDED emits the author's r3c5, which lives on sheet row r3.
 
             if (topology.Slot != HillColumnSlot.NARROW)
             {

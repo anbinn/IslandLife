@@ -108,6 +108,84 @@ namespace IslandLife.World.Terrain
         /// y+/-2 appear in the test.
         /// </summary>
         JUNCTION_VERTICAL_CONTINUATION = 10,
+
+        /// <summary>
+        /// IL-WORLD-004S-R26B, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED.
+        ///
+        /// The author's MIRROR handover, the author's r2c7. The same relation as
+        /// <see cref="JUNCTION_VERTICAL_CONTINUATION"/> with the boundary on the EAST instead of the west:
+        /// the vertical boundary sits on the east side, continues north, and the platform attached to the
+        /// west steps away to the north-west while holding to the south-west.
+        ///
+        /// PROVEN BY OCCUPANCY, NOT BY GUESS. R25A measured this family's core raw as 0x6A and proved
+        /// A-vs-B differ in exactly W, E, SW and SE - all swapped - so the pair is a strict OCCUPANCY
+        /// mirror. On the live map it matches exactly one cell, (8,-10), which currently draws the plain
+        /// body row r1c2. No Sprite is mirrored: the author drew both pieces and each is emitted as-is.
+        /// </summary>
+        JUNCTION_VERTICAL_CONTINUATION_MIRROR = 11,
+
+        /// <summary>
+        /// IL-WORLD-004S-R26B, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED.
+        ///
+        /// The author's handover where the vertical boundary does NOT continue north: the author's r3c5.
+        /// It is the handover relation with ONE BIT removed - nothing is Raised above this cell, so this is
+        /// where the boundary ENDS rather than runs on. R21 recorded exactly this pair, with north
+        /// occupancy as the sole discriminator between its r3c5 and its r2c4, so the relation is
+        /// historical evidence rather than a new guess.
+        ///
+        /// ITS 3x3 IS NOT ENOUGH, AND THAT IS MEASURED. R25 found this raw at five live cells, and R26A
+        /// found that the 3x3 rectangle's top-left corner has the IDENTICAL raw 0xD0, which R11 locks to
+        /// the author's r0c0. A finite 5x5 read separates them, and this role REQUIRES that separation:
+        /// the platform must step away to the south-east while the boundary keeps running south.
+        /// See <see cref="IsJunctionEndedWest"/>.
+        /// </summary>
+        JUNCTION_WEST_ENDED = 12,
+
+        /// <summary>
+        /// IL-WORLD-004S-R26B, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED.
+        ///
+        /// The mirror of <see cref="JUNCTION_WEST_ENDED"/>, the author's r3c6: the east-side boundary
+        /// ends, the west platform steps away to the south-west, and the boundary keeps running south.
+        /// </summary>
+        JUNCTION_EAST_ENDED = 13,
+
+        /// <summary>
+        /// IL-WORLD-004S-R26B, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED.
+        ///
+        /// The author's inner corner where ground wraps around on the WEST and continues SOUTH: the
+        /// author's r0c5. All eight neighbours are decided - north, north-east and east are open because
+        /// the ground wraps away there, while north-west, west, south-west, south and south-east are
+        /// Raised.
+        ///
+        /// The relation it names is "GROUND WRAPS AROUND ME AND KEEPS GOING SOUTH". Its raw 0xE9 was
+        /// measured on the live map at (1,-10), where it currently draws the author's r0c2.
+        /// </summary>
+        INNER_CORNER_WRAPS_SOUTH_WEST = 14,
+
+        /// <summary>IL-WORLD-004S-R26B, PROVISIONAL. The author's r0c6, the mirror of
+        /// <see cref="INNER_CORNER_WRAPS_SOUTH_WEST"/>. Live raw 0xF4 at (7,-10), currently r0c0.</summary>
+        INNER_CORNER_WRAPS_SOUTH_EAST = 15,
+
+        /// <summary>IL-WORLD-004S-R26B, PROVISIONAL. The author's r1c4: ground wraps around on the WEST
+        /// and keeps going NORTH. Live raw 0x2F at (1,-6), currently r2c2.</summary>
+        INNER_CORNER_WRAPS_NORTH_WEST = 16,
+
+        /// <summary>IL-WORLD-004S-R26B, PROVISIONAL. The author's r1c6, the mirror of
+        /// <see cref="INNER_CORNER_WRAPS_NORTH_WEST"/>. Live raw 0x97 at (7,-6), currently r2c0.</summary>
+        INNER_CORNER_WRAPS_NORTH_EAST = 17,
+
+        /// <summary>IL-WORLD-004S-R26B, PROVISIONAL. The author's r0c8: a FOUR-WAY crossing in which
+        /// every arm is exactly one cell wide, so all four diagonals are open. Live raw 0x5A at (-18,-5),
+        /// which currently draws the plain body row r1c1 - plainly wrong in the middle of a crossing.</summary>
+        FOUR_WAY_CROSS_ONE_WIDE = 18,
+
+        /// <summary>IL-WORLD-004S-R26B, PROVISIONAL. The author's r3c8: a four-way crossing that is not
+        /// the one-wide flavour, whose arm along one axis runs two or more cells.</summary>
+        FOUR_WAY_CROSS_LONG_ARM = 19,
+
+        /// <summary>IL-WORLD-004S-R26B, PROVISIONAL. The author's r4c8: the remaining four-way crossing
+        /// flavour, told apart by the finite 5x5 context rather than by the cell's own eight bits.</summary>
+        FOUR_WAY_CROSS_OTHER = 20,
     }
 
     /// <summary>
@@ -394,8 +472,21 @@ namespace IslandLife.World.Terrain
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = RoleForLocal(
-                leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
+            // IL-WORLD-004S-R26B, LEVEL 2. The finite author composition context, consulted ONLY where
+            // Layer A's own topology is genuinely ambiguous. It runs AFTER the straight ladder so a cell
+            // that is plainly a top row, a front row, an interior body row or a band keeps its R18/R23B
+            // answer untouched, and it can only ever REFINE a cell - never widen Layer A.
+            //
+            // The one exception is the one-wide four-way crossing, which Layer A would call an interior
+            // body row: that is precisely the reported defect, a plain r1c1 in the middle of a crossing.
+            if (!TryComposition(grid, x, y, raw, out RaisedSurfaceRole composed))
+            {
+                composed = RoleForLocal(
+                    leftCorner, rightCorner, leftTopCorner, rightTopCorner,
+                    junctionContinuation, n, s);
+            }
+
+            RaisedSurfaceRole role = composed;
 
             return new RaisedTopologyState(
                 raw, canonical, n, s, e, w, runDepth, offset,
@@ -460,6 +551,214 @@ namespace IslandLife.World.Terrain
             return !RaisedNeighborResolver.IsRaised(grid, x + 1, y)
                 && !RaisedNeighborResolver.IsRaised(grid, x - 1, y);
         }
+
+        /// <summary>
+        /// LEVEL 2 - FINITE AUTHOR COMPOSITION CONTEXT. IL-WORLD-004S-R26B.
+        ///
+        /// WHY THIS LAYER EXISTS AT ALL. R25 measured that some author compositions cannot be decided by
+        /// one cell's own 3x3: raw 0xD0 occurs both at a plain 3x3 rectangle corner, where R11 locks the
+        /// author's r0c0, and at a composition site the user has confirmed. That is a real limit of the
+        /// 3x3, and the honest response is a FINITE LOCAL context, not an unbounded one.
+        ///
+        /// EVERY PREDICATE HERE IS FINITE AND NAMED. Each one states an author relation in words and is
+        /// then expressed in bits. The radius never exceeds 5x5. There is no run walk, no run depth, no
+        /// whole-region size, no absolute coordinate, no fixture name and no shape name anywhere in this
+        /// file, and the R23B harness proves the decision methods take no non-coordinate integer.
+        ///
+        /// THE ORDER MATTERS and is a deliberate priority, exactly like the corner ladder above it. A
+        /// cell that satisfies two relations is resolved by the more specific one first:
+        ///
+        ///   1. the one-wide four-way crossing, because it is the only four-way case with no raised
+        ///      diagonal at all and is therefore the most specific statement available;
+        ///   2. the two handovers whose boundary CONTINUES north;
+        ///   3. the two handovers whose boundary ENDS, which need the 5x5 step-away test;
+        ///   4. the four wrap-around inner corners;
+        ///   5. the remaining four-way crossings.
+        ///
+        /// WHY THE FOUR-WAY FAMILY CANNOT OVER-CAPTURE, WHICH WAS MEASURED AND NOT ASSUMED. A first
+        /// attempt asked only for "four cardinals Raised plus two or more diagonals Raised" and that
+        /// matched ELEVEN raw masks - including 0xFF, which is the ordinary deep interior of a wide
+        /// plateau and extremely common. That would have painted every plateau interior as a junction.
+        /// Every four-way predicate here therefore additionally requires AT LEAST ONE DIAGONAL OPEN,
+        /// which is exactly the condition that says "I am on a crossing, not inside a mass". 0xFF is
+        /// excluded by construction.
+        /// </summary>
+        private static bool TryComposition(
+            TerrainGridData grid,
+            int x,
+            int y,
+            TerrainNeighborMask raw,
+            out RaisedSurfaceRole composition)
+        {
+            composition = RaisedSurfaceRole.MIDDLE_SURFACE;
+
+            bool n = (raw & TerrainNeighborMask.North) != 0;
+            bool s = (raw & TerrainNeighborMask.South) != 0;
+            bool e = (raw & TerrainNeighborMask.East) != 0;
+            bool w = (raw & TerrainNeighborMask.West) != 0;
+            bool nw = (raw & TerrainNeighborMask.NorthWest) != 0;
+            bool ne = (raw & TerrainNeighborMask.NorthEast) != 0;
+            bool sw = (raw & TerrainNeighborMask.SouthWest) != 0;
+            bool se = (raw & TerrainNeighborMask.SouthEast) != 0;
+
+            // 1. A four-way crossing whose every arm is exactly one cell wide: all four cardinals Raised
+            //    and all four diagonals open. Nothing else in the grammar is that specific.
+            if (n && s && w && e && !nw && !ne && !sw && !se)
+            {
+                composition = RaisedSurfaceRole.FOUR_WAY_CROSS_ONE_WIDE;
+                return true;
+            }
+
+            // 2. The two handovers whose boundary CONTINUES north. Each is decided on the cell's own
+            //    eight bits plus ONE finite 5x5 clause, and that clause is what keeps them honest.
+            //
+            //    THE CLAUSE. The relation is not only "the boundary continues north"; it is "the
+            //    boundary continues AND the platform it meets ENDS". Without the second half these
+            //    predicates also match the outer edge of an ordinary plateau. MEASURED, not suspected:
+            //    a 7x7 plateau with one cell notched out of its side produces an edge cell with raw
+            //    0x6A - the mirror handover's exact raw - which would repaint plain plateau edge as a
+            //    junction. A plateau's edge is still solid two cells north-west; a real handover's
+            //    platform has ended there. That single cell is the whole difference.
+            if (!w && n && s && e && !ne && !sw && se
+                && !RaisedNeighborResolver.IsRaised(grid, x + 2, y + 1))
+            {
+                composition = RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION;
+                return true;
+            }
+
+            if (!e && n && s && w && !nw && sw && !se
+                && !RaisedNeighborResolver.IsRaised(grid, x - 2, y + 1))
+            {
+                composition = RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR;
+                return true;
+            }
+
+            // 3. The two handovers whose boundary ENDS: no Raised ground north. These are the ones that
+            //    a 3x3 CANNOT decide, so the finite 5x5 step-away test is mandatory here.
+            if (!w && !n && s && e && !ne && se && SteppedAwayEast(grid, x, y))
+            {
+                composition = RaisedSurfaceRole.JUNCTION_WEST_ENDED;
+                return true;
+            }
+
+            if (!e && !n && s && w && !nw && sw && SteppedAwayWest(grid, x, y))
+            {
+                composition = RaisedSurfaceRole.JUNCTION_EAST_ENDED;
+                return true;
+            }
+
+            // 4. The four wrap-around inner corners. Each names the direction the ground keeps going.
+            if (nw && !n && !ne && w && !e && sw && s && se)
+            {
+                composition = RaisedSurfaceRole.INNER_CORNER_WRAPS_SOUTH_WEST;
+                return true;
+            }
+
+            if (!nw && !n && ne && !w && e && sw && s && se)
+            {
+                composition = RaisedSurfaceRole.INNER_CORNER_WRAPS_SOUTH_EAST;
+                return true;
+            }
+
+            if (nw && n && ne && w && !e && sw && !s && !se)
+            {
+                composition = RaisedSurfaceRole.INNER_CORNER_WRAPS_NORTH_WEST;
+                return true;
+            }
+
+            if (nw && n && ne && !w && e && !sw && !s && se)
+            {
+                composition = RaisedSurfaceRole.INNER_CORNER_WRAPS_NORTH_EAST;
+                return true;
+            }
+
+            // 5. The remaining four-way crossings. TWO guards, and the second one was added because the
+            //    over-capture sweep caught the first version stealing plateau ground.
+            //
+            //    Guard one - at least one diagonal must be OPEN. This is what says "I am on a crossing,
+            //    not inside a mass": 0xFF, the ordinary deep interior of a wide plateau, has all four
+            //    diagonals Raised and is excluded by construction.
+            //
+            //    Guard two - MEASURED, NOT ASSUMED. Guard one alone was not enough. It also matched
+            //    0x7F, 0xBF and 0xFB, which are plateau cells with exactly ONE diagonal missing - an
+            //    ordinary concave corner or notch, not a crossing - and those are common. So a genuine
+            //    crossing must ALSO have exactly one axis whose arm carries on for a second cell while
+            //    the other axis stops after one. On a plateau concave corner every second cell is
+            //    Raised, both axes run long, and neither rule fires, so those raws are excluded.
+            if (n && s && w && e && (!nw || !ne || !sw || !se))
+            {
+                bool verticalArmRunsLong = RaisedNeighborResolver.IsRaised(grid, x, y + 2)
+                    || RaisedNeighborResolver.IsRaised(grid, x, y - 2);
+                bool horizontalArmRunsLong = RaisedNeighborResolver.IsRaised(grid, x + 2, y)
+                    || RaisedNeighborResolver.IsRaised(grid, x - 2, y);
+
+                // Exactly one axis may run long. BOTH long means this is not a one-wide crossing at all
+                // but a wide mass with a notch in it, and it belongs to Layer A, not here.
+                if (verticalArmRunsLong && !horizontalArmRunsLong)
+                {
+                    composition = RaisedSurfaceRole.FOUR_WAY_CROSS_LONG_ARM;
+                    return true;
+                }
+
+                if (horizontalArmRunsLong && !verticalArmRunsLong)
+                {
+                    composition = RaisedSurfaceRole.FOUR_WAY_CROSS_OTHER;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The finite 5x5 test that separates an ENDED west handover from an ordinary corner whose raw is
+        /// identical at 3x3.
+        ///
+        /// THE AUTHOR RELATION: "the platform stops here and the boundary keeps running". Both halves are
+        /// needed and neither is enough:
+        ///
+        ///   two cells EAST, on this cell's own row, is RAISED - the bar this cell belongs to is at
+        ///                                                 least three cells wide, so this really is the
+        ///                                                 end of a bar, not the corner of a narrow block.
+        ///   two cells EAST, one cell SOUTH is OPEN     - that bar has ended by the next row down.
+        ///   two cells SOUTH, on this cell's own column, is RAISED - the vertical boundary itself
+        ///                                                 carries on, which is what makes this a handover
+        ///                                                 and not an ordinary corner.
+        ///                                                 and not an ordinary corner.
+        ///
+        /// MEASURED AGAINST THE COUNTEREXAMPLE. The R11-locked 3x3 rectangle's top-left corner has the
+        /// IDENTICAL 3x3 raw 0xD0 but fails BOTH halves: its bar has not ended, and it has no wall
+        /// running south. The 5x5 stamps recorded by R26A are
+        ///     ring corner    ..... / ..... / ..### / ..##. / ..#..
+        ///     3x3 rectangle  ..... / ..... / ..### / ..### / ..###
+        /// and the two rows that differ are exactly the two this test reads.
+        ///
+        /// A FIRST REVISION READ THE WRONG CELL and simply did not fire on the live map at all: it asked
+        /// whether the cell one WEST and two SOUTH was Raised, which is outside the mass on a west wall.
+        /// The boundary is the column THIS cell stands on, so the question belongs at (x, y-2).
+        /// </summary>
+
+        /// THE THIRD CLAUSE WAS ADDED BECAUSE A TWO-BY-THREE BLOCK WAS BEING CAPTURED. With only the
+        /// bar-has-ended and wall-carries-on halves, the top-left cell of a plain two-wide three-tall
+        /// block satisfied both: its bar had ended and its wall ran on. R23B ORACLE_R24_PLAIN_BODY_2x3
+        /// caught it and reported r3c5 where the author r0c0 is locked. Requiring the bar to be three
+        /// cells wide is what separates a real handover from an ordinary block.
+        private static bool SteppedAwayEast(TerrainGridData grid, int x, int y)
+        {
+            return RaisedNeighborResolver.IsRaised(grid, x + 2, y)
+                && !RaisedNeighborResolver.IsRaised(grid, x + 2, y - 1)
+                && RaisedNeighborResolver.IsRaised(grid, x, y - 2);
+        }
+
+        /// <summary>The mirror of <see cref="SteppedAwayEast"/>: the bar ends to the WEST and the
+        /// vertical boundary carries on.</summary>
+        private static bool SteppedAwayWest(TerrainGridData grid, int x, int y)
+        {
+            return RaisedNeighborResolver.IsRaised(grid, x - 2, y)
+                && !RaisedNeighborResolver.IsRaised(grid, x - 2, y - 1)
+                && RaisedNeighborResolver.IsRaised(grid, x, y - 2);
+        }
+
 
         /// <summary>
         /// The author's junction continuation: the vertical boundary on the WEST continues north past
