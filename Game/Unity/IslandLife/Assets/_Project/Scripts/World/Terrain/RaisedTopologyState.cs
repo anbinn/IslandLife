@@ -130,6 +130,32 @@ namespace IslandLife.World.Terrain
         /// VISUAL_COORD_CHANGED are recorded as NOT_MEASURED, not as zero. Static verification only.
         /// </summary>
         JUNCTION_VERTICAL_CONTINUATION_MIRROR = 11,
+
+        /// <summary>
+        /// IL-WORLD-004S-R30, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c5: the wall cell
+        /// directly below the CENTRE of a big corner, on the LEFT.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE, confirmed against cell (0,-6). Not re-judged here.
+        ///
+        /// ONE RAW MASK, AND BOTH OCCURRENCES TAKE IT. Raw 0x56 occurs twice on FirstIsland, at (0,-6)
+        /// and (-13,-6), because the map contains two copies of the same corner shape - the block at
+        /// x=-13..-9 repeats the raws 0xD0, 0x78, 0xD8, 0x68 / 0x56, 0x2F, 0x97, 0x4B in the same order
+        /// as the ring at x=0..8. PM reviewed that second occurrence and ruled it is the SAME author
+        /// relation, so both take r3c5. Identical local topology means one component; the earlier
+        /// reading of the second occurrence as a collision is settled and is not a blocker.
+        ///
+        /// All eight bits are constrained, so this selects exactly ONE of the 256 raw masks. No 5x5, no
+        /// leg length, no runDepth, no coordinate test and no shape name.
+        /// </summary>
+        CORNER_BELOW_LEFT = 12,
+
+        /// <summary>
+        /// IL-WORLD-004S-R30, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c6: the exact
+        /// occupancy MIRROR of <see cref="CORNER_BELOW_LEFT"/>, the wall cell directly below the centre
+        /// of a big corner on the RIGHT. Raw 0x4B, occurring twice, at (8,-6) and (-9,-6), both of which
+        /// take r3c6 for the same reason as the left.
+        /// </summary>
+        CORNER_BELOW_RIGHT = 13,
     }
 
     /// <summary>
@@ -416,11 +442,21 @@ namespace IslandLife.World.Terrain
             // and shares no mask with it, so the two can never fight over the same cell.
             bool junctionContinuationMirror = IsAuthorJunctionContinuationMirror(raw);
 
+            // IL-WORLD-004S-R30. The wall cell directly below a big corner's centre, left and right.
+            // Two exact single-mask rules sharing no mask with each other or with the R24 and R28
+            // junctions, so none of the four can ever fight over the same cell.
+            bool cornerBelowLeft = IsAuthorCornerBelowLeft(raw);
+            bool cornerBelowRight = IsAuthorCornerBelowRight(raw);
+
             // A reflective guard, not a runtime cost worth worrying about: if this predicate ever grows
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = junctionContinuationMirror
+            RaisedSurfaceRole role = cornerBelowLeft
+                ? RaisedSurfaceRole.CORNER_BELOW_LEFT
+                : cornerBelowRight
+                    ? RaisedSurfaceRole.CORNER_BELOW_RIGHT
+                    : junctionContinuationMirror
                 ? RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR
                 : RoleForLocal(
                 leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
@@ -571,6 +607,44 @@ namespace IslandLife.World.Terrain
                 && (raw & TerrainNeighborMask.West) != 0
                 && (raw & TerrainNeighborMask.South) != 0
                 && (raw & TerrainNeighborMask.SouthWest) != 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R30. The author's r3c5: the wall cell directly below a big corner's centre,
+        /// LEFT side. Decided from the RAW MASK ALONE; the method takes a mask and no grid, so it
+        /// cannot read past the cell.
+        ///
+        /// All eight bits decided: north, north-east, east and south Raised; north-west, west,
+        /// south-west and south-east open. That is a corner centre above and to the east, and the wall
+        /// running south beneath this cell - which is the relation the author drew r3c5 for.
+        /// </summary>
+        private static bool IsAuthorCornerBelowLeft(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.NorthEast) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.West) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R30. The author's r3c6: the exact occupancy mirror of
+        /// <see cref="IsAuthorCornerBelowLeft"/>. Also all eight bits decided, also one mask of 256:
+        /// north-west, north, west and south Raised; north-east, east, south-west and south-east open.
+        /// </summary>
+        private static bool IsAuthorCornerBelowRight(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.NorthWest) != 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.East) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
         }
 
         /// <summary>

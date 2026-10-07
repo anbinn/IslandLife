@@ -245,6 +245,32 @@ namespace IslandLife.World.Terrain
             return hillsR2C7;
         }
 
+        /// <summary>
+        /// IL-WORLD-004S-R30, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c5: the wall cell
+        /// directly below a big corner's centre, LEFT.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE. It shares the <c>hillsR3C5</c> field with
+        /// <see cref="GetCornerNoUpperContinuation"/>, the same one-slice-two-named-relations pattern R24
+        /// uses for r2c4. Emitted in the author's original orientation; nothing is mirrored or rotated.
+        /// </summary>
+        public Sprite GetR3C5()
+        {
+            return hillsR3C5;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R30, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c6: the exact
+        /// occupancy mirror of r3c5, the wall cell directly below a big corner's centre, RIGHT.
+        /// </summary>
+        [SerializeField]
+        private Sprite hillsR3C6;
+
+        /// <summary>IL-WORLD-004S-R30. The author's r3c6, the mirror of r3c5.</summary>
+        public Sprite GetR3C6()
+        {
+            return hillsR3C6;
+        }
+
         public Sprite GetJunctionContinuation()
         {
             return hillsR2C4;
@@ -404,6 +430,13 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            // IL-WORLD-004S-R30. Both corner-below roles are reachable now, so r3c6 must be assigned
+            // or a reachable role would silently drop its cell instead of reporting a missing slice.
+            if (GetR3C6() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -481,6 +514,11 @@ namespace IslandLife.World.Terrain
                 missing.Add("junction continuation mirror r2c7");
             }
             return missing.Count == 0 ? "none" : string.Join(", ", missing);
+
+            if (GetR3C6() == null)
+            {
+                missing.Add("corner below right r3c6");
+            }
         }
     }
 }
