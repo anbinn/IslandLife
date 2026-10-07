@@ -56,9 +56,19 @@ namespace IslandLife.World.Terrain
     ///   narrow, Hills column c3, the author's own 1-wide instance, exactly 4 cells tall:
     ///     r0c3 top surface | r1c3 middle surface | r2c3 front cliff | r3c3 second cliff row
     ///
-    /// The alternative author 4-wide band (r3c4..r3c7) is deliberately NOT wired in: it is a
-    /// second proof of repeatability, not a second composition, and R6 must not pick between two
-    /// author bands for the same logical shape.
+    ///   the two author CORNER primitives, IL-WORLD-004S-R19:
+    ///     r3c4 left  corner  - a vertical left boundary turning east into the horizontal front
+    ///     r3c7 right corner  - the horizontal front turning north into a vertical right boundary
+    ///
+    /// IL-WORLD-004S-R19 CORRECTION. This set used to carry the note that r3c4..r3c7 is "an
+    /// alternative author 4-wide band ... deliberately NOT wired in", i.e. a second proof of
+    /// repeatability rather than a second composition. PM and the user then compared those cells
+    /// against the source one Sprite at a time in Unity and locked their real meaning, and the two
+    /// corners are what they are. The old reading was wrong and is superseded; it was never
+    /// re-measured after the source was inspected directly, and it is recorded here so it is not
+    /// re-derived from the sheet layout alone. Both cells are real author slices of the same 16x16
+    /// grid, same row r3, same pivot and same PPU as the rest of the family, and neither is
+    /// mirrored, rotated, stretched or resampled to reach its role.
     /// </summary>
     [CreateAssetMenu(
         fileName = "AuthorHillsCompositionSet",
@@ -117,6 +127,34 @@ namespace IslandLife.World.Terrain
 
         [SerializeField]
         private Sprite hillsR3C3;
+
+        [Header("Author corner primitives, Hills row r3 (IL-WORLD-004S-R19)")]
+        [SerializeField]
+        private Sprite hillsR3C4;
+
+        [SerializeField]
+        private Sprite hillsR3C7;
+
+        /// <summary>
+        /// The author's LEFT corner: a vertical left boundary turning east into the horizontal front.
+        ///
+        /// IL-WORLD-004S-R19. PM locked this meaning against the source sheet. It is a whole-cell
+        /// composition in its own right, not a terminal and not a body, so it is addressed directly
+        /// rather than through <see cref="GetWide"/>'s row and slot lookup.
+        /// </summary>
+        public Sprite GetLeftCorner()
+        {
+            return hillsR3C4;
+        }
+
+        /// <summary>
+        /// The author's RIGHT corner: the horizontal front turning north into a vertical right boundary.
+        /// IL-WORLD-004S-R19.
+        /// </summary>
+        public Sprite GetRightCorner()
+        {
+            return hillsR3C7;
+        }
 
         /// <summary>Returns the author Sprite for one cell of a wide composition row.</summary>
         public Sprite GetWide(HillCompositionRow row, HillColumnSlot slot)
@@ -196,6 +234,11 @@ namespace IslandLife.World.Terrain
                 }
             }
 
+            if (GetLeftCorner() == null || GetRightCorner() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -220,6 +263,16 @@ namespace IslandLife.World.Terrain
                 {
                     missing.Add($"narrow offset{offset}");
                 }
+            }
+
+            if (GetLeftCorner() == null)
+            {
+                missing.Add("left corner r3c4");
+            }
+
+            if (GetRightCorner() == null)
+            {
+                missing.Add("right corner r3c7");
             }
 
             return missing.Count == 0 ? "none" : string.Join(", ", missing);

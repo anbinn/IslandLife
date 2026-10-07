@@ -275,12 +275,17 @@ namespace IslandLife.EditorTools.IslandMap
                     + "rows from displacing a cliff. The author sheet carries no east/west soil face, "
                     + "so no existing art can soften this");
 
-            // IL-WORLD-004S-R18 RE-PIN, measured, not guessed. R18 changed which rows are one cell deep, so the
-            // population that mixes the two author stacks inside one column changed with it.
-            Check("MATRIX_SLOT_FLIP_PINNED", slotFlip == 96,
+            // IL-WORLD-004S-R19 RE-PIN, measured, not guessed. R18 moved this count to 96. R19 then drove it to
+            // ZERO: the only neighbourhoods that mixed the author's narrow c3 stack with the wide
+            // c0..c2 stack inside one column were the ones where a one-wide vertical boundary turns
+            // into a horizontal front, and those cells are now resolved as a single whole-cell author
+            // CORNER (Hills_r3c4 on the west, Hills_r3c7 on the east) instead of being asked for a stack
+            // row they do not belong to. The pin stays so any regression back to a mixed column is
+            // visible immediately.
+            Check("MATRIX_SLOT_FLIP_PINNED", slotFlip == 0,
                 $"{slotFlip} neighbourhoods mix the narrow c3 stack with the wide c0..c2 stack inside "
-                    + "one author column, which happens wherever a column's width changes with height. "
-                    + "Re-pinned from 192 to 96 under the R18 lock");
+                    + "one author column. Measured 0 under the R19 corner lock, down from 96 under R18 "
+                    + "and 192 before that, because the left and right corners now claim those cells");
         }
 
         // ------------------------------------------------------------------ sprite semantics

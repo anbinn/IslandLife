@@ -28,3 +28,5 @@ MonoBehaviour:
   hillsR1C3: {fileID: 21300000, guid: 18bde4ea58bf90243a5019686db37a87, type: 2}
   hillsR2C3: {fileID: 21300000, guid: 622c4980b09787b429aa6734b5b30fb5, type: 2}
   hillsR3C3: {fileID: 21300000, guid: 2909fe57f05cbfb469de27de94710e0a, type: 2}
+  hillsR3C4: {fileID: 21300000, guid: e9e08d1f4b097ae4e8f461aa4308c68d, type: 2}
+  hillsR3C7: {fileID: 21300000, guid: d308fdb00e553134f8417c7f79c2b565, type: 2}

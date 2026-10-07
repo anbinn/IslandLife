@@ -304,7 +304,20 @@ namespace IslandLife.World.Terrain
             int y)
         {
             Sprite sprite;
-            if (slot == HillColumnSlot.NARROW)
+
+            // IL-WORLD-004S-R19. The author corners are whole-cell compositions addressed directly by
+            // role, checked BEFORE the slot dispatch. A corner cell is frequently NARROW or a
+            // TERMINAL by slot, and letting the slot choose would substitute r3c3 or an r2 terminal
+            // for the author's real corner piece.
+            if (topology.Role == RaisedSurfaceRole.LEFT_CORNER)
+            {
+                sprite = set.GetLeftCorner();
+            }
+            else if (topology.Role == RaisedSurfaceRole.RIGHT_CORNER)
+            {
+                sprite = set.GetRightCorner();
+            }
+            else if (slot == HillColumnSlot.NARROW)
             {
                 sprite = set.GetNarrow(NarrowOffset(topology.Role));
             }
@@ -358,6 +371,15 @@ namespace IslandLife.World.Terrain
         /// </summary>
         private static HillCompositionRow TileRow(RaisedTopologyState topology)
         {
+            // IL-WORLD-004S-R19. Both author corners live on sheet row r3, so they are tagged
+            // SECOND_FRONT_CLIFF even though a narrow corner cell would otherwise fall through to the
+            // historical narrow tagging below. The tag now matches the slice actually emitted.
+            if (topology.Role == RaisedSurfaceRole.LEFT_CORNER
+                || topology.Role == RaisedSurfaceRole.RIGHT_CORNER)
+            {
+                return HillCompositionRow.SECOND_FRONT_CLIFF;
+            }
+
             if (topology.Slot != HillColumnSlot.NARROW)
             {
                 return ToCompositionRow(topology.Role);

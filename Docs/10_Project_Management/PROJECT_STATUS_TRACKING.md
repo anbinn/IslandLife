@@ -92,10 +92,44 @@ PM reviews:
 **004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED` · `RAISED ERASE AVAILABLE` ·
 `CONNECTED OUTLINES CLOSED` · `T-JUNCTION INNER CORNERS FIXED` ·
 `RAISED ERASE VISUAL REBUILD FIXED` · `JUNCTION GRAMMAR MEASURED AND LOCKED` ·
-`BASIC STRAIGHT GRAMMAR CORRECTED`.**
+`BASIC STRAIGHT GRAMMAR CORRECTED` · `R18 = UNITY_PASS` · `LEFT/RIGHT CORNER GRAMMAR SHIPPED`.**
 Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13;
 the T-junction inner corner by R14; the erase visual rebuild by R15; the junction and concave corner
-grammar audited and locked by R16B; the basic straight grammar corrected by R18.
+grammar audited and locked by R16B; the basic straight grammar corrected by R18 (**user-confirmed
+UNITY_PASS**); the author left and right corner grammar by R19.
+
+- **R19 author left/right corner grammar — `Hills_r3c4` and `Hills_r3c7` shipped.** PM locked the
+  meaning of two cells after comparing them one Sprite at a time in Unity: **r3c4** is the LEFT corner,
+  a vertical left boundary turning east into the horizontal front, and **r3c7** is the RIGHT corner, the
+  front turning north into a vertical right boundary. Both are real author slices of the same 16x16
+  grid — r3c4 is rect (64, 80), r3c7 is rect (112, 80), both 16x16 with pivot 8,8 and PPU 16, the same
+  family as r3c3 at (48, 80). Nothing was mirrored, rotated, stretched or resampled; each corner is
+  reached through its own adjacency, never by mirroring the other.
+  - **This CORRECTS an earlier reading recorded in the composition set.** The set used to state that
+    `r3c4..r3c7` is "an alternative author 4-wide band … deliberately NOT wired in … a second proof of
+    repeatability". That reading was wrong. It came from the sheet layout rather than from the art, and
+    the two cells are the author's corner primitives. The old note is replaced rather than deleted.
+  - **The rule is a 3x3 window with no shape name, no component id and no coordinate test**, so it
+    generalises to any outline with the same adjacency. LEFT fires when south is open, west is open,
+    east is Raised and **the cell north is genuinely one cell wide**; RIGHT is the mirror-image
+    condition set.
+  - **The "north neighbour is one wide" condition is load bearing and was measured, not guessed.**
+    Without it, every plateau's south-west cell has the same three-way signature and the rule paints
+    corners along the bottom of every rectangle. It was added specifically to keep the R11 rectangles
+    and the R18 band grammar intact, and both suites confirm it: **R18 41 PASS / 0 FAIL** and **R11
+    178 PASS / 0 FAIL / 1 SKIP**, unchanged.
+  - **The corner is decided first, before the R18 depth rules and before the junction rules**, so
+    neither column thickness nor run width can substitute a different piece. Verified across
+    `MIN / SHORT / LONG` at every arm length, both orientations, and with both corners in one shape.
+    Because both roles sit at or above `FRONT_CLIFF`, the corner draws inside its own mask and every
+    corner fixture has **visual tile count equal to logical Raised count and zero tiles outside the
+    logical mask**.
+  - **A measured side effect worth recording:** the narrow/wide author stack mixing inside one column
+    went **192 (pre-R18) → 96 (R18) → 0 (R19)** across all 512 neighbourhoods. The only neighbourhoods
+    that mixed the `c3` and `c0..c2` stacks were exactly these corners, and they are now resolved as a
+    single whole-cell author composition.
+  - **R18's `MaxFrontWalk`, hole region classification and every other R16C/R17A finding are untouched
+    and remain open.**
 
 - **R18 basic straight grammar — the PM-locked author grammar, now implemented.** After the source
   Basic Pack and `Hills.png` were inspected cell by cell, PM locked the composition of the three most

@@ -22,6 +22,22 @@ namespace IslandLife.World.Terrain
 
         /// <summary>The author second front row, Hills row r3.</summary>
         SECOND_FRONT_CLIFF = 3,
+
+        /// <summary>
+        /// The author's LEFT corner, Hills r3c4: a vertical left boundary turning east into the
+        /// horizontal front. IL-WORLD-004S-R19.
+        ///
+        /// A corner is a composition in its own right, so it gets its own role rather than a row and
+        /// slot combination. It sits on a logical Raised cell and never displaces a cliff south of
+        /// itself.
+        /// </summary>
+        LEFT_CORNER = 4,
+
+        /// <summary>
+        /// The author's RIGHT corner, Hills r3c7: the horizontal front turning north into a vertical
+        /// right boundary. IL-WORLD-004S-R19.
+        /// </summary>
+        RIGHT_CORNER = 5,
     }
 
     /// <summary>
@@ -116,6 +132,16 @@ namespace IslandLife.World.Terrain
 
         /// <summary>Which horizontal slot of that row.</summary>
         public HillColumnSlot Slot { get; }
+
+        /// <summary>
+        /// True when this cell is the author's left corner, Hills r3c4. IL-WORLD-004S-R19.
+        /// </summary>
+        public bool IsLeftCorner => Role == RaisedSurfaceRole.LEFT_CORNER;
+
+        /// <summary>
+        /// True when this cell is the author's right corner, Hills r3c7. IL-WORLD-004S-R19.
+        /// </summary>
+        public bool IsRightCorner => Role == RaisedSurfaceRole.RIGHT_CORNER;
 
         /// <summary>
         /// Solid means Raised, or an enclosed hole. A hole is an INTERIOR boundary, so ground continues
@@ -227,7 +253,13 @@ namespace IslandLife.World.Terrain
             // cells so the answer is bounded and no recursive Resolve is needed.
             bool frontContinues = !s && (FrontContinuesInMask(grid, x, y, 0));
 
+            // IL-WORLD-004S-R19. The corner tests read the grid directly, so they are computed here and
+            // handed to RoleFor rather than growing another parameter list in it.
+            bool leftCorner = IsAuthorLeftCorner(grid, x, y);
+            bool rightCorner = IsAuthorRightCorner(grid, x, y);
+
             RaisedSurfaceRole role = RoleFor(
+                leftCorner, rightCorner,
                 n || northVoid, !s, runDepth, offset, northVoid,
                 slot == HillColumnSlot.NARROW, frontContinues);
 
@@ -365,7 +397,70 @@ namespace IslandLife.World.Terrain
         /// Region height is nowhere in this decision, which is what removes the HEIGHT_NOT_PROVEN
         /// refusal for 3x4, 5x4, 8x4 and anything taller.
         /// </summary>
+        /// <summary>
+        /// True when the cell at (x,y) is genuinely ONE cell wide, i.e. nothing Raised immediately
+        /// east or west of it. IL-WORLD-004S-R19.
+        ///
+        /// Deliberately asks about real Raised ground and not about <c>Solid</c>. A one-cell hole is an
+        /// INTERIOR boundary: ground continues across it, so treating a hole as the open side of a
+        /// corner would invent a corner against a void. Requiring genuine Raised keeps a corner
+        /// recognition strictly on the outer boundary of the mass.
+        /// </summary>
+        private static bool IsOneWide(TerrainGridData grid, int x, int y)
+        {
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y))
+            {
+                return false;
+            }
+
+            return !RaisedNeighborResolver.IsRaised(grid, x + 1, y)
+                && !RaisedNeighborResolver.IsRaised(grid, x - 1, y);
+        }
+
+        /// <summary>
+        /// The author's LEFT corner: the south-west end of a horizontal front, where a ONE WIDE
+        /// vertical boundary on the west turns east into that front.
+        ///
+        /// IL-WORLD-004S-R19. Read from a 3x3 window only, with no shape name, no component id and no
+        /// coordinate test, so the same rule fires on an L, on the leg of a U, on a staircase step or
+        /// on any irregular outline with the same local adjacency.
+        ///
+        /// The four conditions are exactly the author's LOCKED meaning:
+        ///   south open   - this cell is on the front, so it has a front at all
+        ///   west open    - the boundary it turns FROM is the vertical one on the west
+        ///   east Raised  - the front continues east, so the boundary turns rather than ends
+        ///   north one wide - the vertical boundary is a genuine single-cell-wide edge, not the side
+        ///                   of a two-wide-or-wider mass. THIS CONDITION IS LOAD BEARING: without it
+        ///                   every plateau's south-west cell has the same three-way signature and the
+        ///                   rule would paint corners along the bottom of every rectangle, which is
+        ///                   measured to break the R11 rectangles and the R18 band grammar.
+        /// </summary>
+        private static bool IsAuthorLeftCorner(TerrainGridData grid, int x, int y)
+        {
+            return !RaisedNeighborResolver.IsRaised(grid, x, y - 1)
+                && !RaisedNeighborResolver.IsRaised(grid, x - 1, y)
+                && RaisedNeighborResolver.IsRaised(grid, x + 1, y)
+                && IsOneWide(grid, x, y + 1);
+        }
+
+        /// <summary>
+        /// The author's RIGHT corner: the south-east end of a horizontal front, where that front turns
+        /// north into a ONE WIDE vertical boundary on the east.
+        ///
+        /// IL-WORLD-004S-R19. The mirror-image condition set, reached through its own adjacency, never
+        /// by mirroring art: the emitted slice is the author's own r3c7 in its original orientation.
+        /// </summary>
+        private static bool IsAuthorRightCorner(TerrainGridData grid, int x, int y)
+        {
+            return !RaisedNeighborResolver.IsRaised(grid, x, y - 1)
+                && !RaisedNeighborResolver.IsRaised(grid, x + 1, y)
+                && RaisedNeighborResolver.IsRaised(grid, x - 1, y)
+                && IsOneWide(grid, x, y + 1);
+        }
+
         private static RaisedSurfaceRole RoleFor(
+            bool leftCorner,
+            bool rightCorner,
             bool solidNorth,
             bool southExposed,
             int runDepth,
@@ -374,6 +469,24 @@ namespace IslandLife.World.Terrain
             bool isNarrow,
             bool frontContinuesInMask)
         {
+            // IL-WORLD-004S-R19. The author corner grammar, and it is decided FIRST, before the R18
+            // straight shapes and before the junction rules below, so neither the column's thickness
+            // nor the run's width can substitute a different piece for the corner. That is the whole
+            // point of a corner: the cell where the boundary turns is the same cell whatever the two
+            // straight runs either side of it happen to be.
+            //
+            // Both roles are at or above FRONT_CLIFF, so the corner draws its own front inside its own
+            // logical mask and never displaces a cliff one row south. The corner therefore occupies
+            // exactly one visual cell, on the logical Raised cell itself.
+            if (leftCorner)
+            {
+                return RaisedSurfaceRole.LEFT_CORNER;
+            }
+
+            if (rightCorner)
+            {
+                return RaisedSurfaceRole.RIGHT_CORNER;
+            }
             // A front wall belongs inside the mask whenever there is ground above it to sit under:
             // either the plateau is at least three cells thick (the proven r0/r1/r2 stack), or the cell
             // above is an enclosed hole, in which case the ground continues all the way round and the
