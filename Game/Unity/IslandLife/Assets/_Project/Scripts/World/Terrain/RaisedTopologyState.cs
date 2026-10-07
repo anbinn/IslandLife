@@ -130,6 +130,26 @@ namespace IslandLife.World.Terrain
         /// VISUAL_COORD_CHANGED are recorded as NOT_MEASURED, not as zero. Static verification only.
         /// </summary>
         JUNCTION_VERTICAL_CONTINUATION_MIRROR = 11,
+
+        /// <summary>
+        /// IL-WORLD-004S-R31, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c5 at (1,-11): the
+        /// bottom front wall, one cell in from its left corner, where the wall above joins it.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE and the COORDINATE IS THE USER'S LOCATING ORACLE. The
+        /// coordinate is NOT in the rule - the rule is the raw 3x3 only. Raw 0x1B occurs EXACTLY ONCE on
+        /// the current 32-cell FirstIsland, at (1,-11), so the rule cannot capture anything else.
+        ///
+        /// All eight bits are constrained, so this selects exactly ONE of the 256 raw masks.
+        /// No 5x5, no leg length, no runDepth, no coordinate test, no shape name.
+        /// </summary>
+        BOTTOM_WALL_INNER_LEFT = 12,
+
+        /// <summary>
+        /// IL-WORLD-004S-R31, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r3c6 at (7,-11), the
+        /// exact occupancy MIRROR of <see cref="BOTTOM_WALL_INNER_LEFT"/>. Raw 0x1E, also occurring
+        /// exactly once on the current map, at (7,-11).
+        /// </summary>
+        BOTTOM_WALL_INNER_RIGHT = 13,
     }
 
     /// <summary>
@@ -416,11 +436,20 @@ namespace IslandLife.World.Terrain
             // and shares no mask with it, so the two can never fight over the same cell.
             bool junctionContinuationMirror = IsAuthorJunctionContinuationMirror(raw);
 
+            // IL-WORLD-004S-R31. The bottom front wall's inner cells beside each corner. Two exact
+            // single-mask rules sharing no mask with each other or with the R24 and R28 junctions.
+            bool bottomWallInnerLeft = IsAuthorBottomWallInnerLeft(raw);
+            bool bottomWallInnerRight = IsAuthorBottomWallInnerRight(raw);
+
             // A reflective guard, not a runtime cost worth worrying about: if this predicate ever grows
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = junctionContinuationMirror
+            RaisedSurfaceRole role = bottomWallInnerLeft
+                ? RaisedSurfaceRole.BOTTOM_WALL_INNER_LEFT
+                : bottomWallInnerRight
+                    ? RaisedSurfaceRole.BOTTOM_WALL_INNER_RIGHT
+                    : junctionContinuationMirror
                 ? RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR
                 : RoleForLocal(
                 leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
@@ -571,6 +600,45 @@ namespace IslandLife.World.Terrain
                 && (raw & TerrainNeighborMask.West) != 0
                 && (raw & TerrainNeighborMask.South) != 0
                 && (raw & TerrainNeighborMask.SouthWest) != 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R31. The author's r3c5, raw 0x1B. Decided from the RAW MASK ALONE; the method
+        /// takes a mask and no grid, so it cannot read past the cell.
+        ///
+        /// All eight bits decided: north-west, north, west and east Raised; north-east, south-west,
+        /// south and south-east open. That is the bottom wall with the wall above present to the
+        /// NORTH-WEST - the inner cell beside the left corner - which is the relation the author drew
+        /// r3c5 for.
+        /// </summary>
+        private static bool IsAuthorBottomWallInnerLeft(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.NorthWest) != 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.South) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R31. The author's r3c6, raw 0x1E: the exact occupancy mirror of
+        /// <see cref="IsAuthorBottomWallInnerLeft"/>. Also all eight bits decided, also one mask of
+        /// 256: north, north-east, west and east Raised; north-west, south-west, south and
+        /// south-east open.
+        /// </summary>
+        private static bool IsAuthorBottomWallInnerRight(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.NorthEast) != 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.South) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
         }
 
         /// <summary>

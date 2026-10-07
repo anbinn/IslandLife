@@ -271,6 +271,16 @@ namespace IslandLife.World.Terrain
                 // The author's own slice in its original orientation; nothing is mirrored or rotated.
                 sprite = set.GetR2C7();
             }
+            else if (topology.Role == RaisedSurfaceRole.BOTTOM_WALL_INNER_LEFT)
+            {
+                // IL-WORLD-004S-R31, USER_VISUAL_ORACLE. The author's r3c5 for raw 0x1B at (1,-11).
+                sprite = set.GetR3C5();
+            }
+            else if (topology.Role == RaisedSurfaceRole.BOTTOM_WALL_INNER_RIGHT)
+            {
+                // IL-WORLD-004S-R31, USER_VISUAL_ORACLE. The author's r3c6 for raw 0x1E at (7,-11).
+                sprite = set.GetR3C6();
+            }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
                 // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable: no rule produces this role, because
@@ -393,6 +403,13 @@ namespace IslandLife.World.Terrain
             if (topology.Role == RaisedSurfaceRole.JUNCTION_VERTICAL_CONTINUATION_MIRROR)
             {
                 return HillCompositionRow.FRONT_CLIFF;
+            }
+
+            // IL-WORLD-004S-R31. Both bottom-wall components live on the author's sheet row r3.
+            if (topology.Role == RaisedSurfaceRole.BOTTOM_WALL_INNER_LEFT
+                || topology.Role == RaisedSurfaceRole.BOTTOM_WALL_INNER_RIGHT)
+            {
+                return HillCompositionRow.SECOND_FRONT_CLIFF;
             }
             if (topology.Slot != HillColumnSlot.NARROW)
             {
