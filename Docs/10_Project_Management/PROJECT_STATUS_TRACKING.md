@@ -132,7 +132,39 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
-- **R23A topology matrix — TESTS ONLY. The refactor is BLOCKED, and the blocker is architectural.**
+- **R23A2 raw-vs-canonical collapse audit — the 9 collisions are LEGACY_RUN_OVERRIDE, all 9. Answer C,
+  and R23A's STOP is REFINED rather than confirmed.**
+  - **Classification tally, measured over 512 probes / 47 canonical states:** `RAW_DISTINGUISHABLE = 0`,
+    `CANONICAL_COLLAPSE = 0`, **`TRUE_LOCAL_AMBIGUITY = 0`**, `LEGACY_RUN_OVERRIDE = 9`.
+  - **So it is NOT A and NOT B.** The author grammar is **not** proven to need more than 3x3, because
+    card section 5's licensing condition requires a `TRUE_LOCAL_AMBIGUITY` and there are none. And the
+    normalizer is **not** destroying author information, because no collision is a canonical collapse.
+  - **Every one of the 9 is the same raw 3x3 producing different Sprites**, and the only thing that
+    differs is how far the run walk reached. Current production output is explicitly not accepted as
+    proof that the difference is correct, which is exactly the card's section 5 rule.
+  - **The witness grid is now self-proving, and that fix matters.** The mask is read back OUT of the
+    constructed grid and compared with the requested mask, asserted per record:
+    `Encode(grid) == requested raw mask`, **0/512 disagreements**. R23A printed its grids from a
+    confused row index; those grids should no longer be read as evidence.
+  - **The locked straight grammar in RAW 3x3 terms, which is the load-bearing result.** Each piece is
+    distinguishable from raw alone, through **cardinal** bits:
+    - horizontal LEFT   `. . . | . C . | . X X`   (E only, no W)
+    - horizontal BODY   `. . . | . C . | X X X`   (E and W, both diagonals open)
+    - horizontal RIGHT  `. . . | . C . | X X .`   (W only, no E)
+    - vertical TOP      `. . . | . C . | . X .`   (S only)
+    - vertical BODY     `. X . | . C . | . X .`   (N and S)
+    - vertical BOTTOM   `. X . | . C . | . . .`   (N only)
+    The E-only / E+W / W-only and S-only / N+S / N-only patterns are **different cardinal patterns, so
+    raw 3x3 carries the terminal-versus-body signal.**
+  - **This CORRECTS R23A's own conclusion.** R23A asserted that slot is irreducibly a run property and
+    that a pure 3x3 Layer A therefore cannot work. The evidence says otherwise: the signal is present in
+    raw, and the loss happens LATER, in `SlotFor`, `CliffSlotFor`, `RunContinuesThrough` and the run
+    walk, which re-derive the slot from an unbounded outward read instead of reading the cardinal the
+    cell already has. So a 3x3-only Layer A is **not proven impossible**; it is proven un-attempted.
+  - **Consequence for R23B:** the blocker is no longer architectural. It is that the current slot
+    derivation must be replaced by a raw-cardinal derivation, and that replacement has to be proven
+    against the R18/R19/R20 oracles one piece at a time. Nothing was implemented this round, per
+    section 7.- **R23A topology matrix — TESTS ONLY. The refactor is BLOCKED, and the blocker is architectural.**
   Card section 22 mandates the matrix before any production edit, so this round produced the matrix and
   **no production change at all**.
   - **Measured: 512 raw probes reduce to 47 canonical states, and 9 of those canonical states CURRENTLY
