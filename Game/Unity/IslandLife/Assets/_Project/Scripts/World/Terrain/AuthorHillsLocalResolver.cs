@@ -245,14 +245,12 @@ namespace IslandLife.World.Terrain
             int start = x;
             int end = x;
 
-            while (CliffVisualRow(grid, start - 1, y) == cliffVisualY
-                && EmitsAnyCliff(grid, start - 1, y))
+            while (RunContinuesThrough(grid, start - 1, y, cliffVisualY))
             {
                 start--;
             }
 
-            while (CliffVisualRow(grid, end + 1, y) == cliffVisualY
-                && EmitsAnyCliff(grid, end + 1, y))
+            while (RunContinuesThrough(grid, end + 1, y, cliffVisualY))
             {
                 end++;
             }
@@ -273,6 +271,40 @@ namespace IslandLife.World.Terrain
         private static bool EmitsAnyCliff(TerrainGridData grid, int x, int y)
         {
             return CliffVisualRow(grid, x, y) != int.MinValue;
+        }
+
+        /// <summary>
+        /// Whether the cliff run continues through this cell on the same visual row.
+        ///
+        /// IL-WORLD-004S-R20. A cell normally joins the run only when it emits a cliff of its own on
+        /// that row. An author CORNER is the exception and it is load bearing: a top corner has a leg
+        /// below it, so its own south is NOT exposed, it emits no cliff, and the walk used to stop
+        /// there. The body cell immediately inside a corner was therefore made a run END and drawn as
+        /// the author's r3c0 or r3c2 terminal instead of the author's r3c1 BODY, which put an
+        /// unconfirmed piece in the middle of a plain straight top run.
+        ///
+        /// A corner is a whole-cell composition that occupies its own cell in the same visual row, so
+        /// the run genuinely does continue through it. The corner's own sprite is chosen from its ROLE
+        /// in <see cref="PickSprite"/> and never from this walk, so nothing here can overwrite it.
+        ///
+        /// This is a no-op for the two R19 front corners, which already emit a cliff on that row and so
+        /// already extended the run; it is measured by R19 staying at 33 PASS / 0 FAIL.
+        /// </summary>
+        private static bool RunContinuesThrough(TerrainGridData grid, int x, int y, int cliffVisualY)
+        {
+            if (EmitsAnyCliff(grid, x, y))
+            {
+                return CliffVisualRow(grid, x, y) == cliffVisualY;
+            }
+
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y))
+            {
+                return false;
+            }
+
+            RaisedTopologyState t = RaisedTopologyState.Resolve(grid, x, y);
+            return t.IsLeftTopCorner || t.IsRightTopCorner
+                || t.IsLeftCorner || t.IsRightCorner;
         }
 
         /// <summary>
@@ -316,6 +348,14 @@ namespace IslandLife.World.Terrain
             else if (topology.Role == RaisedSurfaceRole.RIGHT_CORNER)
             {
                 sprite = set.GetRightCorner();
+            }
+            else if (topology.Role == RaisedSurfaceRole.LEFT_TOP_CORNER)
+            {
+                sprite = set.GetLeftTopCorner();
+            }
+            else if (topology.Role == RaisedSurfaceRole.RIGHT_TOP_CORNER)
+            {
+                sprite = set.GetRightTopCorner();
             }
             else if (slot == HillColumnSlot.NARROW)
             {
@@ -378,6 +418,16 @@ namespace IslandLife.World.Terrain
                 || topology.Role == RaisedSurfaceRole.RIGHT_CORNER)
             {
                 return HillCompositionRow.SECOND_FRONT_CLIFF;
+            }
+
+            // IL-WORLD-004S-R20. The two TOP corners are the author's row r0 cells, so they are tagged
+            // TOP_SURFACE. This matters for more than bookkeeping: a top corner cell is never given a
+            // slot, and without this it would fall through to the narrow tagging branch and be
+            // reported on the wrong row.
+            if (topology.Role == RaisedSurfaceRole.LEFT_TOP_CORNER
+                || topology.Role == RaisedSurfaceRole.RIGHT_TOP_CORNER)
+            {
+                return HillCompositionRow.TOP_SURFACE;
             }
 
             if (topology.Slot != HillColumnSlot.NARROW)

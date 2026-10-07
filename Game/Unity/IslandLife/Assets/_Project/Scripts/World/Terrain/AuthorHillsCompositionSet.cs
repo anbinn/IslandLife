@@ -60,6 +60,12 @@ namespace IslandLife.World.Terrain
     ///     r3c4 left  corner  - a vertical left boundary turning east into the horizontal front
     ///     r3c7 right corner  - the horizontal front turning north into a vertical right boundary
     ///
+    ///   the two author TOP CORNER primitives, IL-WORLD-004S-R20:
+    ///     r0c4 left  top corner - a vertical left boundary reaching the TOP and turning east into
+    ///                               the horizontal top structure
+    ///     r0c7 right top corner - the horizontal top structure reaching its right end and turning
+    ///                               south into a vertical right boundary
+    ///
     /// IL-WORLD-004S-R19 CORRECTION. This set used to carry the note that r3c4..r3c7 is "an
     /// alternative author 4-wide band ... deliberately NOT wired in", i.e. a second proof of
     /// repeatability rather than a second composition. PM and the user then compared those cells
@@ -69,6 +75,12 @@ namespace IslandLife.World.Terrain
     /// re-derived from the sheet layout alone. Both cells are real author slices of the same 16x16
     /// grid, same row r3, same pivot and same PPU as the rest of the family, and neither is
     /// mirrored, rotated, stretched or resampled to reach its role.
+    ///
+    /// IL-WORLD-004S-R20 adds the row r0 pair on exactly the same basis: r0c4 is rect (64,128) and
+    /// r0c7 is rect (112,128), the same 16x16 grid, pivot and PPU as the locked r0c1 at (16,128).
+    /// The BODY between them is the author's r3c1 and is NOT re-specified: a one-cell-deep top
+    /// structure is already the R18 r3 band body, so no new BODY slice was introduced and none of
+    /// the R18 or R19 cells changed meaning.
     /// </summary>
     [CreateAssetMenu(
         fileName = "AuthorHillsCompositionSet",
@@ -135,12 +147,19 @@ namespace IslandLife.World.Terrain
         [SerializeField]
         private Sprite hillsR3C7;
 
+        [Header("Author TOP corner primitives, Hills row r0 (IL-WORLD-004S-R20)")]
+        [SerializeField]
+        private Sprite hillsR0C4;
+
+        [SerializeField]
+        private Sprite hillsR0C7;
+
         /// <summary>
         /// The author's LEFT corner: a vertical left boundary turning east into the horizontal front.
         ///
-        /// IL-WORLD-004S-R19. PM locked this meaning against the source sheet. It is a whole-cell
-        /// composition in its own right, not a terminal and not a body, so it is addressed directly
-        /// rather than through <see cref="GetWide"/>'s row and slot lookup.
+        /// IL-WORLD-004S-R19. It is a whole-cell composition in its own right, not a terminal and not
+        /// a body, so it is addressed directly rather than through <see cref="GetWide"/>'s row and
+        /// slot lookup.
         /// </summary>
         public Sprite GetLeftCorner()
         {
@@ -154,6 +173,24 @@ namespace IslandLife.World.Terrain
         public Sprite GetRightCorner()
         {
             return hillsR3C7;
+        }
+
+        /// <summary>
+        /// The author's LEFT TOP corner: a vertical left boundary reaching the top and turning east
+        /// into the horizontal top structure. IL-WORLD-004S-R20.
+        /// </summary>
+        public Sprite GetLeftTopCorner()
+        {
+            return hillsR0C4;
+        }
+
+        /// <summary>
+        /// The author's RIGHT TOP corner: the horizontal top structure reaching its right end and
+        /// turning south into a vertical right boundary. IL-WORLD-004S-R20.
+        /// </summary>
+        public Sprite GetRightTopCorner()
+        {
+            return hillsR0C7;
         }
 
         /// <summary>Returns the author Sprite for one cell of a wide composition row.</summary>
@@ -239,6 +276,11 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            if (GetLeftTopCorner() == null || GetRightTopCorner() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -273,6 +315,16 @@ namespace IslandLife.World.Terrain
             if (GetRightCorner() == null)
             {
                 missing.Add("right corner r3c7");
+            }
+
+            if (GetLeftTopCorner() == null)
+            {
+                missing.Add("left top corner r0c4");
+            }
+
+            if (GetRightTopCorner() == null)
+            {
+                missing.Add("right top corner r0c7");
             }
 
             return missing.Count == 0 ? "none" : string.Join(", ", missing);

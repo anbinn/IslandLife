@@ -38,6 +38,22 @@ namespace IslandLife.World.Terrain
         /// right boundary. IL-WORLD-004S-R19.
         /// </summary>
         RIGHT_CORNER = 5,
+
+        /// <summary>
+        /// The author's LEFT TOP corner, Hills r0c4: a vertical left boundary that reaches the top and
+        /// turns east into the horizontal top structure. IL-WORLD-004S-R20.
+        ///
+        /// "Top" here is the project's own Grammar Map position name, kept as PM named it. It is the
+        /// cell on the north edge of the mass, so its own face is a north-facing one and its art is a
+        /// row r0 piece.
+        /// </summary>
+        LEFT_TOP_CORNER = 6,
+
+        /// <summary>
+        /// The author's RIGHT TOP corner, Hills r0c7: the horizontal top structure reaching its right
+        /// end and turning south into a vertical right boundary. IL-WORLD-004S-R20.
+        /// </summary>
+        RIGHT_TOP_CORNER = 7,
     }
 
     /// <summary>
@@ -142,6 +158,16 @@ namespace IslandLife.World.Terrain
         /// True when this cell is the author's right corner, Hills r3c7. IL-WORLD-004S-R19.
         /// </summary>
         public bool IsRightCorner => Role == RaisedSurfaceRole.RIGHT_CORNER;
+
+        /// <summary>
+        /// True when this cell is the author's left top corner, Hills r0c4. IL-WORLD-004S-R20.
+        /// </summary>
+        public bool IsLeftTopCorner => Role == RaisedSurfaceRole.LEFT_TOP_CORNER;
+
+        /// <summary>
+        /// True when this cell is the author's right top corner, Hills r0c7. IL-WORLD-004S-R20.
+        /// </summary>
+        public bool IsRightTopCorner => Role == RaisedSurfaceRole.RIGHT_TOP_CORNER;
 
         /// <summary>
         /// Solid means Raised, or an enclosed hole. A hole is an INTERIOR boundary, so ground continues
@@ -258,8 +284,12 @@ namespace IslandLife.World.Terrain
             bool leftCorner = IsAuthorLeftCorner(grid, x, y);
             bool rightCorner = IsAuthorRightCorner(grid, x, y);
 
+            // IL-WORLD-004S-R20. The two top corners, same arrangement.
+            bool leftTopCorner = IsAuthorLeftTopCorner(grid, x, y);
+            bool rightTopCorner = IsAuthorRightTopCorner(grid, x, y);
+
             RaisedSurfaceRole role = RoleFor(
-                leftCorner, rightCorner,
+                leftCorner, rightCorner, leftTopCorner, rightTopCorner,
                 n || northVoid, !s, runDepth, offset, northVoid,
                 slot == HillColumnSlot.NARROW, frontContinues);
 
@@ -458,9 +488,55 @@ namespace IslandLife.World.Terrain
                 && IsOneWide(grid, x, y + 1);
         }
 
+        /// <summary>
+        /// The author's LEFT TOP corner: the north-west cell of a horizontal top structure, where a ONE
+        /// WIDE vertical boundary on the west reaches the top and turns east into that structure.
+        ///
+        /// IL-WORLD-004S-R20. This is the 180 degree counterpart of <see cref="IsAuthorLeftCorner"/>,
+        /// reached through its own adjacency and never by rotating or mirroring art: the emitted slice
+        /// is the author's own r0c4 in its original orientation.
+        ///
+        /// The conditions are exactly the PM-locked meaning:
+        ///   north open     - this cell is ON the top, which is what makes it a top corner
+        ///   west open      - the boundary it turns FROM is the vertical one on the west
+        ///   east Raised    - the top structure continues east, so the boundary turns rather than ends
+        ///   south one wide - the vertical boundary is a genuine single-cell-wide column continuing
+        ///                   south. THIS CONDITION IS LOAD BEARING, and it was MEASURED rather than
+        ///                   assumed: without it the north-west cell of EVERY rectangle has the same
+        ///                   three-way signature, because a plateau's top cell is also its south-west
+        ///                   corner, and the rule would paint top corners along the top of every
+        ///                   rectangle and break the R11 rectangles, the R18 band grammar and the R19
+        ///                   front corners at once.
+        /// </summary>
+        private static bool IsAuthorLeftTopCorner(TerrainGridData grid, int x, int y)
+        {
+            return !RaisedNeighborResolver.IsRaised(grid, x, y + 1)
+                && !RaisedNeighborResolver.IsRaised(grid, x - 1, y)
+                && RaisedNeighborResolver.IsRaised(grid, x + 1, y)
+                && IsOneWide(grid, x, y - 1);
+        }
+
+        /// <summary>
+        /// The author's RIGHT TOP corner: the north-east cell of a horizontal top structure, where that
+        /// structure reaches its right end and turns south into a ONE WIDE vertical boundary on the east.
+        ///
+        /// IL-WORLD-004S-R20. The mirror-image condition set, reached through its own adjacency. The
+        /// "south neighbour is one wide" guard is the same load-bearing condition as on the left, for
+        /// the same measured reason.
+        /// </summary>
+        private static bool IsAuthorRightTopCorner(TerrainGridData grid, int x, int y)
+        {
+            return !RaisedNeighborResolver.IsRaised(grid, x, y + 1)
+                && !RaisedNeighborResolver.IsRaised(grid, x + 1, y)
+                && RaisedNeighborResolver.IsRaised(grid, x - 1, y)
+                && IsOneWide(grid, x, y - 1);
+        }
+
         private static RaisedSurfaceRole RoleFor(
             bool leftCorner,
             bool rightCorner,
+            bool leftTopCorner,
+            bool rightTopCorner,
             bool solidNorth,
             bool southExposed,
             int runDepth,
@@ -469,6 +545,23 @@ namespace IslandLife.World.Terrain
             bool isNarrow,
             bool frontContinuesInMask)
         {
+            // IL-WORLD-004S-R20. The author TOP corner grammar, and it is decided FIRST, before the
+            // R19 front corners, the R18 straight shapes and the junction rules below, so neither the
+            // column's thickness nor the run's width can substitute a different piece.
+            //
+            // The four corner predicates cannot collide with one another. The two top corners require
+            // a Raised SOUTH neighbour, the two front corners require an open one, so a single cell can
+            // never satisfy a top corner and a front corner at the same time. That is checked by
+            // assertion over all 512 neighbourhoods in the R16B matrix, not just argued here.
+            if (leftTopCorner)
+            {
+                return RaisedSurfaceRole.LEFT_TOP_CORNER;
+            }
+
+            if (rightTopCorner)
+            {
+                return RaisedSurfaceRole.RIGHT_TOP_CORNER;
+            }
             // IL-WORLD-004S-R19. The author corner grammar, and it is decided FIRST, before the R18
             // straight shapes and before the junction rules below, so neither the column's thickness
             // nor the run's width can substitute a different piece for the corner. That is the whole

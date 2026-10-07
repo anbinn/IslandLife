@@ -92,11 +92,55 @@ PM reviews:
 **004S status: `FREEFORM RAISED VISUAL PROJECTION SHIPPED` · `RAISED ERASE AVAILABLE` ·
 `CONNECTED OUTLINES CLOSED` · `T-JUNCTION INNER CORNERS FIXED` ·
 `RAISED ERASE VISUAL REBUILD FIXED` · `JUNCTION GRAMMAR MEASURED AND LOCKED` ·
-`BASIC STRAIGHT GRAMMAR CORRECTED` · `R18 = UNITY_PASS` · `LEFT/RIGHT CORNER GRAMMAR SHIPPED`.**
+`BASIC STRAIGHT GRAMMAR CORRECTED` · `R18 = UNITY_PASS` · `LEFT/RIGHT CORNER GRAMMAR SHIPPED` ·
+`R19 = UNITY_PASS` · `TOP CORNER GRAMMAR SHIPPED`.**
 Grammar baseline locked by R11; freeform coverage by R12; erase and the exterior-boundary fix by R13;
 the T-junction inner corner by R14; the erase visual rebuild by R15; the junction and concave corner
 grammar audited and locked by R16B; the basic straight grammar corrected by R18 (**user-confirmed
-UNITY_PASS**); the author left and right corner grammar by R19.
+UNITY_PASS**); the author left and right front corners by R19 (**user-confirmed UNITY_PASS**); the
+author left and right **top** corners by R20.
+
+- **R20 author top corner grammar — `Hills_r0c4` and `Hills_r0c7` shipped.** PM locked two more author
+  cells against the source after a cell-by-cell comparison in Unity: **r0c4** is the LEFT TOP corner, a
+  vertical left boundary that reaches the TOP and turns east into the horizontal top structure, and
+  **r0c7** is the RIGHT TOP corner, the top structure reaching its right end and turning south. Both
+  are real author slices of the same 16×16 grid: r0c4 is rect (64,128) and r0c7 is rect (112,128), the
+  same pivot 8,8 and PPU 16 as the already-locked r0c1 at (16,128). Nothing mirrored, rotated,
+  stretched or resampled. "Left top" and "right top" are the project's own Grammar Map position names
+  and are used verbatim; they are not converted into any other corner naming scheme.
+  - **No new BODY slice was introduced and none was needed.** The BODY between two top corners is the
+    author's existing `r3c1`, because a one-cell-deep top structure is already the R18 r3 band body.
+    The card's requirement that a cell adjacent to a corner must stay `r3c1` therefore needed no art
+    change at all, only the removal of something that was overwriting it (below).
+  - **The rule is a 3×3 window with no shape name, component id or coordinate test.** LEFT fires when
+    north is open, west is open, east is Raised and **the cell south is genuinely one cell wide**; RIGHT
+    is the mirror-image condition set.
+  - **The "south neighbour is one wide" guard is load bearing and was measured.** Without it the
+    north-west cell of *every* rectangle has the same signature, because a plateau's top cell is also
+    its south-west corner. It was added specifically to keep R11's rectangles, R18's band grammar and
+    R19's front corners intact, and all three suites confirm it unchanged: **R18 41/0**, **R19 33/0**,
+    **R11 178/0/1 SKIP**.
+  - **A real defect was found and fixed in the R14 run walk, and it is the interesting finding of this
+    round.** `AuthorHillsLocalResolver.CliffSlotFor` decides whether a cell ends a front run by asking
+    which neighbours emit a cliff on the same visual row. A top corner has a **leg below it**, so its
+    own south is not exposed, it emits no cliff, and the walk stopped there. The body cell immediately
+    inside a corner was consequently treated as a run END and drawn as the author's `r3c0` or `r3c2`
+    terminal instead of `r3c1` — exactly the unconfirmed corner-adjacent piece the card forbids. The
+    walk now continues **through** any of the four corner roles, on the stated grounds that a corner is
+    a whole-cell composition occupying its own cell in the same visual row. The corner's own sprite
+    still comes from its ROLE and can never be overwritten by the walk. This is measured to be a no-op
+    for R19's front corners, which already emitted a cliff on that row.
+  - **0 body cells between the two top corners is PROVED NOT CONSTRUCTIBLE** and was not forced. Two
+    adjacent top corners would each need a Raised one-wide south neighbour, which forces the
+    south-east and south-west cells to be simultaneously Raised and open. Fixtures therefore run
+    1, 2, 3 and 6 body cells, and the narrowest possible two-wide shape is asserted to yield at most
+    one corner as a direct demonstration.
+  - **Measured compositions** (top-left visual grid, per cell, from the committed harness): corner raw
+    mask `0x50` canonical `East, South` role `LEFT_TOP_CORNER` → `r0c4`; body raw `0x18`/`0x38`/`0x98`/
+    `0xB8` canonical `West, East` role `SECOND_FRONT_CLIFF` slot `BODY` → `r3c1`; right corner raw
+    `0x48` canonical `West, South` role `RIGHT_TOP_CORNER` → `r0c7`. Every fixture has visual tile
+    count equal to logical Raised count and **zero tiles outside the logical mask**.
+  - **R18, R19, R16C, MaxFrontWalk and hole classification are untouched and remain open.**
 
 - **R19 author left/right corner grammar — `Hills_r3c4` and `Hills_r3c7` shipped.** PM locked the
   meaning of two cells after comparing them one Sprite at a time in Unity: **r3c4** is the LEFT corner,
