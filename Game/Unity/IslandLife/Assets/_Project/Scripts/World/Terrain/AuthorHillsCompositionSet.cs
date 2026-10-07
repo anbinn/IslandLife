@@ -199,6 +199,84 @@ namespace IslandLife.World.Terrain
         /// <see cref="GetJunctionContinuation"/>, which returns this same field as a
         /// LOCKED_USER_VISUAL_ORACLE. <c>r2c5</c> remains unwired from any rule, unchanged.
         /// </summary>
+        /// <summary>
+        /// IL-WORLD-004S-R27B, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED. The seven Hills
+        /// components the user selected one at a time in Unity, by Source Sprite, against real map
+        /// configurations.
+        ///
+        /// They are reached by <c>RaisedTopologyState.TryUserComponent</c>, which is a PURE function of
+        /// the cell's own raw 3x3. It takes a mask and no grid, so it is structurally incapable of
+        /// reading past the cell - there is no 5x5 anywhere, no arm length, no region and no shape name.
+        /// The card permits a wider discriminator only to resolve a genuine collision, and the seven
+        /// 3x3 patterns are disjoint, so no collision exists.
+        ///
+        /// NOTHING IS MIRRORED, ROTATED, STRETCHED, GENERATED OR NEAREST-MATCHED. Each getter returns the
+        /// author's own existing slice in its original orientation.
+        /// </summary>
+        [Header("User-confirmed composition components (IL-WORLD-004S-R27B)")]
+        [SerializeField]
+        private Sprite hillsR1C4;
+
+        [SerializeField]
+        private Sprite hillsR0C5;
+
+        [SerializeField]
+        private Sprite hillsR0C6;
+
+        [SerializeField]
+        private Sprite hillsR1C6;
+
+        [SerializeField]
+        private Sprite hillsR0C8;
+
+        [SerializeField]
+        private Sprite hillsR3C8;
+
+        [SerializeField]
+        private Sprite hillsR4C8;
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r1c4, raw 0x2F: ground wraps west and runs north.</summary>
+        public Sprite GetR1C4()
+        {
+            return hillsR1C4;
+        }
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r0c5, raw 0xE9: ground wraps west and runs south.</summary>
+        public Sprite GetR0C5()
+        {
+            return hillsR0C5;
+        }
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r0c6, raw 0xF4: the mirror of r0c5.</summary>
+        public Sprite GetR0C6()
+        {
+            return hillsR0C6;
+        }
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r1c6, raw 0x97: the mirror of r1c4.</summary>
+        public Sprite GetR1C6()
+        {
+            return hillsR1C6;
+        }
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r0c8, raw 0x5A: a one-wide four-way crossing.</summary>
+        public Sprite GetR0C8()
+        {
+            return hillsR0C8;
+        }
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r3c8: a four-way crossing with one Raised diagonal.</summary>
+        public Sprite GetR3C8()
+        {
+            return hillsR3C8;
+        }
+
+        /// <summary>IL-WORLD-004S-R27B. The user's r4c8: a four-way crossing with two Raised diagonals.</summary>
+        public Sprite GetR4C8()
+        {
+            return hillsR4C8;
+        }
+
         public Sprite GetR2C4()
         {
             return hillsR2C4;
@@ -377,6 +455,15 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            // IL-WORLD-004S-R27B. All seven user components are reachable now, so each must be assigned
+            // or a reachable role would silently drop its cell.
+            if (GetR1C4() == null || GetR0C5() == null || GetR0C6() == null || GetR1C6() == null
+                || GetR0C8() == null || GetR3C8() == null || GetR4C8() == null)
+            {
+                return false;
+            }
+
+
             return true;
         }
 
@@ -448,6 +535,42 @@ namespace IslandLife.World.Terrain
                 missing.Add("junction continuation r2c4");
             }
 
+
+            // IL-WORLD-004S-R27B. Named individually so a missing slice names itself.
+            if (GetR1C4() == null)
+            {
+                missing.Add("user component r1c4");
+            }
+
+            if (GetR0C5() == null)
+            {
+                missing.Add("user component r0c5");
+            }
+
+            if (GetR0C6() == null)
+            {
+                missing.Add("user component r0c6");
+            }
+
+            if (GetR1C6() == null)
+            {
+                missing.Add("user component r1c6");
+            }
+
+            if (GetR0C8() == null)
+            {
+                missing.Add("user component r0c8");
+            }
+
+            if (GetR3C8() == null)
+            {
+                missing.Add("user component r3c8");
+            }
+
+            if (GetR4C8() == null)
+            {
+                missing.Add("user component r4c8");
+            }
             return missing.Count == 0 ? "none" : string.Join(", ", missing);
         }
     }

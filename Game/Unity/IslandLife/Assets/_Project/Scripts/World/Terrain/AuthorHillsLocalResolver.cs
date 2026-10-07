@@ -265,6 +265,41 @@ namespace IslandLife.World.Terrain
                 // rotated, stretched, generated or nearest-matched to reach it.
                 sprite = set.GetJunctionContinuation();
             }
+            else if (topology.Role == RaisedSurfaceRole.USER_WRAP_NORTH_WEST)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r1c4. Ground wraps west, runs north.
+                sprite = set.GetR1C4();
+            }
+            else if (topology.Role == RaisedSurfaceRole.USER_WRAP_SOUTH_WEST)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r0c5. Ground wraps west, runs south.
+                sprite = set.GetR0C5();
+            }
+            else if (topology.Role == RaisedSurfaceRole.USER_WRAP_SOUTH_EAST)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r0c6, the mirror relation.
+                sprite = set.GetR0C6();
+            }
+            else if (topology.Role == RaisedSurfaceRole.USER_WRAP_NORTH_EAST)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r1c6, the mirror relation.
+                sprite = set.GetR1C6();
+            }
+            else if (topology.Role == RaisedSurfaceRole.USER_CROSS_ALL_ARMS_ONE_WIDE)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r0c8, a one-wide four-way crossing.
+                sprite = set.GetR0C8();
+            }
+            else if (topology.Role == RaisedSurfaceRole.USER_CROSS_ONE_FLANK)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r3c8.
+                sprite = set.GetR3C8();
+            }
+            else if (topology.Role == RaisedSurfaceRole.USER_CROSS_TWO_FLANKS)
+            {
+                // IL-WORLD-004S-R27B, PROVISIONAL. The user's r4c8.
+                sprite = set.GetR4C8();
+            }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
                 // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable: no rule produces this role, because
@@ -380,6 +415,29 @@ namespace IslandLife.World.Terrain
             {
                 return HillCompositionRow.FRONT_CLIFF;
             }
+
+            // IL-WORLD-004S-R27B. Each user component is tagged with the author sheet row its own slice
+            // lives on, so a mis-tag names which author piece was actually chosen.
+            switch (topology.Role)
+            {
+                case RaisedSurfaceRole.USER_WRAP_SOUTH_WEST:
+                case RaisedSurfaceRole.USER_WRAP_SOUTH_EAST:
+                    return HillCompositionRow.TOP_SURFACE; // r0c5, r0c6
+
+                case RaisedSurfaceRole.USER_WRAP_NORTH_WEST:
+                case RaisedSurfaceRole.USER_WRAP_NORTH_EAST:
+                    return HillCompositionRow.MIDDLE_SURFACE; // r1c4, r1c6
+
+                case RaisedSurfaceRole.USER_CROSS_ONE_FLANK:
+                case RaisedSurfaceRole.USER_CROSS_TWO_FLANKS:
+                    return HillCompositionRow.SECOND_FRONT_CLIFF; // r3c8, r4c8
+
+                default:
+                    break;
+            }
+
+            // USER_CROSS_ALL_ARMS_ONE_WIDE emits the author r0c8, which lives on sheet row r0, and
+            // falls through to ToCompositionRow below.
 
             if (topology.Slot != HillColumnSlot.NARROW)
             {

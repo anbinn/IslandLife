@@ -108,6 +108,47 @@ namespace IslandLife.World.Terrain
         /// y+/-2 appear in the test.
         /// </summary>
         JUNCTION_VERTICAL_CONTINUATION = 10,
+
+        /// <summary>
+        /// IL-WORLD-004S-R27B, PROVISIONAL_USER_VISUAL_ORACLE. The seven Hills components the user picked
+        /// one at a time in Unity, by Source Sprite, against real map configurations.
+        ///
+        /// EACH IS DECIDED BY THIS CELL'S OWN 3x3 AND NOTHING ELSE. No 5x5, no grid read, no arm
+        /// length, no region, no shape name. That is a measured result and not a preference: the seven
+        /// occupy seven DISJOINT 3x3 patterns, so there is no collision for a wider context to resolve,
+        /// and R26B already showed what reading past the 3x3 costs - the user judged it VISUAL FAIL
+        /// because it moved ordinary rectangles, edges and corners.
+        ///
+        /// The five single-mask roles are the exact raw values R26A measured at the sites the user
+        /// confirmed: 0x2F, 0xE9, 0xF4, 0x97 and 0x5A. The three crossing roles are told apart by how
+        /// many diagonals are Raised, and are deliberately bounded at two - see
+        /// <see cref="TryUserComponent"/>.
+        /// </summary>
+        USER_WRAP_NORTH_WEST = 11,
+
+        /// <summary>IL-WORLD-004S-R27B, PROVISIONAL. The user's r0c5: ground wraps around on the west
+        /// and keeps running SOUTH. Measured raw 0xE9.</summary>
+        USER_WRAP_SOUTH_WEST = 12,
+
+        /// <summary>IL-WORLD-004S-R27B, PROVISIONAL. The user's r0c6: the mirror of
+        /// <see cref="USER_WRAP_SOUTH_WEST"/>. Measured raw 0xF4.</summary>
+        USER_WRAP_SOUTH_EAST = 13,
+
+        /// <summary>IL-WORLD-004S-R27B, PROVISIONAL. The user's r1c6: the mirror of
+        /// <see cref="USER_WRAP_NORTH_WEST"/>. Measured raw 0x97.</summary>
+        USER_WRAP_NORTH_EAST = 14,
+
+        /// <summary>IL-WORLD-004S-R27B, PROVISIONAL. The user's r0c8: a four-way crossing whose every
+        /// arm is exactly one cell wide, so all four diagonals are open. Measured raw 0x5A.</summary>
+        USER_CROSS_ALL_ARMS_ONE_WIDE = 15,
+
+        /// <summary>IL-WORLD-004S-R27B, PROVISIONAL. The user's r3c8: a four-way crossing with exactly
+        /// ONE Raised diagonal.</summary>
+        USER_CROSS_ONE_FLANK = 16,
+
+        /// <summary>IL-WORLD-004S-R27B, PROVISIONAL. The user's r4c8: a four-way crossing with exactly
+        /// TWO Raised diagonals.</summary>
+        USER_CROSS_TWO_FLANKS = 17,
     }
 
     /// <summary>
@@ -394,7 +435,15 @@ namespace IslandLife.World.Terrain
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = RoleForLocal(
+            // IL-WORLD-004S-R27B. The seven user-confirmed components are a PURE REFINEMENT decided from
+            // raw alone, so they are asked first. Each names an author relation in words and is then
+            // expressed in this cell's own eight bits; the R27B harness re-declares the same bit lists
+            // independently and proves the matched sets are disjoint and claim no ordinary ground.
+            RaisedSurfaceRole userComponent = TryUserComponent(raw);
+
+            RaisedSurfaceRole role = userComponent != RaisedSurfaceRole.MIDDLE_SURFACE
+                ? userComponent
+                : RoleForLocal(
                 leftCorner, rightCorner, leftTopCorner, rightTopCorner, junctionContinuation, n, s);
 
             return new RaisedTopologyState(
@@ -773,5 +822,86 @@ namespace IslandLife.World.Terrain
                 + (IsNotchCell ? " NOTCH" : string.Empty)
                 + (NorthIsEnclosedVoid ? " HOLE-N" : string.Empty);
         }
+        /// <summary>
+        /// IL-WORLD-004S-R27B. The seven user-confirmed components, as a pure function of the raw 3x3.
+        ///
+        /// NO GRID, NO 5x5, NO NEIGHBOUR LOOKUP. This method takes a mask and nothing else, so it is
+        /// structurally incapable of reading past the cell - the same argument the R23B harness makes for
+        /// the corners, and the reason the reflective guard above still holds.
+        ///
+        /// WHY THE CROSSING FAMILY IS BOUNDED AT TWO DIAGONALS. Three drafts were measured and rejected
+        /// during this card:
+        ///
+        ///   "four cardinals plus two or more diagonals" also matched 0xFF, the ordinary deep interior
+        ///     of a wide plateau, and would have repainted every plateau interior as a junction.
+        ///   "four cardinals plus at least one diagonal open" then matched 0x7F, 0xBF, 0xFB and 0xDF -
+        ///     ordinary plateau cells with one diagonal missing, i.e. a concave notch, not a crossing.
+        ///   A 5x5 arm-length test was then required to separate those, and that is exactly the global
+        ///     composition matcher this card forbids.
+        ///
+        /// Counting the diagonals and accepting only zero, one or two excludes all of them by
+        /// construction, with no read past the 3x3. Three or four Raised diagonals means the cell is
+        /// inside a mass or in a notch, and those raws are left to Layer A untouched.
+        /// </summary>
+        private static RaisedSurfaceRole TryUserComponent(TerrainNeighborMask mask)
+        {
+            bool n = (mask & TerrainNeighborMask.North) != 0;
+            bool s = (mask & TerrainNeighborMask.South) != 0;
+            bool e = (mask & TerrainNeighborMask.East) != 0;
+            bool w = (mask & TerrainNeighborMask.West) != 0;
+            bool nw = (mask & TerrainNeighborMask.NorthWest) != 0;
+            bool ne = (mask & TerrainNeighborMask.NorthEast) != 0;
+            bool sw = (mask & TerrainNeighborMask.SouthWest) != 0;
+            bool se = (mask & TerrainNeighborMask.SouthEast) != 0;
+
+            // The four wrap-around inner corners. EACH IS ONE EXACT MASK. The first draft left the
+            // south-east diagonal unconstrained, which quietly made every one of these roles claim TWO raws
+            // instead of one - measured by the harness, which reported 19 claimed masks where 15 were
+            // intended. The card's highest principle is that the rules stay as narrow as possible, and the
+            // measured sites fix the south-east bit, so it is decided here rather than left free.
+            if (nw && n && ne && w && !e && sw && !s && !se)
+            {
+                return RaisedSurfaceRole.USER_WRAP_NORTH_WEST;
+            }
+
+            if (nw && !n && !ne && w && !e && sw && s && se)
+            {
+                return RaisedSurfaceRole.USER_WRAP_SOUTH_WEST;
+            }
+
+            if (!nw && !n && ne && !w && e && sw && s && se)
+            {
+                return RaisedSurfaceRole.USER_WRAP_SOUTH_EAST;
+            }
+
+            if (nw && n && ne && !w && e && !sw && !s && se)
+            {
+                return RaisedSurfaceRole.USER_WRAP_NORTH_EAST;
+            }
+
+            // The three crossings, told apart by how many diagonals are Raised. A crossing needs all
+            // four cardinals Raised; see the header for why three and four diagonals are refused.
+            if (n && s && e && w)
+            {
+                int diagonals = (nw ? 1 : 0) + (ne ? 1 : 0) + (sw ? 1 : 0) + (se ? 1 : 0);
+                if (diagonals == 0)
+                {
+                    return RaisedSurfaceRole.USER_CROSS_ALL_ARMS_ONE_WIDE;
+                }
+
+                if (diagonals == 1)
+                {
+                    return RaisedSurfaceRole.USER_CROSS_ONE_FLANK;
+                }
+
+                if (diagonals == 2)
+                {
+                    return RaisedSurfaceRole.USER_CROSS_TWO_FLANKS;
+                }
+            }
+
+            return RaisedSurfaceRole.MIDDLE_SURFACE;
+        }
     }
 }
+
