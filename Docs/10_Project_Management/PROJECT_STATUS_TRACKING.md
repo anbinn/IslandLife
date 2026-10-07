@@ -132,7 +132,36 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
-- **R21 corner continuation grammar: the RULE is now fully derived; only the slice identity is open.**
+- **R21 author corner continuation grammar SHIPPED. `Hills_r3c5` (no continuation) and `Hills_r2c4`
+  (continuation).** The junction is the cell where a **vertical Raised boundary on the west meets a
+  Raised platform running east**, and the vertical boundary ends immediately below it. Measured on the
+  real resolver path at `(4,5)`:
+  - **STATE A** raw `0xD0` canonical `East, South, SouthEast`, N **open** →
+    `CORNER_NO_UPPER_CONTINUATION` → **`Hills_r3c5`**
+  - **STATE B** raw `0xD2` canonical `North, East, South, SouthEast`, N **Raised** →
+    `CORNER_WITH_UPPER_CONTINUATION` → **`Hills_r2c4`**
+  - **`DIFFERING_NEIGHBORS = N: open -> Raised`.** North occupancy is the only A/B discriminator.
+    `runDepth` is deliberately NOT used to decide A/B; it reads 2 in STATE A and 3 in STATE B, and the
+    old sprite simply slid with it (`r0c0, r1c0, r2c0` as the wall grew), which is the reported defect:
+    a two-deep west column drew `r0c0` directly over `r2c0` and **skipped the author's r1 body row
+    entirely**.
+  - **The height ladder, off-by-one fixed, is now 5/5: H1 `r3c5`, H2..H5 `r2c4`,** with the junction
+    sprite never sliding back to `r0c0`/`r1c0`/`r2c0`. Repetition 10x: `r3c5 | r2c4 r2c4 r2c4 r2c4`,
+    9/9 identical. Added height is carried by the already-locked vertical straight/body grammar only.
+  - **Rectangles are NOT captured: 5/5 clean** (2x2, 3x2, 5x2, 3x3, 5x3 all resolve ZERO junction
+    roles). This required two guards that were each added after measurement, not guessed:
+    - the platform must **hold depth beside the junction** (`SE` Raised). R20's already-locked top
+      corner is otherwise identical here: `[XXX / X..]` gives raw `0x50` with SE open while this
+      junction's `[XXX / XX.]` gives raw `0xD0` with SE Raised. Without this guard R20 regressed 7
+      assertions and its locked `Hills_r0c4` was stolen.
+    - the platform must be **at least three cells wide and must step away** two columns east, which is
+      what excludes a 2x2 block and any plateau that keeps the junction's depth all the way across.
+  - **`Hills_r3c5` (rect 80,80) is now wired into the composition set** and covered by `IsComplete()`.
+    Both junction components are tagged with their OWN author row, r3 and r2, so a consumer can tell
+    which locked piece was chosen.
+  - **Regressions, every frozen suite unchanged:** R18 41/0, R19 33/0, **R20 59/0**, R20B P fixture
+    27/0, R11 172/0/1 SKIP with 2 legacy deferred, R16B 17/0/25 deferred, R16C 13/0. R20B's projection
+    fix is untouched: outside-mask visual tiles remain 0 and no south displaced cliff was reintroduced.- **R21 corner continuation grammar: the RULE is now fully derived; only the slice identity is open.**
   PM clarified the target: the junction where a **vertical Raised boundary meets a Raised platform on
   its RIGHT**. In the locked P that cell is `(4,5)`. Measured on the real resolver path:
   - **STATE A** (no Raised above) — `(4,5)` raw `0xD0` canonical `East, South, SouthEast`,

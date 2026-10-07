@@ -54,6 +54,26 @@ namespace IslandLife.World.Terrain
         /// end and turning south into a vertical right boundary. IL-WORLD-004S-R20.
         /// </summary>
         RIGHT_TOP_CORNER = 7,
+
+        /// <summary>
+        /// A corner/junction where a vertical Raised boundary meets a Raised platform running east, and
+        /// the boundary does NOT continue above this cell. IL-WORLD-004S-R21.
+        ///
+        /// The author's component for this state is <c>Hills_r3c5</c>. Before this role existed the cell
+        /// fell through to the straight grammar and was drawn as the plain row r0 LEFT terminal, so a
+        /// two-deep column rendered <c>r0c0</c> directly over <c>r2c0</c> and skipped the author's r1 body
+        /// row entirely.
+        /// </summary>
+        CORNER_NO_UPPER_CONTINUATION = 8,
+
+        /// <summary>
+        /// The SAME corner/junction, but the vertical boundary DOES continue above this cell, so this cell
+        /// carries a Raised NORTH neighbour. IL-WORLD-004S-R21.
+        ///
+        /// The author's component for this state is <c>Hills_r2c4</c>. North occupancy is the ONLY
+        /// discriminator between the two junction states; nothing else about the cell differs.
+        /// </summary>
+        CORNER_WITH_UPPER_CONTINUATION = 9,
     }
 
     /// <summary>
@@ -168,6 +188,20 @@ namespace IslandLife.World.Terrain
         /// True when this cell is the author's right top corner, Hills r0c7. IL-WORLD-004S-R20.
         /// </summary>
         public bool IsRightTopCorner => Role == RaisedSurfaceRole.RIGHT_TOP_CORNER;
+
+        /// <summary>
+        /// True when this cell is the R21 corner/junction whose vertical boundary does NOT continue
+        /// above it. IL-WORLD-004S-R21.
+        /// </summary>
+        public bool IsCornerNoUpperContinuation =>
+            Role == RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION;
+
+        /// <summary>
+        /// True when this cell is the R21 corner/junction whose vertical boundary DOES continue above
+        /// it. IL-WORLD-004S-R21.
+        /// </summary>
+        public bool IsCornerWithUpperContinuation =>
+            Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION;
 
         /// <summary>
         /// Solid means Raised, or an enclosed hole. A hole is an INTERIOR boundary, so ground continues
@@ -288,9 +322,15 @@ namespace IslandLife.World.Terrain
             bool leftTopCorner = IsAuthorLeftTopCorner(grid, x, y);
             bool rightTopCorner = IsAuthorRightTopCorner(grid, x, y);
 
+            // IL-WORLD-004S-R21. The corner/junction test first, then its north occupancy as the final
+            // A/B discriminator. North is read as genuine Raised ground, never as Solid, so a one cell
+            // hole above the cell can never be mistaken for a continuation of the vertical boundary.
+            bool cornerJunction = IsAuthorCornerJunction(grid, x, y);
+            bool upperContinuation = cornerJunction && n;
+
             RaisedSurfaceRole role = RoleFor(
                 leftCorner, rightCorner, leftTopCorner, rightTopCorner,
-                n || northVoid, !s, runDepth, offset, northVoid,
+                cornerJunction, upperContinuation, n || northVoid, !s, runDepth, offset, northVoid,
                 slot == HillColumnSlot.NARROW, frontContinues);
 
             return new RaisedTopologyState(
@@ -532,11 +572,83 @@ namespace IslandLife.World.Terrain
                 && IsOneWide(grid, x, y - 1);
         }
 
+        /// <summary>
+        /// True when this cell is the R21 corner/junction at all, independently of which of the two
+        /// states it is in. North occupancy is deliberately NOT tested here; it is only the final
+        /// discriminator, applied once this topology is confirmed.
+        ///
+        /// The junction is a vertical Raised boundary on the WEST that turns east into a Raised platform,
+        /// and the boundary ends immediately below this cell: the cell's own south neighbour is itself a
+        /// front cell, i.e. it has open ground under it.
+        ///
+        /// IL-WORLD-004S-R21. All of it is read from this cell's own 3x3 neighbourhood plus the single
+        /// fact that the cell under it is the bottom of the mass. There is no shape name, no fixture
+        /// name, no component id and no absolute coordinate, so the same local topology reaches the same
+        /// author component wherever it occurs, including inside a T, an O, a ring or a larger mass.
+        /// </summary>
+        private static bool IsAuthorCornerJunction(TerrainGridData grid, int x, int y)
+        {
+            // The west side is open: that is the vertical boundary.
+            if (RaisedNeighborResolver.IsRaised(grid, x - 1, y))
+            {
+                return false;
+            }
+
+            // East is Raised: that is the platform this boundary connects to.
+            if (!RaisedNeighborResolver.IsRaised(grid, x + 1, y))
+            {
+                return false;
+            }
+
+            // South is Raised: the boundary continues below this cell, so this cell is NOT the front.
+            if (!RaisedNeighborResolver.IsRaised(grid, x, y - 1))
+            {
+                return false;
+            }
+
+            // The boundary ENDS below this cell: the cell under it has open ground under it, which is
+            // what makes this the turning point rather than one more cell of a straight vertical edge.
+            if (RaisedNeighborResolver.IsRaised(grid, x, y - 2))
+            {
+                return false;
+            }
+
+            // IL-WORLD-004S-R21. The junction needs a PLATFORM that HOLDS DEPTH beside it and then STEPS AWAY.
+            //
+            // Measured: the south-east neighbour is what separates this junction from R20's already
+            // locked top corner, and the two are otherwise identical. R20's [XXX / X..] gives (4,5) raw
+            // 0x50 with SE open, while this junction's [XXX / XX.] gives raw 0xD0 with SE Raised. So SE
+            // must be Raised, which is also the honest meaning: the platform really is at that depth for
+            // more than one cell, rather than the single cell R20's top corner turns off.
+            if (!RaisedNeighborResolver.IsRaised(grid, x + 1, y - 1))
+            {
+                return false;
+            }
+
+            // The platform must be at least three cells wide at the junction's row, or there is no
+            // platform at all, just one neighbour. This is what keeps a 2x2 block out.
+            if (!RaisedNeighborResolver.IsRaised(grid, x + 2, y))
+            {
+                return false;
+            }
+
+            // And it must STEP AWAY two columns east. A plain plateau keeps the junction's own depth all
+            // the way across, which is what keeps a 3x3 and a 5x3 out.
+            if (RaisedNeighborResolver.IsRaised(grid, x + 2, y - 1))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private static RaisedSurfaceRole RoleFor(
             bool leftCorner,
             bool rightCorner,
             bool leftTopCorner,
             bool rightTopCorner,
+            bool cornerJunction,
+            bool upperContinuation,
             bool solidNorth,
             bool southExposed,
             int runDepth,
@@ -545,6 +657,26 @@ namespace IslandLife.World.Terrain
             bool isNarrow,
             bool frontContinuesInMask)
         {
+            // IL-WORLD-004S-R21. The author corner/junction grammar, and it is decided BEFORE every
+            // depth-driven choice, so the column's thickness can never override the junction state.
+            //
+            // This is what fixes the reported defect: the junction's sprite used to slide with runDepth,
+            // giving r0c0, then r1c0, then r2c0 as the wall grew, and a two-deep column skipped the
+            // author's r1 body row completely. Now the junction resolves once, from its own topology,
+            // and only its north occupancy chooses between the two locked author components.
+            if (upperContinuation)
+            {
+                return RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION;
+            }
+
+            // IL-WORLD-004S-R21. The SAME junction with NO Raised above it. This half was initially
+            // omitted, which left STATE A falling through to the straight grammar and still emitting
+            // the plain r0c0 terminal, so the height ladder measured H1 wrong.
+            if (cornerJunction)
+            {
+                return RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION;
+            }
+
             // IL-WORLD-004S-R20. The author TOP corner grammar, and it is decided FIRST, before the
             // R19 front corners, the R18 straight shapes and the junction rules below, so neither the
             // column's thickness nor the run's width can substitute a different piece.

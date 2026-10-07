@@ -349,6 +349,14 @@ namespace IslandLife.World.Terrain
             {
                 sprite = set.GetRightCorner();
             }
+            else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
+            {
+                sprite = set.GetCornerWithUpperContinuation();
+            }
+            else if (topology.Role == RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION)
+            {
+                sprite = set.GetCornerNoUpperContinuation();
+            }
             else if (topology.Role == RaisedSurfaceRole.LEFT_TOP_CORNER)
             {
                 sprite = set.GetLeftTopCorner();
@@ -428,6 +436,19 @@ namespace IslandLife.World.Terrain
                 || topology.Role == RaisedSurfaceRole.RIGHT_TOP_CORNER)
             {
                 return HillCompositionRow.TOP_SURFACE;
+            }
+
+            // IL-WORLD-004S-R21. The two junction components live on the author sheet at row r3 (r3c5)
+            // and row r2 (r2c4), so each is tagged with its OWN row. Reporting them as one shared row
+            // would hide which of the two locked pieces was actually chosen.
+            if (topology.Role == RaisedSurfaceRole.CORNER_NO_UPPER_CONTINUATION)
+            {
+                return HillCompositionRow.SECOND_FRONT_CLIFF;
+            }
+
+            if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
+            {
+                return HillCompositionRow.FRONT_CLIFF;
             }
 
             if (topology.Slot != HillColumnSlot.NARROW)

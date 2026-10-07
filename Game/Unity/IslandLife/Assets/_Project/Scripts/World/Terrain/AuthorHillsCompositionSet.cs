@@ -182,6 +182,10 @@ namespace IslandLife.World.Terrain
         [SerializeField]
         private Sprite hillsR2C5;
 
+        [Header("Author corner/junction components (IL-WORLD-004S-R21)")]
+        [SerializeField]
+        private Sprite hillsR3C5;
+
         /// <summary>
         /// The author's r2c4 left corner-wall piece. IL-WORLD-004S-PJ.
         ///
@@ -200,6 +204,27 @@ namespace IslandLife.World.Terrain
         public Sprite GetR2C5()
         {
             return hillsR2C5;
+        }
+
+        /// <summary>
+        /// The author's corner/junction component for a vertical boundary that does NOT continue upward.
+        /// IL-WORLD-004S-R21. Slice rect (80,80), sheet row r3. PM locked this identity against the
+        /// source sheet for the junction at (4,5) with raw mask 0xD0, canonical "East, South,
+        /// SouthEast".
+        /// </summary>
+        public Sprite GetCornerNoUpperContinuation()
+        {
+            return hillsR3C5;
+        }
+
+        /// <summary>
+        /// The author's corner/junction component for a vertical boundary that DOES continue upward.
+        /// IL-WORLD-004S-R21. Slice rect (64,96), sheet row r2. PM locked this identity for the same
+        /// junction with raw mask 0xD2, canonical "North, East, South, SouthEast".
+        /// </summary>
+        public Sprite GetCornerWithUpperContinuation()
+        {
+            return hillsR2C4;
         }
 
         /// <summary>
@@ -313,6 +338,12 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            if (GetCornerNoUpperContinuation() == null
+                || GetCornerWithUpperContinuation() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -367,6 +398,16 @@ namespace IslandLife.World.Terrain
             if (GetR2C5() == null)
             {
                 missing.Add("r2 internal connection r2c5");
+            }
+
+            if (GetCornerNoUpperContinuation() == null)
+            {
+                missing.Add("corner no upper continuation r3c5");
+            }
+
+            if (GetCornerWithUpperContinuation() == null)
+            {
+                missing.Add("corner with upper continuation r2c4");
             }
 
             return missing.Count == 0 ? "none" : string.Join(", ", missing);

@@ -57,6 +57,9 @@ namespace IslandLife.EditorTools.IslandMap
             Inventory(set);
             StateAdjacency(set);
             Candidates(set);
+            VerifyHeights(set);
+            VerifyRectangles(set);
+            TenFoldHeights(set);
 
             var sb = new StringBuilder();
             foreach (string l in Lines)
@@ -333,7 +336,10 @@ namespace IslandLife.EditorTools.IslandMap
         private static string[] ContinuationFixture(int height)
         {
             var rows = new List<string>();
-            for (int i = 2; i < height; i++)
+            // IL-WORLD-004S-R21 LADDER FIX. The previous version started at i = 2, so HEIGHT 1 and
+            // HEIGHT 2 built the identical fixture and HEIGHT 1 was never measured as its own state.
+            // Height 1 is now the bare base P and each additional height adds exactly one Raised cell.
+            for (int i = 1; i < height; i++)
             {
                 rows.Insert(0, "X..");
             }
@@ -437,6 +443,126 @@ namespace IslandLife.EditorTools.IslandMap
             }
 
             return grid;
+        }
+
+        // ---------------------------------------------------------------- R21 locks
+
+        private static void Check(string id, bool ok, string detail)
+        {
+            Line((ok ? "PASS  " : "FAIL  ") + id + "  ::  " + detail);
+        }
+
+        /// <summary>
+        /// The PM-locked junction lock over heights 1..5. H1 must be the no-continuation component and
+        /// H2..H5 must ALL be the continuation component, with the junction sprite never sliding back
+        /// with runDepth.
+        /// </summary>
+        private static void VerifyHeights(AuthorHillsCompositionSet set)
+        {
+            Line("");
+            Line("-- JUNCTION LOCK over HEIGHT 1..5: H1 = r3c5, H2..H5 = r2c4, no sliding --");
+            int good = 0;
+            for (int h = 1; h <= 5; h++)
+            {
+                var d = Dump(set, ContinuationFixture(h));
+                CellInfo j;
+                if (!d.TryGetValue("4,5", out j))
+                {
+                    Line("   HEIGHT " + h + ": TARGET CELL MISSING");
+                    continue;
+                }
+
+                string want = h == 1 ? "Hills_r3c5" : "Hills_r2c4";
+                bool okSprite = j.Sprite == want;
+                bool okRole = h == 1
+                    ? j.Role == "CORNER_NO_UPPER_CONTINUATION"
+                    : j.Role == "CORNER_WITH_UPPER_CONTINUATION";
+                Line("   HEIGHT " + h + " cells=" + d.Count + " north=" + j.Occupancy["N"]
+                    + " raw=0x" + j.Raw.ToString("X2") + " canon=" + j.Canon
+                    + " runDepth=" + j.RunDepth + " role=" + j.Role + " sprite=" + j.Sprite
+                    + (okSprite && okRole ? "   OK" : "   MISMATCH, expected " + want));
+                if (okSprite && okRole)
+                {
+                    good++;
+                }
+            }
+
+            Check("HEIGHT_LADDER_JUNCTION_LOCK", good == 5,
+                good + "/5 heights resolved the PM-locked junction component: H1 no-continuation "
+                    + "r3c5, H2..H5 continuation r2c4, with no sliding back to r0c0/r1c0/r2c0");
+        }
+
+        /// <summary>
+        /// Card section 13: a plain rectangle must NOT be captured by the junction rule. The junction
+        /// requires the vertical boundary to END directly under it, which a three-deep or deeper wall
+        /// never satisfies.
+        /// </summary>
+        private static void VerifyRectangles(AuthorHillsCompositionSet set)
+        {
+            Line("");
+            Line("-- RECTANGLE GUARD: a plain rectangle must not be captured as a corner/junction --");
+            var cases = new List<Tuple<string, string[]>>
+            {
+                Tuple.Create("2x2", new[] { "XX", "XX" }),
+                Tuple.Create("3x2", new[] { "XXX", "XXX" }),
+                Tuple.Create("5x2", new[] { "XXXXX", "XXXXX" }),
+                Tuple.Create("3x3", new[] { "XXX", "XXX", "XXX" }),
+                Tuple.Create("5x3", new[] { "XXXXX", "XXXXX", "XXXXX" }),
+            };
+
+            int clean = 0;
+            foreach (Tuple<string, string[]> c in cases)
+            {
+                var d = Dump(set, c.Item2);
+                int junctions = d.Values.Count(
+                    v => v.Role == "CORNER_NO_UPPER_CONTINUATION"
+                        || v.Role == "CORNER_WITH_UPPER_CONTINUATION");
+                Line("   " + c.Item1.PadRight(4) + " cells=" + d.Count + " junction_roles=" + junctions
+                    + "  sprites=" + string.Join(" ",
+                        d.Values.OrderBy(v => v.Y).ThenBy(v => v.X).Select(v =>
+                            "(" + v.X + "," + v.Y + ")="
+                                + v.Sprite.Replace("Hills_", string.Empty))));
+                if (junctions == 0)
+                {
+                    clean++;
+                }
+            }
+
+            Check("RECTANGLES_NOT_CAPTURED_AS_JUNCTIONS", clean == 5,
+                clean + "/5 plain rectangles resolve ZERO junction roles, so north occupancy alone "
+                    + "cannot drag an ordinary rectangle into the junction grammar");
+        }
+
+        private static void TenFoldHeights(AuthorHillsCompositionSet set)
+        {
+            Line("");
+            Line("-- 10x consistency over HEIGHT 1..5 --");
+            string reference = null;
+            int agree = 0;
+            for (int rep = 0; rep < 10; rep++)
+            {
+                var keys = new List<string>();
+                foreach (int h in new[] { 1, 2, 3, 4, 5 })
+                {
+                    var d = Dump(set, ContinuationFixture(h));
+                    CellInfo j;
+                    keys.Add(d.TryGetValue("4,5", out j) ? j.Sprite : "MISSING");
+                }
+
+                string joined = string.Join("|", keys);
+                if (reference == null)
+                {
+                    reference = joined;
+                }
+                else if (joined == reference)
+                {
+                    agree++;
+                }
+            }
+
+            Check("TENFOLD_HEIGHT_LADDER_STABLE", agree == 9,
+                agree + "/9 further repetitions produced the identical junction sequence ["
+                    + reference + "], i.e. r3c5 once then r2c4 four times");
         }
 
         // ---------------------------------------------------------------- 6 / 18: candidates
