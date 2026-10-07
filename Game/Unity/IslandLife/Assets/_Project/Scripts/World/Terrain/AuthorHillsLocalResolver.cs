@@ -281,6 +281,27 @@ namespace IslandLife.World.Terrain
                 // IL-WORLD-004S-R31, USER_VISUAL_ORACLE. The author's r3c6 for raw 0x1E at (7,-11).
                 sprite = set.GetR3C6();
             }
+            else if (topology.Role == RaisedSurfaceRole.TOP_WALL_INNER_LEFT)
+            {
+                // IL-WORLD-004S-R32, USER_VISUAL_ORACLE. The author's r0c5 for raw 0x78 at (1,-5).
+                sprite = set.GetR0C5();
+            }
+            else if (topology.Role == RaisedSurfaceRole.SIDE_WALL_UPPER_LEFT)
+            {
+                // IL-WORLD-004S-R32, USER_VISUAL_ORACLE. The author's r1c4 for raw 0x56 at (0,-6).
+                // NOT r3c5: R30 paired this raw with the wrong Sprite and was reverted.
+                sprite = set.GetR1C4();
+            }
+            else if (topology.Role == RaisedSurfaceRole.TOP_WALL_INNER_RIGHT)
+            {
+                // IL-WORLD-004S-R32, USER_VISUAL_ORACLE. The author's r0c6 for raw 0xD8 at (7,-5).
+                sprite = set.GetR0C6();
+            }
+            else if (topology.Role == RaisedSurfaceRole.SIDE_WALL_UPPER_RIGHT)
+            {
+                // IL-WORLD-004S-R32, USER_VISUAL_ORACLE. The author's r1c6 for raw 0x4B at (8,-6).
+                sprite = set.GetR1C6();
+            }
             else if (topology.Role == RaisedSurfaceRole.CORNER_WITH_UPPER_CONTINUATION)
             {
                 // R21_SUPERSEDED, IL-WORLD-004S-R23B. Unreachable: no rule produces this role, because
@@ -410,6 +431,22 @@ namespace IslandLife.World.Terrain
                 || topology.Role == RaisedSurfaceRole.BOTTOM_WALL_INNER_RIGHT)
             {
                 return HillCompositionRow.SECOND_FRONT_CLIFF;
+            }
+
+            // IL-WORLD-004S-R32. Each component is tagged with the author sheet row its own slice lives
+            // on: r0c5 and r0c6 on row r0, r1c4 and r1c6 on row r1.
+            switch (topology.Role)
+            {
+                case RaisedSurfaceRole.TOP_WALL_INNER_LEFT:
+                case RaisedSurfaceRole.TOP_WALL_INNER_RIGHT:
+                    return HillCompositionRow.TOP_SURFACE;
+
+                case RaisedSurfaceRole.SIDE_WALL_UPPER_LEFT:
+                case RaisedSurfaceRole.SIDE_WALL_UPPER_RIGHT:
+                    return HillCompositionRow.MIDDLE_SURFACE;
+
+                default:
+                    break;
             }
             if (topology.Slot != HillColumnSlot.NARROW)
             {

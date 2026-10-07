@@ -268,6 +268,49 @@ namespace IslandLife.World.Terrain
             return hillsR3C6;
         }
 
+        /// <summary>
+        /// IL-WORLD-004S-R32, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The four upper-hill components the
+        /// user confirmed by screenshot: r0c5 at (1,-5), r1c4 at (0,-6), r0c6 at (7,-5), r1c6 at (8,-6).
+        /// Reached by four exact single-mask rules in <c>RaisedTopologyState</c>, each taking a mask and
+        /// no grid, so none can read past the cell.
+        /// </summary>
+        [Header("Upper hill components (IL-WORLD-004S-R32)")]
+        [SerializeField]
+        private Sprite hillsR0C5;
+
+        [SerializeField]
+        private Sprite hillsR0C6;
+
+        [SerializeField]
+        private Sprite hillsR1C4;
+
+        [SerializeField]
+        private Sprite hillsR1C6;
+
+        /// <summary>IL-WORLD-004S-R32. The author's r0c5, the top wall's inner-left cell.</summary>
+        public Sprite GetR0C5()
+        {
+            return hillsR0C5;
+        }
+
+        /// <summary>IL-WORLD-004S-R32. The author's r0c6, the top wall's inner-right cell.</summary>
+        public Sprite GetR0C6()
+        {
+            return hillsR0C6;
+        }
+
+        /// <summary>IL-WORLD-004S-R32. The author's r1c4, the left side wall's upper cell.</summary>
+        public Sprite GetR1C4()
+        {
+            return hillsR1C4;
+        }
+
+        /// <summary>IL-WORLD-004S-R32. The author's r1c6, the right side wall's upper cell.</summary>
+        public Sprite GetR1C6()
+        {
+            return hillsR1C6;
+        }
+
         public Sprite GetJunctionContinuation()
         {
             return hillsR2C4;
@@ -434,6 +477,13 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
+            // IL-WORLD-004S-R32. All four upper-hill roles are reachable, so each slice must be assigned
+            // or a reachable role would silently drop its cell instead of reporting it.
+            if (GetR0C5() == null || GetR0C6() == null || GetR1C4() == null || GetR1C6() == null)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -517,5 +567,25 @@ namespace IslandLife.World.Terrain
                 missing.Add("bottom wall inner right r3c6");
             }
         }
+
+            if (GetR0C5() == null)
+            {
+                missing.Add("top wall inner left r0c5");
+            }
+
+            if (GetR0C6() == null)
+            {
+                missing.Add("top wall inner right r0c6");
+            }
+
+            if (GetR1C4() == null)
+            {
+                missing.Add("side wall upper left r1c4");
+            }
+
+            if (GetR1C6() == null)
+            {
+                missing.Add("side wall upper right r1c6");
+            }
     }
 }

@@ -150,6 +150,39 @@ namespace IslandLife.World.Terrain
         /// exactly once on the current map, at (7,-11).
         /// </summary>
         BOTTOM_WALL_INNER_RIGHT = 13,
+
+        /// <summary>
+        /// IL-WORLD-004S-R32, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r0c5 at (1,-5): the
+        /// top wall's inner-left cell, where the wall drops away to the south-west.
+        ///
+        /// THE SPRITE IS THE USER'S CHOICE and the COORDINATE IS ONLY THE LOCATING ORACLE - it is not in
+        /// the rule. Raw 0x78 occurs EXACTLY ONCE on the current 32-cell FirstIsland, at (1,-5).
+        /// All eight bits constrained, so this is exactly one of the 256 raw masks.
+        /// </summary>
+        TOP_WALL_INNER_LEFT = 14,
+
+        /// <summary>
+        /// IL-WORLD-004S-R32, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r1c4 at (0,-6): the
+        /// left side wall's upper cell, where the wall turns east above it.
+        ///
+        /// NOTE THIS IS NOT R30. R30 mapped this same raw 0x56 to the WRONG Sprite, r3c5. The user's
+        /// confirmed component for it is r1c4. Raw 0x56 occurs exactly once on the current map, at
+        /// (0,-6), so the rule cannot capture anything else.
+        /// </summary>
+        SIDE_WALL_UPPER_LEFT = 15,
+
+        /// <summary>
+        /// IL-WORLD-004S-R32, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r0c6 at (7,-5), the
+        /// exact occupancy MIRROR of <see cref="TOP_WALL_INNER_LEFT"/>. Raw 0xD8, once, at (7,-5).
+        /// </summary>
+        TOP_WALL_INNER_RIGHT = 16,
+
+        /// <summary>
+        /// IL-WORLD-004S-R32, USER_VISUAL_ORACLE -> STATIC_VERIFIED. The author's r1c6 at (8,-6), the
+        /// exact occupancy MIRROR of <see cref="SIDE_WALL_UPPER_LEFT"/>. Raw 0x4B, once, at (8,-6).
+        /// NOT R30, which paired this raw with the wrong Sprite r3c6.
+        /// </summary>
+        SIDE_WALL_UPPER_RIGHT = 17,
     }
 
     /// <summary>
@@ -441,11 +474,27 @@ namespace IslandLife.World.Terrain
             bool bottomWallInnerLeft = IsAuthorBottomWallInnerLeft(raw);
             bool bottomWallInnerRight = IsAuthorBottomWallInnerRight(raw);
 
+            // IL-WORLD-004S-R32. The top wall's inner cells and the side walls' upper cells, left and
+            // right. Four exact single-mask rules, pairwise mirror-symmetric and sharing no mask with
+            // each other, with R31, or with the R24 and R28 junctions.
+            bool topWallInnerLeft = IsAuthorTopWallInnerLeft(raw);
+            bool sideWallUpperLeft = IsAuthorSideWallUpperLeft(raw);
+            bool topWallInnerRight = IsAuthorTopWallInnerRight(raw);
+            bool sideWallUpperRight = IsAuthorSideWallUpperRight(raw);
+
             // A reflective guard, not a runtime cost worth worrying about: if this predicate ever grows
             // a grid parameter it can no longer be decided from the mask alone, and the R23B harness
             // asserts that no decision method takes a non-coordinate integer. See the harness.
 
-            RaisedSurfaceRole role = bottomWallInnerLeft
+            RaisedSurfaceRole role = topWallInnerLeft
+                ? RaisedSurfaceRole.TOP_WALL_INNER_LEFT
+                : sideWallUpperLeft
+                    ? RaisedSurfaceRole.SIDE_WALL_UPPER_LEFT
+                    : topWallInnerRight
+                        ? RaisedSurfaceRole.TOP_WALL_INNER_RIGHT
+                        : sideWallUpperRight
+                            ? RaisedSurfaceRole.SIDE_WALL_UPPER_RIGHT
+                            : bottomWallInnerLeft
                 ? RaisedSurfaceRole.BOTTOM_WALL_INNER_LEFT
                 : bottomWallInnerRight
                     ? RaisedSurfaceRole.BOTTOM_WALL_INNER_RIGHT
@@ -638,6 +687,70 @@ namespace IslandLife.World.Terrain
                 && (raw & TerrainNeighborMask.NorthWest) == 0
                 && (raw & TerrainNeighborMask.SouthWest) == 0
                 && (raw & TerrainNeighborMask.South) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R32. The author's r0c5, raw 0x78: top wall, inner-left. RAW MASK ALONE, no grid.
+        /// All eight bits decided: west, east, south-west and south Raised; the other four open.
+        /// </summary>
+        private static bool IsAuthorTopWallInnerLeft(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.SouthWest) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.North) == 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R32. The author's r1c4, raw 0x56: the left side wall's upper cell. RAW MASK
+        /// ALONE. All eight bits decided: north, north-east, east and south Raised; the rest open.
+        /// </summary>
+        private static bool IsAuthorSideWallUpperLeft(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.NorthEast) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.West) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
+                && (raw & TerrainNeighborMask.SouthEast) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R32. The author's r0c6, raw 0xD8: the exact mirror of r0c5's 0x78. All eight
+        /// bits decided: west, east, south and south-east Raised; the other four open.
+        /// </summary>
+        private static bool IsAuthorTopWallInnerRight(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.East) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.SouthEast) != 0
+                && (raw & TerrainNeighborMask.NorthWest) == 0
+                && (raw & TerrainNeighborMask.North) == 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0;
+        }
+
+        /// <summary>
+        /// IL-WORLD-004S-R32. The author's r1c6, raw 0x4B: the exact mirror of r1c4's 0x56. All eight
+        /// bits decided: north-west, north, west and south Raised; the other four open.
+        /// </summary>
+        private static bool IsAuthorSideWallUpperRight(TerrainNeighborMask raw)
+        {
+            return (raw & TerrainNeighborMask.NorthWest) != 0
+                && (raw & TerrainNeighborMask.North) != 0
+                && (raw & TerrainNeighborMask.West) != 0
+                && (raw & TerrainNeighborMask.South) != 0
+                && (raw & TerrainNeighborMask.NorthEast) == 0
+                && (raw & TerrainNeighborMask.East) == 0
+                && (raw & TerrainNeighborMask.SouthWest) == 0
                 && (raw & TerrainNeighborMask.SouthEast) == 0;
         }
 
