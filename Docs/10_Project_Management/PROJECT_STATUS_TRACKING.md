@@ -132,7 +132,40 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
-- **R22 grammar stability audit — DIAGNOSTIC ONLY, no production change. The headline result is
+- **R23A topology matrix — TESTS ONLY. The refactor is BLOCKED, and the blocker is architectural.**
+  Card section 22 mandates the matrix before any production edit, so this round produced the matrix and
+  **no production change at all**.
+  - **Measured: 512 raw probes reduce to 47 canonical states, and 9 of those canonical states CURRENTLY
+    emit MORE THAN ONE author Sprite.** That is card STOP condition 1 verbatim. The contradictions are:
+    - `East, South` → `r0c4` **or** `r0c0`
+    - `North, East` → `r3c4` **or** `r2c0`
+    - `North, West` → `r3c7` **or** `r2c2`
+    - `West, South` → `r0c7` **or** `r0c2`
+    - `North, West, East` → `r2c0` **or** `r2c1` **or** `r2c2`
+    - `West, East` → `r3c0` **or** `r3c1` **or** `r3c2`
+    - `North, NorthEast, West, East` → `r2c0 / r2c1 / r2c2`
+    - `NorthWest, North, West, East` → `r2c0 / r2c1 / r2c2`
+    - `NorthWest, North, NorthEast, West, East` → `r2c0 / r2c1 / r2c2`
+  - **The architectural reason, which is the real content of this round: SLOT IS A RUN PROPERTY, NOT A
+    CELL PROPERTY.** The `r2c0 / r2c1 / r2c2` and `r3c0 / r3c1 / r3c2` triples are
+    LEFT_TERMINAL / BODY / RIGHT_TERMINAL. Whether a cell is the END of a horizontal front is not a fact
+    about that cell's own 3x3 at all — it is a fact about **where the run stops**, which is only knowable
+    by walking outward until it does. Card section 5 requires Layer A to depend only on "the current
+    cell's canonical/local adjacency". **That requirement is unsatisfiable for slot.** A pure 3x3
+    function cannot express terminal-versus-body, so Layer A as specified cannot produce Layer B.
+  - **Seven beyond-3x3 semantic reads are present in production today**, printed from source by the
+    harness: `MeasureRunDepth(grid,x,y)`, `MeasureRunBottom(grid,x,y)`, `MaxFrontWalk = 2`,
+    `IsRaised(x, y-2)`, `IsRaised(x+2, y)`, `IsRaised(x+2, y-1)`, and
+    `MeasureRunDepth(grid,x,y) >= 3` on a **neighbour**. Section 21 forbids unapproved x+2 / y-2
+    lookahead and section 27.3 requires an immediate STOP when more than 3x3 is needed.
+  - **R21 is therefore REOPENED and NOT superseded here:** its junction role is built on an `x+2` probe,
+    so it cannot survive a strict 3x3-only semantic layer. `r3c5` / `r2c4` are retained as historical
+    evidence only, exactly as section 14 requires, and no attempt was made to preserve them by
+    distorting the new model because there is no new model yet.
+  - **Honest defect in this round's harness:** the ASCII witness grid printout uses a confused row index
+    and does not correspond exactly to the raw mask labels beside it. The COUNTS, the canonical-state
+    list and the multi-sprite facts are unaffected and are what this conclusion rests on; the witness
+    grids should not be read as exact reproductions until that printout is fixed.- **R22 grammar stability audit — DIAGNOSTIC ONLY, no production change. The headline result is
   NEGATIVE and it corrects the card's premise.**
   - **There is currently NO observed remote sprite mutation.** Sweeping lengths 1,2,3,4,5,6,7,8,16,32,
     64,100 on a plain vertical line, a plain horizontal line, both arms of a correct L, and the
