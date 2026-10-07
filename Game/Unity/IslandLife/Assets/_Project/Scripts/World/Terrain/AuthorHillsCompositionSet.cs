@@ -187,106 +187,6 @@ namespace IslandLife.World.Terrain
         private Sprite hillsR3C5;
 
         /// <summary>
-        /// IL-WORLD-004S-R26B, PROVISIONAL_USER_VISUAL_ORACLE -> STATIC_VERIFIED.
-        ///
-        /// The eleven author components the user selected by hand in Unity from the Source Sprite sheet
-        /// and against real map configurations. They are reached by
-        /// <c>RaisedTopologyState.TryComposition</c>, which is a FINITE 3x3-plus-5x5 context and never
-        /// reads further, never measures a run, and never uses a shape name.
-        ///
-        /// The status is deliberately PROVISIONAL rather than LOCKED: PM's decision for R26B is that the
-        /// user chooses the Slice and the Worker chooses the Topology, and that this mapping is
-        /// STATIC_VERIFIED now and becomes LOCKED_PROJECT_GRAMMAR only when the user has actually looked
-        /// at the result in Unity.
-        ///
-        /// NOTHING IS MIRRORED, ROTATED, STRETCHED, GENERATED OR NEAREST-MATCHED. Each getter returns the
-        /// author's own existing slice in its original orientation, and the composition rules select
-        /// OCCUPANCY; where two components form an occupancy mirror, the author's own second slice is
-        /// emitted rather than a flipped copy of the first.
-        /// </summary>
-        [Header("Author composition components, finite context (IL-WORLD-004S-R26B)")]
-        [SerializeField]
-        private Sprite hillsR0C5;
-
-        [SerializeField]
-        private Sprite hillsR0C6;
-
-        [SerializeField]
-        private Sprite hillsR0C8;
-
-        [SerializeField]
-        private Sprite hillsR1C4;
-
-        [SerializeField]
-        private Sprite hillsR1C6;
-
-        [SerializeField]
-        private Sprite hillsR2C7;
-
-        [SerializeField]
-        private Sprite hillsR3C6;
-
-        [SerializeField]
-        private Sprite hillsR3C8;
-
-        [SerializeField]
-        private Sprite hillsR4C8;
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r0c5, ground wrapping around and running south.</summary>
-        public Sprite GetR0C5()
-        {
-            return hillsR0C5;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r0c6, the mirror relation of r0c5.</summary>
-        public Sprite GetR0C6()
-        {
-            return hillsR0C6;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r0c8, a one-wide four-way crossing.</summary>
-        public Sprite GetR0C8()
-        {
-            return hillsR0C8;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r1c4, ground wrapping around and running north.</summary>
-        public Sprite GetR1C4()
-        {
-            return hillsR1C4;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r1c6, the mirror relation of r1c4.</summary>
-        public Sprite GetR1C6()
-        {
-            return hillsR1C6;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r2c7, the mirror handover.</summary>
-        public Sprite GetR2C7()
-        {
-            return hillsR2C7;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r3c6, the mirror of the ended handover.</summary>
-        public Sprite GetR3C6()
-        {
-            return hillsR3C6;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r3c8, a four-way crossing with a longer arm.</summary>
-        public Sprite GetR3C8()
-        {
-            return hillsR3C8;
-        }
-
-        /// <summary>IL-WORLD-004S-R26B. The author's r4c8, the remaining four-way crossing flavour.</summary>
-        public Sprite GetR4C8()
-        {
-            return hillsR4C8;
-        }
-
-        /// <summary>
         /// The author's r2c4 left corner-wall piece. IL-WORLD-004S-PJ.
         ///
         /// R24 SUPERSEDES THE OLD "NOT REACHABLE" NOTE, and the correction is worth stating because the
@@ -328,21 +228,6 @@ namespace IslandLife.World.Terrain
         public Sprite GetJunctionContinuation()
         {
             return hillsR2C4;
-        }
-
-        /// <summary>
-        /// IL-WORLD-004S-R26B, PROVISIONAL_USER_VISUAL_ORACLE. The author's r3c5: the handover where the
-        /// vertical boundary does NOT continue north.
-        ///
-        /// This is the SAME field that <see cref="GetCornerNoUpperContinuation"/> returns. R21 had
-        /// pointed the two R21 roles at r3c5 and r2c4 using an out-of-range predicate; R24 replaced the
-        /// r2c4 half with a local rule, and R26B replaces the r3c5 half the same way, via
-        /// <c>JUNCTION_WEST_ENDED</c>. The R21 role itself stays unreachable, so only one production
-        /// route now reaches this slice and the two cannot fight over the same cell.
-        /// </summary>
-        public Sprite GetR3C5()
-        {
-            return hillsR3C5;
         }
 
         /// <summary>
@@ -492,16 +377,6 @@ namespace IslandLife.World.Terrain
                 return false;
             }
 
-            // IL-WORLD-004S-R26B. The eleven composition components are all REACHABLE now, so every one
-            // of them must be assigned or a reachable role would silently drop its cell.
-            if (GetR0C5() == null || GetR0C6() == null || GetR0C8() == null
-                || GetR1C4() == null || GetR1C6() == null
-                || GetR2C7() == null || GetR3C6() == null
-                || GetR3C8() == null || GetR4C8() == null)
-            {
-                return false;
-            }
-
             return true;
         }
 
@@ -571,52 +446,6 @@ namespace IslandLife.World.Terrain
             if (GetJunctionContinuation() == null)
             {
                 missing.Add("junction continuation r2c4");
-            }
-
-            // IL-WORLD-004S-R26B, named individually so a missing slice names itself.
-            if (GetR0C5() == null)
-            {
-                missing.Add("composition r0c5");
-            }
-
-            if (GetR0C6() == null)
-            {
-                missing.Add("composition r0c6");
-            }
-
-            if (GetR0C8() == null)
-            {
-                missing.Add("composition r0c8");
-            }
-
-            if (GetR1C4() == null)
-            {
-                missing.Add("composition r1c4");
-            }
-
-            if (GetR1C6() == null)
-            {
-                missing.Add("composition r1c6");
-            }
-
-            if (GetR2C7() == null)
-            {
-                missing.Add("composition r2c7");
-            }
-
-            if (GetR3C6() == null)
-            {
-                missing.Add("composition r3c6");
-            }
-
-            if (GetR3C8() == null)
-            {
-                missing.Add("composition r3c8");
-            }
-
-            if (GetR4C8() == null)
-            {
-                missing.Add("composition r4c8");
             }
 
             return missing.Count == 0 ? "none" : string.Join(", ", missing);
