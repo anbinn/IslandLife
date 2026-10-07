@@ -164,7 +164,73 @@ author left and right **top** corners by R20.
   - **Consequence for R23B:** the blocker is no longer architectural. It is that the current slot
     derivation must be replaced by a raw-cardinal derivation, and that replacement has to be proven
     against the R18/R19/R20 oracles one piece at a time. Nothing was implemented this round, per
-    section 7.- **R24: the author's r2c4 junction is restored from LOCAL topology, and it is now a LOCKED_USER_VISUAL_ORACLE.
+    section 7.- **R25 STOPPED as `BLOCKED_PM_DECISION`. NO production file was changed.** The four-component joint
+  comparison RESOLVED, and in the process it proved that the natural rule for `r3c5` would over-capture.
+  Reporting the resolution and the blocker; not guessing past either.
+  - **THE LIVE MAP CHANGED UNDER THIS CARD, and that is the user's own doing.** Card start SHA
+    `5281BA5186CA8A73C4786C48366EC180782EA3FB9F97AAAED2A6FE674F26647F`, 50 Raised, mtime 04:17.
+    At the first read of this card it is SHA `6986B2C40D722A7F6BC53AD4B65C6E5D190B5BA4502BACB46EE0082526733506`,
+    **53 Raised**, mtime 05:00. The user edited the map while the card was being worked - which the
+    standing rule explicitly allows and expects. **The live file is the authority, so the 53-cell map is
+    treated as the current baseline and was never written to, restored or reverted.**
+  - **THE JOINT COMPARISON IS A COMPLETE AND CLEAN RESULT. Four components, two independent axes, and
+    each axis is a small set of bits. All four core masks, in production bit order:**
+    ```
+    A  r2c4  0xD2  NW- N+ NE- | W- C E+ | SW- S+ SE+
+    B  r2c7  0x6A  NW- N+ NE- | W+ C E- | SW+ S+ SE-
+    C  r3c5  0xD0  NW- N- NE- | W- C E+ | SW- S+ SE+
+    D  r3c6  0x68  NW- N- NE- | W+ C E- | SW+ S+ SE-
+    ```
+    - **LEFT vs RIGHT differs in exactly four bits** - `W`, `E`, `SW`, `SE` - all of them swapped.
+      **A/B and C/D are strict occupancy mirrors** (measured `True`/`True` by an explicit eight-bit
+      equivalence, not by comparing two numbers). This is a statement about logical occupancy only; **no
+      Sprite is mirrored anywhere.**
+    - **r2 vs r3 differs in exactly ONE bit: `N`.** A/C and B/D each differ by `N` alone.
+    - So the four components are **two axes, not four rules**: which side the boundary is on
+      (4 bits) and whether it continues north (1 bit). That is the honest structure of the grammar.
+  - **A = r2c4 IS CONFIRMED AND STILL LOCAL.** Live (0,-10), raw `0xD2`, role
+    JUNCTION_VERTICAL_CONTINUATION, slot LEFT_TERMINAL, sprite `Hills_r2c4`, reachable. Family `0xD2 0xD3
+    0xF2 0xF3`, exactly 1 live cell. **No regression: R24's result is intact.**
+  - **B = r2c7 HAS A UNIQUE LOCAL CANDIDATE.** Mirror of A = `0x6A`, family `0x6A 0x6E 0xEA 0xEE`,
+    and it matches **exactly ONE** live cell: **(8,-10)**, raw `0x6A`, currently `Hills_r1c2` as
+    MIDDLE_SURFACE/RIGHT_TERMINAL. **There is no over-capture and no ambiguity for B.**
+  - **THE BLOCKER IS C AND D, AND IT IS MEASURED, NOT SUSPECTED.** Family C (`0xD0`) matches **5** live
+    cells - `(-5,-10) (0,-5) (13,-5) (13,-1) (16,-1)` - and **all five currently draw the author's r0c0**.
+    Family D (`0x68`/`0xE8`) matches **5** - `(-3,-10) (8,-5) (14,-5) (14,-1) (17,-1)` - and **all five
+    currently draw the author's r0c2**.
+    The five `0xD0` cells are **genuinely different shapes** - four are the plain top-left corner of a
+    small 2 or 3 deep block, one (`(0,-5)`) is the big ring's own top-left corner - and they share a
+    **byte-identical 8-neighbour raw `0xD0`**. Their 5x5 printouts are in the audit and the difference is
+    plainly outside the 3x3. **So a `0xD0 -> r3c5` rule would change all five, four of which are ordinary
+    rectangle corners whose r0c0 is R11-locked and which card section 9 explicitly protects.** That is
+    card **section 21 STOP condition 2** (identical full RAW 3x3, two different required Sprites) and
+    also **section 9 over-capture**, and it is not avoidable by narrowing the predicate: all five have
+    the same eight bits.
+  - **WHAT IS MISSING IS NOT A RULE, IT IS A COORDINATE.** The card fixes four sprites and says the user
+    pointed at four positions, but **gives no coordinate for B, C or D**, and no screenshot reached this
+    session. The live map proves which topologies EXIST; it cannot prove which cell was MEANT. With no
+    coordinate I would have to choose between "break four R11-locked corners" and "silently do nothing",
+    and both are forbidden. **PM decision required: the coordinates of B, C and D.**
+  - **NO SEMANTIC ROLE WAS NAMED, deliberately.** The card forbids deriving a name from a sprite's sheet
+    row or column, and refuses to pre-assume `r2 = upper` / `r3 = lower`. The two axes are described by
+    their BITS (`N` occupancy, and the W/E/SW/SE side), which is what the evidence supports.
+  - **REACHABILITY AUDIT OF ALL 21 ALREADY-LOCKED COMPONENTS.** 13 are emitted by at least one live cell.
+    **8 are emitted by NO live cell** - `r3c3 r0c3 r3c0 r1c1 r3c4 r3c7 r0c4 r0c7` - all of which are
+    reachable in R18/R19/R20/R11 fixtures but simply do not occur on the 53-cell live map. **This is NOT a
+    reachability defect and must not be reported as one**: e.g. `r3c4`/`r3c7` need an L-shaped one-wide
+    corner and `r0c4`/`r0c7` need a top corner, none of which the current live shape contains. A
+    live-map scan cannot establish reachability for fixtures the live map does not contain.
+    `r2c7` and `r3c6` additionally have **no accessor and no wiring at all** yet (slices exist as author
+    assets, guids `2950afe7…` and `ff98ff8e…`), which is expected given the STOP.
+  - **Other facts recorded:** `UNCHANGED_RAW_3X3_SPRITE_MUTATIONS: 0` on the live map - no live raw draws
+    two Sprites; `OUTSIDE_MASK_PROJECTION: 0`; `ONE live raw splits two sprites: 0`; the 3x3 rectangle's
+    top-left raw is **not** `0xD0`, so the R11 rectangle oracle is not itself the colliding case - the
+    collision is between the ring corner and four separate small-block corners.
+  - **Two harness defects fixed on the way, both mine:** the R25 audit's tuple literal carried an unused
+    third element that shadowed the enclosing loop variable, and its `IsMirror` was rewritten as an
+    explicit eight-bit equivalence so the mirror claim cannot be an artefact of two numbers matching.
+  - **FirstIsland READ ONLY throughout** - no paint, no undo, no scene, no `AssetDatabase` write; both
+    new files only create an in-memory grid from the asset.- **R24: the author's r2c4 junction is restored from LOCAL topology, and it is now a LOCKED_USER_VISUAL_ORACLE.
   The live cell the user's screenshot marked draws `Hills_r2c4` instead of `Hills_r1c0`, from a six-bit
   predicate over its own 3x3.**
   - **TARGET_RAW_3x3 = 0xD2** (production bit order: NW 0x01, N 0x02, NE 0x04, W 0x08, E 0x10, SW 0x20,
