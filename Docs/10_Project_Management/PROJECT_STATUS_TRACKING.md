@@ -132,7 +132,33 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
-- **P-junction projection FIXED. Out-of-mask visual tiles eliminated: 128 of 512 neighbourhoods -> 0.**
+- **R21 corner continuation grammar: MEASUREMENT DELIVERED, production rule BLOCKED.** Two measured facts
+  contradict the card's premises and must be corrected before any rule is written.
+  - **The author Hills sheet has NO empty slots. Measured: 99 of 99 slices NON_EMPTY, 0
+    TRANSPARENT_EMPTY**, across rows r0..r8 x c0..c10, each cell checked by copying through
+    `Graphics.Blit` + `ReadPixels` and testing for any pixel above alpha 8. Every one of the 99 cells has
+    content. The card's instruction to classify transparent-empty slots therefore has no population, and
+    "a transparent cell is an author empty slot, not a missing asset" does not apply to this sheet.
+    (Earlier notes recorded `r2c9`/`r2c10` as ~2 px silhouette slivers; those still contain pixels, so
+    they are non-empty rather than empty slots.)
+  - **Extending the P's vertical arm upward by one cell changed NOTHING in the measured output.** Every
+    one of the five cells reported `DIFFERING_NEIGHBORS = NONE` between HEIGHT 1 and HEIGHT 2, and no
+    cell changed its sprite. So on the arm this card named, there is no observable STATE A / STATE B
+    transition at +1, and the specific cell whose sprite PM reports as visually wrong does not change
+    when a cell is added above it.
+  - **Honest incompleteness in my own measurement:** the HEIGHT ladder in the committed harness has an
+    off-by-one (`for (int extra = 2; extra < height; extra++)`), so HEIGHT 1 and HEIGHT 2 produced the
+    identical 5-cell fixture and HEIGHT 3 is the first genuinely taller one. The ladder is therefore NOT
+    yet a valid A/B comparison and must be re-measured before any conclusion is drawn. What the harness
+    did show, measured, is the west arm's front cell `(4,4)` over H1..H5:
+    `r2c0 r2c0 r2c0 r3c0 r3c0` — it moves from the r2 row to the r3 row at the point the column reaches
+    four deep, which is the R16C `runDepth >= 4` rule, NOT an "upper continuation" rule. That is
+    currently indistinguishable from what the card describes, which is why no rule was written.
+  - **`Hills_r3c5` exists, is NON_EMPTY (rect 80,80) and is NOT referenced by the production
+    composition set.** `Hills_r2c4` (rect 64,96) and `Hills_r2c5` (rect 80,96) are wired in but emitted
+    by no rule. No state was assigned any of them, because section 18 forbids choosing between
+    reasonable candidates and the measurement above does not yet isolate a unique STATE A / STATE B
+    pair. Committed evidence harness: `ILW004SR21ContinuationInventory` (read-only, asserts nothing).- **P-junction projection FIXED. Out-of-mask visual tiles eliminated: 128 of 512 neighbourhoods -> 0.**
   The locked fixture is now correct. BEFORE `[XXX / X..]` = 4 logical / 4 visual / 0 outside.
   AFTER `[XXX / XX.]` = **5 logical / 5 visual / 0 outside**, and `(4,3)` / `(5,3)` no longer exist.
   Every visual tile now sits on its own logical cell and traces to a logical cell plus an author role
