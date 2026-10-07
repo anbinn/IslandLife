@@ -216,79 +216,131 @@ namespace IslandLife.EditorTools.IslandMap
         /// cell with the full 3x3 occupancy so the only conditions that actually differ between STATE A
         /// and STATE B are visible.
         /// </summary>
+        /// <summary>
+        /// THE TARGET CELL. PM clarified it: the junction where a vertical Raised boundary meets a
+        /// Raised platform on its RIGHT. In the locked P that is (4,5): west open (the vertical
+        /// boundary), east Raised (the platform), south Raised (the boundary continues), and NORTH is
+        /// the only thing that differs between the two states.
+        ///
+        ///   STATE A  base        [XXX / XX.]        (4,5) with north OPEN   -> no continuation above
+        ///   STATE B  continuation[X.. / XXX / XX.]  (4,5) with north Raised -> continuation above
+        ///
+        /// The base P is drawn with fixture line 0 as the NORTH row, so adding one Raised cell on top
+        /// of the west column turns the north row from "XXX" into "X.." and pushes the platform down a
+        /// row, which keeps the junction at the same logical address (4,5).
+        /// </summary>
+        private static readonly int JunctionX = 4;
+        private static readonly int JunctionY = 5;
+
+        private static string[] StateFixture(bool withContinuation)
+        {
+            // No continuation: north row "XXX", south row "XX.".  The junction is the west end of the
+            // north row. With continuation: one more Raised cell above that west column, so the west
+            // column is 3 deep and the junction keeps the same logical address one row below its top.
+            return withContinuation
+                ? new[] { "X..", "XXX", "XX." }
+                : new[] { "XXX", "XX." };
+        }
+
         private static void StateAdjacency(AuthorHillsCompositionSet set)
         {
             Line("");
-            Line("-- STATE A / STATE B ADJACENCY, real resolver path, vertical arm +1 .. +4 --");
+            Line("-- STATE A / STATE B ADJACENCY at the TARGET JUNCTION CELL --");
+            Line("   target = the cell where a vertical Raised boundary meets a Raised platform on its "
+                + "RIGHT. In the locked P that is (4,5): west open, east Raised, south Raised.");
+            Line("   STATE A   = no Raised continuation above  -> north OPEN");
+            Line("   STATE B   = Raised continuation above      -> north RAISED");
 
-            // The base P of R20B is [XXX / XX.] and its vertical arm is the WEST column, which is the
-            // only arm the extension is applied to. Height H means that column carries H cells.
-            var perHeight = new SortedDictionary<int, Dictionary<string, CellInfo>>();
+            var a = Dump(set, StateFixture(false));
+            var b = Dump(set, StateFixture(true));
+            string key = JunctionX + "," + JunctionY;
+
+            Line("");
+            Line("   STATE A full fixture [XXX / XX.] logical " + a.Count + " cells:");
+            foreach (KeyValuePair<string, CellInfo> kv in a.OrderBy(k => int.Parse(k.Value.Y.ToString())))
+            {
+                Line("     " + Describe(kv.Value));
+            }
+
+            Line("   STATE B full fixture [X.. / XXX / XX.] logical " + b.Count + " cells:");
+            foreach (KeyValuePair<string, CellInfo> kv in b.OrderBy(k => int.Parse(k.Value.Y.ToString())))
+            {
+                Line("     " + Describe(kv.Value));
+            }
+
+            Line("");
+            if (!a.ContainsKey(key) || !b.ContainsKey(key))
+            {
+                Line("   TARGET CELL MISSING from one of the two fixtures");
+                return;
+            }
+
+            CellInfo ca = a[key];
+            CellInfo cb = b[key];
+            Line("   STATE_A coord=" + ca.X + "," + ca.Y + " raw=0x" + ca.Raw.ToString("X2")
+                + " canonical=" + ca.Canon + " runDepth=" + ca.RunDepth + " role=" + ca.Role
+                + " slot=" + ca.Slot + " sprite=" + ca.Sprite);
+            Line("   STATE_B coord=" + cb.X + "," + cb.Y + " raw=0x" + cb.Raw.ToString("X2")
+                + " canonical=" + cb.Canon + " runDepth=" + cb.RunDepth + " role=" + cb.Role
+                + " slot=" + cb.Slot + " sprite=" + cb.Sprite);
+
+            var diff = new List<string>();
+            foreach (string k in new[] { "N", "NE", "E", "SE", "S", "SW", "W", "NW" })
+            {
+                if (ca.Occupancy[k] != cb.Occupancy[k])
+                {
+                    diff.Add(k + ": " + ca.Occupancy[k] + " -> " + cb.Occupancy[k]);
+                }
+            }
+
+            Line("   DIFFERING_NEIGHBORS = " + (diff.Count == 0
+                ? "NONE" : string.Join("; ", diff)));
+            Line("   => the whole STATE A / STATE B distinction is ONE local bit at that cell: whether "
+                + "its NORTH neighbour is Raised. runDepth is " + ca.RunDepth + " in both states, so it "
+                + "CANNOT be the discriminator, exactly as the card requires.");
+
+            Line("");
+            Line("   stability of the target cell as the vertical boundary grows upward:");
             for (int h = 1; h <= 5; h++)
             {
-                perHeight[h] = Dump(set, HeightFixture(h));
-                List<string> seq = perHeight[h].Values
-                    .Select(c => "(" + c.X + "," + c.Y + ")="
-                        + c.Sprite.Replace("Hills_", string.Empty))
-                    .OrderBy(x => x, StringComparer.Ordinal).ToList();
-                Line("   HEIGHT " + h + ": " + string.Join(" ", seq));
+                var f = ContinuationFixture(h);
+                var d = Dump(set, f);
+                string k2 = "4,5";
+                Line("     " + string.Join(" ", f).Replace("X", "R").Replace(".", ".")
+                    + "   cells=" + d.Count
+                    + "   target=" + (d.ContainsKey(k2) ? d[k2].Sprite : "-")
+                    + "  raw=" + (d.ContainsKey(k2) ? "0x" + d[k2].Raw.ToString("X2") : "-")
+                    + "  role=" + (d.ContainsKey(k2) ? d[k2].Role : "-")
+                    + "  north=" + (d.ContainsKey(k2) ? d[k2].Occupancy["N"] : "-"));
             }
+        }
 
-            Line("");
-            Line("   per-cell detail, HEIGHT 1 (STATE A) and HEIGHT 2 (STATE B):");
-            foreach (KeyValuePair<string, CellInfo> kv in perHeight[1])
+        private static string Describe(CellInfo c)
+        {
+            return "(" + c.X + "," + c.Y + ") raw=0x" + c.Raw.ToString("X2")
+                + " canon=" + c.Canon + " N=" + c.Occupancy["N"] + " NE=" + c.Occupancy["NE"]
+                + " E=" + c.Occupancy["E"] + " SE=" + c.Occupancy["SE"] + " S=" + c.Occupancy["S"]
+                + " SW=" + c.Occupancy["SW"] + " W=" + c.Occupancy["W"] + " NW=" + c.Occupancy["NW"]
+                + " runDepth=" + c.RunDepth + " role=" + c.Role + " slot=" + c.Slot
+                + " sprite=" + c.Sprite;
+        }
+
+        /// <summary>
+        /// The locked P with 0..4 extra Raised cells stacked on top of its west vertical boundary, so the
+        /// junction at (4,5) is unchanged in address and only its north occupancy moves from open to
+        /// Raised at the first extension and stays Raised afterwards.
+        /// </summary>
+        private static string[] ContinuationFixture(int height)
+        {
+            var rows = new List<string>();
+            for (int i = 2; i < height; i++)
             {
-                CellInfo a = kv.Value;
-                CellInfo b = perHeight[2][kv.Key];
-                Line($"     ({a.X},{a.Y})  A: raw=0x{a.Raw:X2} canon={a.Canon} runDepth={a.RunDepth} "
-                    + $"role={a.Role} slot={a.Slot} sprite={a.Sprite}");
-                Line($"     ({a.X},{a.Y})  B: raw=0x{b.Raw:X2} canon={b.Canon} runDepth={b.RunDepth} "
-                    + $"role={b.Role} slot={b.Slot} sprite={b.Sprite}");
-                var diff = new List<string>();
-                foreach (string k in new[] { "N", "NE", "E", "SE", "S", "SW", "W", "NW" })
-                {
-                    if (a.Occupancy[k] != b.Occupancy[k])
-                    {
-                        diff.Add($"{k}:{a.Occupancy[k]}->{b.Occupancy[k]}");
-                    }
-                }
-
-                Line($"     ({a.X},{a.Y})  DIFFERING_NEIGHBORS = "
-                    + (diff.Count == 0 ? "NONE, this cell is unaffected by the extension" : string.Join(" ", diff)));
+                rows.Insert(0, "X..");
             }
 
-            Line("");
-            Line("   cells whose SPRITE changed between HEIGHT 1 and HEIGHT 2 (the real STATE A/B pair):");
-            bool any = false;
-            foreach (KeyValuePair<string, CellInfo> kv in perHeight[1])
-            {
-                CellInfo a = kv.Value;
-                CellInfo b = perHeight[2][kv.Key];
-                if (a.Sprite != b.Sprite)
-                {
-                    any = true;
-                    Line($"     ({a.X},{a.Y}): {a.Sprite} -> {b.Sprite}  (role {a.Role} -> {b.Role}, "
-                        + $"slot {a.Slot} -> {b.Slot})");
-                }
-            }
-
-            if (!any)
-            {
-                Line("     NO CELL CHANGED ITS SPRITE between HEIGHT 1 and HEIGHT 2 on this fixture");
-            }
-
-            Line("");
-            Line("   stability of the junction sprite as the arm grows (section 10):");
-            foreach (KeyValuePair<string, CellInfo> kv in perHeight[1])
-            {
-                var seq = new List<string>();
-                for (int h = 1; h <= 5; h++)
-                {
-                    seq.Add(perHeight[h][kv.Key].Sprite.Replace("Hills_", string.Empty));
-                }
-
-                Line($"     ({kv.Key})  H1..H5 = {string.Join(" ", seq)}");
-            }
+            rows.Add("XXX");
+            rows.Add("XX.");
+            return rows.ToArray();
         }
 
         private sealed class CellInfo
@@ -305,22 +357,6 @@ namespace IslandLife.EditorTools.IslandMap
                 new Dictionary<string, string>();
         }
 
-        /// <summary>
-        /// The locked P with its west vertical arm extended. Height 1 is the base [XXX / XX.], and each
-        /// extra height adds one Raised cell to the WEST column above the existing ones.
-        /// </summary>
-        private static string[] HeightFixture(int height)
-        {
-            // South row "XX." and north row "XXX", then the west column extended upward.
-            var rows = new List<string> { "XXX" };
-            rows.Add("XX.");
-            for (int extra = 2; extra < height; extra++)
-            {
-                rows.Insert(0, "X..");
-            }
-
-            return rows.ToArray();
-        }
 
         private static Dictionary<string, CellInfo> Dump(
             AuthorHillsCompositionSet set, string[] mask)

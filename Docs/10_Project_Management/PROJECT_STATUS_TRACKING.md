@@ -132,7 +132,29 @@ author left and right **top** corners by R20.
     section 22 forbids Worker guessing an un-locked sprite semantic. Any rule written from the fixture
     alone would be the hard-coding the card forbids. Committed evidence harness:
     `ILW004SPJunctionAudit` (read-only, no production change).
-- **R21 corner continuation grammar: MEASUREMENT DELIVERED, production rule BLOCKED.** Two measured facts
+- **R21 corner continuation grammar: the RULE is now fully derived; only the slice identity is open.**
+  PM clarified the target: the junction where a **vertical Raised boundary meets a Raised platform on
+  its RIGHT**. In the locked P that cell is `(4,5)`. Measured on the real resolver path:
+  - **STATE A** (no Raised above) — `(4,5)` raw `0xD0` canonical `East, South, SouthEast`,
+    `runDepth 2`, role `TOP_SURFACE`, slot `LEFT_TERMINAL`, **N open**, currently `Hills_r0c0`.
+  - **STATE B** (Raised continuation above) — `(4,5)` raw `0xD2` canonical
+    `North, East, South, SouthEast`, `runDepth 3`, role `MIDDLE_SURFACE`, slot `LEFT_TERMINAL`,
+    **N Raised**, currently `Hills_r1c0`.
+  - **`DIFFERING_NEIGHBORS = N: open -> Raised`.** The entire A/B distinction is **one local bit**:
+    whether the junction's own NORTH neighbour is Raised. Every other direction is identical
+    (W open, E Raised, SE Raised, S Raised, NE/SW/NW open). The rule is therefore derivable purely
+    from that cell's 3x3 occupancy.
+  - **runDepth CANNOT be the discriminator and must not be.** It reads 2 in STATE A and 3 in STATE B,
+    and today's sprite simply slides with it: over heights 1..5 the junction emits
+    `Hills_r0c0, Hills_r0c0, Hills_r1c0, Hills_r2c0, Hills_r2c0`. That height-dependent sliding is
+    exactly what section 10 forbids, and it is also the visible defect: a two-deep west column draws
+    `r0c0` directly over `r2c0` and **skips the author's r1 body row entirely**.
+  - **Still open, and reserved for PM by sections 6 and 18:** which author slice is the STATE A base
+    component and which is the STATE B continuation component. Both cells currently resolve to plain
+    already-proven `LEFT_TERMINAL` pieces (`r0c0` / `r1c0`), which PM has reported as visually wrong,
+    and `Hills_r2c4` (rect 64,96) and `Hills_r3c5` (rect 80,80) have both been named as candidates.
+    Section 18 forbids choosing between reasonable candidates, and nothing in the sheet layout or the
+    locked grammar makes either assignment unique, so no slice was chosen and no role was written. Two measured facts
   contradict the card's premises and must be corrected before any rule is written.
   - **The author Hills sheet has NO empty slots. Measured: 99 of 99 slices NON_EMPTY, 0
     TRANSPARENT_EMPTY**, across rows r0..r8 x c0..c10, each cell checked by copying through
